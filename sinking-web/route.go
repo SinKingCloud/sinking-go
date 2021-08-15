@@ -88,7 +88,7 @@ func (r *router) handle(c *Context) {
 		c.handlers = append(c.handlers, r.handlers[key])
 	} else {
 		c.handlers = append(c.handlers, func(c *Context) {
-			NotFound(c)
+			NotFoundHandle(c)
 		})
 	}
 	c.Next()
