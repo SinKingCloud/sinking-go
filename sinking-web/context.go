@@ -7,8 +7,6 @@ import (
 	"fmt"
 )
 
-type H map[string]interface{}
-
 type Context struct {
 	// origin objects
 	Writer  http.ResponseWriter
@@ -46,7 +44,6 @@ func (c *Context) Next() {
 
 func (c *Context) Fail(code int, err string) {
 	c.index = len(c.handlers)
-	c.JSON(code, H{"message": err, "code": err})
 }
 
 func (c *Context) Param(key string) string {
