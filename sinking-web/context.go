@@ -54,7 +54,7 @@ func (c *Context) Param(key string) string {
 	return value
 }
 
-func (c *Context) PostForm(key string) string {
+func (c *Context) Form(key string) string {
 	return c.Request.FormValue(key)
 }
 
@@ -62,7 +62,7 @@ func (c *Context) Query(key string) string {
 	return c.Request.URL.Query().Get(key)
 }
 
-func (c *Context) Status(code int) {
+func (c *Context) SetStatus(code int) {
 	c.StatusCode = code
 	c.Writer.WriteHeader(code)
 }
@@ -73,7 +73,7 @@ func (c *Context) SetHeader(key string, value string) {
 
 func (c *Context) String(code int, format string, values ...interface{}) {
 	c.SetHeader("Content-Type", "text/plain")
-	c.Status(code)
+	c.SetStatus(code)
 	_, err := c.Writer.Write([]byte(fmt.Sprintf(format, values...)))
 	if err != nil {
 		return
@@ -82,7 +82,7 @@ func (c *Context) String(code int, format string, values ...interface{}) {
 
 func (c *Context) JSON(code int, obj interface{}) {
 	c.SetHeader("Content-Type", "application/json")
-	c.Status(code)
+	c.SetStatus(code)
 	encoder := json.NewEncoder(c.Writer)
 	if err := encoder.Encode(obj); err != nil {
 		http.Error(c.Writer, err.Error(), 500)
@@ -90,7 +90,7 @@ func (c *Context) JSON(code int, obj interface{}) {
 }
 
 func (c *Context) Data(code int, data []byte) {
-	c.Status(code)
+	c.SetStatus(code)
 	_, err := c.Writer.Write(data)
 	if err != nil {
 		return
@@ -99,7 +99,7 @@ func (c *Context) Data(code int, data []byte) {
 
 func (c *Context) HTML(code int, name string, data interface{}) {
 	c.SetHeader("Content-Type", "text/html")
-	c.Status(code)
+	c.SetStatus(code)
 	if err := c.engine.htmlTemplates.ExecuteTemplate(c.Writer, name, data); err != nil {
 		c.Fail(500, err.Error())
 	}
