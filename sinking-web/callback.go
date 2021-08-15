@@ -22,7 +22,7 @@ func NotFoundHandle(c *Context) {
 	if route.NotFound != nil {
 		route.NotFound(c)
 	} else {
-		c.JSON(http.StatusNotFound, H{"code": http.StatusNotFound, "message": message.NOT_FOUNT})
+		c.JSON(http.StatusNotFound, H{"code": http.StatusNotFound, "message": message.NotFound})
 	}
 }
 

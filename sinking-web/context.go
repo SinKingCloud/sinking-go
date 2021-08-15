@@ -44,6 +44,7 @@ func (c *Context) Next() {
 
 func (c *Context) Fail(code int, err string) {
 	c.index = len(c.handlers)
+	FailHandle(c, code, err)
 }
 
 func (c *Context) Param(key string) string {
