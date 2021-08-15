@@ -1,4 +1,4 @@
-module sinking-orm
+module github.com/SinKingCloud/sinking-go/sinking-orm
 
 go 1.11
 
