@@ -1,7 +1,6 @@
 package sinking_web
 
 import (
-	"github.com/SinKingCloud/sinking-go/sinking-web/callback"
 	"strings"
 )
 
@@ -89,7 +88,7 @@ func (r *router) handle(c *Context) {
 		c.handlers = append(c.handlers, r.handlers[key])
 	} else {
 		c.handlers = append(c.handlers, func(c *Context) {
-			callback.NotFound(c)
+			NotFound(c)
 		})
 	}
 	c.Next()
