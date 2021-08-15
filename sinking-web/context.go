@@ -23,6 +23,7 @@ type Context struct {
 	// engine pointer
 	engine *Engine
 }
+type H map[string]interface{}
 
 func newContext(w http.ResponseWriter, req *http.Request) *Context {
 	return &Context{
