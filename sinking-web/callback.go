@@ -5,6 +5,8 @@ import (
 	"net/http"
 )
 
+type H map[string]interface{}
+
 //route方法重写
 var route routeStruct
 

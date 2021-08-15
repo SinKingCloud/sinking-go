@@ -1,7 +1,6 @@
 package sinking_web
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -10,10 +9,6 @@ type node struct {
 	part     string
 	children []*node
 	isWild   bool
-}
-
-func (n *node) String() string {
-	return fmt.Sprintf("node{pattern=%s, part=%s, isWild=%t}", n.pattern, n.part, n.isWild)
 }
 
 func (n *node) insert(pattern string, parts []string, height int) {
