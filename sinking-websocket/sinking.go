@@ -16,7 +16,7 @@ type websocketHandle struct {
 	OnMessageHandle func(ws *websocket.Conn, messageType int, data []byte)
 }
 
-var handle websocketHandle
+var Handle websocketHandle
 
 func (handle *websocketHandle) SetErrorHandle(fun func(err error)) *websocketHandle {
 	handle.ErrorHandle = fun
