@@ -26,15 +26,15 @@ type (
 	}
 )
 
-func New() *Engine {
+func NewHttpServer() *Engine {
 	engine := &Engine{router: newRouter()}
 	engine.RouterGroup = &RouterGroup{engine: engine}
 	engine.groups = []*RouterGroup{engine.RouterGroup}
 	return engine
 }
 
-func Default() *Engine {
-	engine := New()
+func DefaultHttpServer() *Engine {
+	engine := NewHttpServer()
 	engine.Use(Logger(), Recovery())
 	return engine
 }
