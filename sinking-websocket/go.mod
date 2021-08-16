@@ -1,4 +1,4 @@
-module github.com/SinKingCloud/sinking-go/sinking-webscoket
+module github.com/SinKingCloud/sinking-go/sinking-websocket
 
 go 1.11
 
