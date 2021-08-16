@@ -26,15 +26,15 @@ type (
 	}
 )
 
-func NewHttpServer() *Engine {
+func New() *Engine {
 	engine := &Engine{router: newRouter()}
 	engine.RouterGroup = &RouterGroup{engine: engine}
 	engine.groups = []*RouterGroup{engine.RouterGroup}
 	return engine
 }
 
-func DefaultHttpServer() *Engine {
-	engine := NewHttpServer()
+func Default() *Engine {
+	engine := New()
 	engine.Use(Logger(), Recovery())
 	return engine
 }
@@ -114,12 +114,16 @@ func (engine *Engine) SetFuncMap(funcMap template.FuncMap) {
 	engine.funcMap = funcMap
 }
 
-func (engine *Engine) LoadHTMLGlob(pattern string) {
+func (engine *Engine) LoadHtmlGlob(pattern string) {
 	engine.htmlTemplates = template.Must(template.New("").Funcs(engine.funcMap).ParseGlob(pattern))
 }
 
 func (engine *Engine) Run(addr string) (err error) {
 	return http.ListenAndServe(addr, engine)
+}
+
+func (engine *Engine) RunTLS(addr string, certFile string, keyFile string) (err error) {
+	return http.ListenAndServeTLS(addr, certFile, keyFile, engine)
 }
 
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
