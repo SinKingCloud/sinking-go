@@ -11,19 +11,17 @@ var upGrader = websocket.Upgrader{
 	},
 }
 
-type websocketHandle struct {
+type WebsocketHandle struct {
 	ErrorHandle     func(err error)
 	OnMessageHandle func(ws *websocket.Conn, messageType int, data []byte)
 }
 
-var Handle websocketHandle
-
-func (handle *websocketHandle) SetErrorHandle(fun func(err error)) *websocketHandle {
+func (handle *WebsocketHandle) SetErrorHandle(fun func(err error)) *WebsocketHandle {
 	handle.ErrorHandle = fun
 	return handle
 }
 
-func (handle *websocketHandle) SetOnMessageHandle(fun func(ws *websocket.Conn, messageType int, data []byte)) *websocketHandle {
+func (handle *WebsocketHandle) SetOnMessageHandle(fun func(ws *websocket.Conn, messageType int, data []byte)) *WebsocketHandle {
 	handle.OnMessageHandle = fun
 	return handle
 }
@@ -37,7 +35,7 @@ func (err *Error) Error() string {
 	return err.ErrMsg
 }
 
-func (handle *websocketHandle) Listen(writer http.ResponseWriter, request *http.Request) {
+func (handle *WebsocketHandle) Listen(writer http.ResponseWriter, request *http.Request) {
 	defer func(writer http.ResponseWriter, request *http.Request) {
 		if request.Header.Get("Connection") != "Upgrade" {
 			if handle.ErrorHandle != nil {
