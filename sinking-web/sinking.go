@@ -12,22 +12,23 @@ type HandlerFunc func(*Context)
 type (
 	RouterGroup struct {
 		prefix      string
-		middlewares []HandlerFunc // support middleware
-		parent      *RouterGroup  // support nesting
-		engine      *Engine       // all groups share an Engine instance
+		middlewares []HandlerFunc
+		parent      *RouterGroup
+		engine      *Engine
 	}
 
 	Engine struct {
 		*RouterGroup
-		router        *router
-		groups        []*RouterGroup     // store all groups
-		htmlTemplates *template.Template // for html render
-		funcMap       template.FuncMap   // for html render
+		router             *router
+		groups             []*RouterGroup
+		htmlTemplates      *template.Template
+		funcMap            template.FuncMap
+		MaxMultipartMemory int64
 	}
 )
 
 func New() *Engine {
-	engine := &Engine{router: newRouter()}
+	engine := &Engine{router: newRouter(), MaxMultipartMemory: defaultMultipartMemory}
 	engine.RouterGroup = &RouterGroup{engine: engine}
 	engine.groups = []*RouterGroup{engine.RouterGroup}
 	return engine
