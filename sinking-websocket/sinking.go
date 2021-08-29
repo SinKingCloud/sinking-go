@@ -13,6 +13,7 @@ var upGrader = websocket.Upgrader{
 
 type Websocket struct {
 	OnError   func(err error)
+	OnConnect func(ws *websocket.Conn)
 	OnMessage func(ws *websocket.Conn, messageType int, data []byte)
 }
 
@@ -59,6 +60,9 @@ func (handle *Websocket) Listen(writer http.ResponseWriter, request *http.Reques
 				return
 			}
 		}(ws) //返回前关闭
+		if handle.OnConnect != nil {
+			handle.OnConnect(ws)
+		}
 		for {
 			//读取ws中的数据
 			mt, message, err := ws.ReadMessage()
