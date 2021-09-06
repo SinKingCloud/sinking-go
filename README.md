@@ -1,2 +1,29 @@
 # sinking-go
-sinking-go framework
+
+这是一个正在开发的go项目，它将成为一个低成本高性能的微服务解决方案
+
+### 项目架构
+
+- [x] sinking-web http框架
+- [x] sinking-websocket websocket框架包装
+- [ ] sinking-gateway 网关
+- [ ] sinking-consul 注册中心/配置中心
+
+### 计划
+
+- sinking-web将成为http基础框架
+- sinking-websocket将成为websocket基础包装类
+- sinking-gateway将实现网关/负载均衡
+- sinking-consul将实现配置中心/注册中心/限流/分布式事务
+
+### 技术栈
+
+- 前端:react,antd design,antd pro
+- 后端:原生golang
+
+### 加入我们
+
+- QQ:1178710004
+- WX:loser88887777
+- Blog:[https://www.clwl.online](https://www.clwl.online)
+
