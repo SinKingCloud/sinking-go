@@ -19,7 +19,7 @@
 ### 技术栈
 
 - 前端:react,antd design,antd pro
-- 后端:原生golang
+- 后端:sinking-web,gorm-sqlite,sinking-websocket
 
 ### 加入我们
 
