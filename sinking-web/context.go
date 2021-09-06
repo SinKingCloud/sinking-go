@@ -99,24 +99,32 @@ func (c *Context) FormFile(name string) (*multipart.FileHeader, error) {
 	return fh, err
 }
 
-// MultipartForm is the parsed multipart form, including file uploads.
 func (c *Context) MultipartForm() (*multipart.Form, error) {
 	err := c.Request.ParseMultipartForm(c.engine.MaxMultipartMemory)
 	return c.Request.MultipartForm, err
 }
 
-// SaveUploadedFile uploads the form file to specific dst.
 func (c *Context) SaveUploadedFile(file *multipart.FileHeader, dst string) error {
 	src, err := file.Open()
 	if err != nil {
 		return err
 	}
-	defer src.Close()
+	defer func(src multipart.File) {
+		err := src.Close()
+		if err != nil {
+			return
+		}
+	}(src)
 	out, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func(out *os.File) {
+		err := out.Close()
+		if err != nil {
+			return
+		}
+	}(out)
 	_, err = io.Copy(out, src)
 	return err
 }
@@ -265,9 +273,9 @@ func (c *Context) GetStringMapString(key string) (sms map[string]string) {
 	return
 }
 
-func (c *Context) GetStringMapStringSlice(key string) (smss map[string][]string) {
+func (c *Context) GetStringMapStringSlice(key string) (temp map[string][]string) {
 	if val, ok := c.Get(key); ok && val != nil {
-		smss, _ = val.(map[string][]string)
+		temp, _ = val.(map[string][]string)
 	}
 	return
 }
