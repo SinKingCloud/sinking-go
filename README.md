@@ -14,7 +14,7 @@
 - sinking-web将成为http基础框架
 - sinking-websocket将成为websocket基础包装类
 - sinking-gateway将实现网关/负载均衡
-- sinking-consul将实现配置中心/注册中心/限流/分布式事务
+- sinking-consul将实现可视化配置中心/注册中心/限流/分布式事务
 
 ### 技术栈
 
