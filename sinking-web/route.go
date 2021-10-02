@@ -1,7 +1,6 @@
 package sinking_web
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -83,7 +82,6 @@ func (r *router) getRoutes(method string) []*node {
 
 func (r *router) handle(c *Context) {
 	n, params := r.getRoute(c.Method, c.Path)
-	fmt.Println(n, params, r)
 	if n != nil {
 		key := c.Method + "-" + n.pattern
 		c.Params = params
