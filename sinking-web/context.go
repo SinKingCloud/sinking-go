@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"sync"
 	"time"
 )
-
-const defaultMultipartMemory = 32 << 20
 
 type Context struct {
 	Writer     http.ResponseWriter
@@ -80,6 +79,14 @@ func (c *Context) DefaultQuery(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+func (c *Context) Body() string {
+	body, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		return ""
+	}
+	return string(body)
 }
 
 func (c *Context) FormFile(name string) (*multipart.FileHeader, error) {

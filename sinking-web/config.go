@@ -8,7 +8,10 @@ import (
 type H map[string]interface{}
 
 //route方法重写
-var route routeStruct
+var (
+	route routeStruct
+	debug = false
+)
 
 type routeStruct struct {
 	NotFound func(*Context)
@@ -44,4 +47,9 @@ func FailHandle(c *Context, code int, message string) {
 	} else {
 		c.JSON(code, H{"code": code, "message": message})
 	}
+}
+
+// SetDebugMode 设置运行模式为debug
+func SetDebugMode(mode bool) {
+	debug = mode
 }

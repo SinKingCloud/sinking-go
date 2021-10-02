@@ -9,6 +9,8 @@ import (
 
 type HandlerFunc func(*Context)
 
+const defaultMultipartMemory = 32 << 20
+
 type (
 	RouterGroup struct {
 		prefix      string
