@@ -19,9 +19,15 @@ type (
 		engine      *Engine
 	}
 
+	ErrorHandel struct {
+		NotFound func(*Context)
+		Fail     func(c *Context, code int, message string)
+	}
+
 	Engine struct {
 		*RouterGroup
 		router             *router
+		errorHandel        *ErrorHandel
 		groups             []*RouterGroup
 		htmlTemplates      *template.Template
 		funcMap            template.FuncMap
@@ -92,6 +98,10 @@ func (group *RouterGroup) TRACE(pattern string, handler HandlerFunc) {
 
 func (group *RouterGroup) PATCH(pattern string, handler HandlerFunc) {
 	group.addRoute(http.MethodPatch, pattern, handler)
+}
+
+func (group *RouterGroup) SetErrorHandle(handle *ErrorHandel) {
+	group.engine.errorHandel = handle
 }
 
 func (group *RouterGroup) createStaticHandler(relativePath string, fs http.FileSystem) HandlerFunc {

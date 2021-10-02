@@ -46,7 +46,11 @@ func (c *Context) Next() {
 
 func (c *Context) Fail(code int, err string) {
 	c.index = len(c.handlers)
-	FailHandle(c, code, err)
+	if c.engine.errorHandel != nil && c.engine.errorHandel.Fail != nil {
+		c.engine.errorHandel.Fail(c, code, err)
+	} else {
+		c.JSON(code, H{"code": code, "message": err})
+	}
 }
 
 func (c *Context) Param(key string) string {

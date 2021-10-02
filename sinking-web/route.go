@@ -1,6 +1,8 @@
 package sinking_web
 
 import (
+	"github.com/SinKingCloud/sinking-go/sinking-web/constant/message"
+	"net/http"
 	"strings"
 )
 
@@ -88,7 +90,11 @@ func (r *router) handle(c *Context) {
 		c.handlers = append(c.handlers, r.handlers[key])
 	} else {
 		c.handlers = append(c.handlers, func(c *Context) {
-			NotFoundHandle(c)
+			if c.engine.errorHandel != nil && c.engine.errorHandel.NotFound != nil {
+				c.engine.errorHandel.NotFound(c)
+			} else {
+				c.JSON(http.StatusNotFound, H{"code": http.StatusNotFound, "message": message.NotFound})
+			}
 		})
 	}
 	c.Next()
