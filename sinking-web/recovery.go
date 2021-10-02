@@ -25,10 +25,10 @@ func Recovery() HandlerFunc {
 	return func(c *Context) {
 		defer func() {
 			if err := recover(); err != nil {
-				message := fmt.Sprintf("%s", err)
 				if debug {
 					c.Fail(http.StatusInternalServerError, message2.InternalServerError)
 				} else {
+					message := fmt.Sprintf("%s", err)
 					c.Fail(http.StatusInternalServerError, trace(message))
 				}
 			}

@@ -33,12 +33,12 @@ func New() *Engine {
 	engine := &Engine{router: newRouter(), MaxMultipartMemory: defaultMultipartMemory}
 	engine.RouterGroup = &RouterGroup{engine: engine}
 	engine.groups = []*RouterGroup{engine.RouterGroup}
-	engine.Use(Recovery())
 	return engine
 }
 
 func Default() *Engine {
 	engine := New()
+	engine.Use(Recovery())
 	return engine
 }
 
