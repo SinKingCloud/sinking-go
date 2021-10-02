@@ -45,6 +45,9 @@ func New() *Engine {
 func Default() *Engine {
 	engine := New()
 	engine.Use(Recovery())
+	if debug {
+		engine.Use(Logger())
+	}
 	return engine
 }
 
@@ -132,10 +135,12 @@ func (engine *Engine) LoadHtmlGlob(pattern string) {
 }
 
 func (engine *Engine) Run(addr string) (err error) {
+	Author(engine, addr)
 	return http.ListenAndServe(addr, engine)
 }
 
 func (engine *Engine) RunTLS(addr string, certFile string, keyFile string) (err error) {
+	Author(engine, addr)
 	return http.ListenAndServeTLS(addr, certFile, keyFile, engine)
 }
 
