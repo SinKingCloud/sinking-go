@@ -1,9 +1,11 @@
 package sinking_web
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -80,6 +82,7 @@ func (c *Context) AllForm() map[string]string {
 	return param
 }
 func (c *Context) Form(key string) string {
+
 	return c.Request.FormValue(key)
 }
 func (c *Context) DefaultForm(key, defaultValue string) string {
@@ -104,6 +107,15 @@ func (c *Context) DefaultQuery(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+func (c *Context) Body() string {
+	body, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		return ""
+	}
+	c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+	return string(body)
 }
 
 func (c *Context) FormFile(name string) (*multipart.FileHeader, error) {
