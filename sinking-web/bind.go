@@ -9,19 +9,20 @@ import (
 )
 
 const (
-	FormTagName = "form"
+	FormTagName         = "form"
+	DefaultValueTagName = "default"
 )
 
 func (c *Context) BindForm(obj interface{}) error {
-	return c.bind(c.AllForm(), obj, FormTagName)
+	return c.bind(c.AllForm(), obj)
 }
 
 func (c *Context) BindQuery(obj interface{}) error {
-	return c.bind(c.AllQuery(), obj, FormTagName)
+	return c.bind(c.AllQuery(), obj)
 }
 
 func (c *Context) BindParam(obj interface{}) error {
-	return c.bind(c.AllParam(), obj, FormTagName)
+	return c.bind(c.AllParam(), obj)
 }
 
 func (c *Context) BindJson(obj interface{}) error {
@@ -33,13 +34,19 @@ func (c *Context) BindJson(obj interface{}) error {
 	return nil
 }
 
-func (c *Context) bind(params map[string]string, obj interface{}, tagName string) error {
+func (c *Context) bind(params map[string]string, obj interface{}) error {
 	keys := reflect.TypeOf(obj).Elem()
 	values := reflect.ValueOf(obj).Elem()
 	for i := 0; i < keys.NumField(); i++ {
-		name := keys.Field(i).Tag.Get(tagName)
+		name := keys.Field(i).Tag.Get(FormTagName)
 		if name == "" {
 			name = keys.Field(i).Name
+		}
+		if params[name] == "" {
+			defaultValue := keys.Field(i).Tag.Get(DefaultValueTagName)
+			if defaultValue != "" {
+				params[name] = defaultValue
+			}
 		}
 		err := setWithProperType(params[name], values.Field(i), keys.Field(i))
 		if err != nil {
