@@ -2,6 +2,7 @@ package sinking_web
 
 import (
 	"fmt"
+	"github.com/SinKingCloud/sinking-go/sinking-web/constant/sinking"
 	"log"
 	"os"
 	"time"
@@ -9,7 +10,7 @@ import (
 
 func Author(engine *Engine, addr string) {
 	fmt.Println(" ____    ______   __  __  __  __   ______   __  __  ____              ____    _____      \n/\\  _`\\ /\\__  _\\ /\\ \\/\\ \\/\\ \\/\\ \\ /\\__  _\\ /\\ \\/\\ \\/\\  _`\\           /\\  _`\\ /\\  __`\\    \n\\ \\,\\L\\_\\/_/\\ \\/ \\ \\ `\\\\ \\ \\ \\/'/'\\/_/\\ \\/ \\ \\ `\\\\ \\ \\ \\L\\_\\         \\ \\ \\L\\_\\ \\ \\/\\ \\   \n \\/_\\__ \\  \\ \\ \\  \\ \\ , ` \\ \\ , <    \\ \\ \\  \\ \\ , ` \\ \\ \\L_L   _______\\ \\ \\L_L\\ \\ \\ \\ \\  \n   /\\ \\L\\ \\ \\_\\ \\__\\ \\ \\`\\ \\ \\ \\\\`\\   \\_\\ \\__\\ \\ \\`\\ \\ \\ \\/, \\/\\______\\\\ \\ \\/, \\ \\ \\_\\ \\ \n   \\ `\\____\\/\\_____\\\\ \\_\\ \\_\\ \\_\\ \\_\\ /\\_____\\\\ \\_\\ \\_\\ \\____/\\/______/ \\ \\____/\\ \\_____\\\n    \\/_____/\\/_____/ \\/_/\\/_/\\/_/\\/_/ \\/_____/ \\/_/\\/_/\\/___/            \\/___/  \\/_____/\n                                                                                         ")
-	fmt.Println("SinKing-Go Framework")
+	fmt.Println("SinKing-Go Framework " + sinking.VERSION)
 	fmt.Println("Author:SinKingCloud")
 	fmt.Println("Blog:www.clwl.online")
 	for k := range engine.router.handlers {
@@ -17,6 +18,11 @@ func Author(engine *Engine, addr string) {
 	}
 	fmt.Printf("The total handle is %d", len(engine.router.handlers))
 	fmt.Printf("The request url is %s \n", addr)
+	if debug {
+		fmt.Printf("The run mode is debug")
+	} else {
+		fmt.Printf("The run mode is release")
+	}
 }
 
 func Logger() HandlerFunc {
