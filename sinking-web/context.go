@@ -55,7 +55,6 @@ func (c *Context) Fail(code int, err string) {
 func (c *Context) AllParam() map[string]string {
 	return c.Params
 }
-
 func (c *Context) Param(key string) string {
 	value, _ := c.Params[key]
 	return value
@@ -80,7 +79,6 @@ func (c *Context) AllForm() map[string]string {
 	}
 	return param
 }
-
 func (c *Context) Form(key string) string {
 	return c.Request.FormValue(key)
 }
@@ -98,7 +96,6 @@ func (c *Context) AllQuery() map[string]string {
 	}
 	return param
 }
-
 func (c *Context) Query(key string) string {
 	return c.Request.URL.Query().Get(key)
 }
