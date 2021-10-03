@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -53,16 +52,33 @@ func (c *Context) Fail(code int, err string) {
 	}
 }
 
+func (c *Context) AllParam() map[string]string {
+	return c.Params
+}
+
 func (c *Context) Param(key string) string {
 	value, _ := c.Params[key]
 	return value
 }
+
 func (c *Context) DefaultParam(key, defaultValue string) string {
 	value, exists := c.Params[key]
 	if exists {
 		return value
 	}
 	return defaultValue
+}
+
+func (c *Context) AllForm() map[string]string {
+	param := map[string]string{}
+	err := c.Request.ParseForm()
+	if err != nil {
+		return param
+	}
+	for k, v := range c.Request.PostForm {
+		param[k] = v[0]
+	}
+	return param
 }
 
 func (c *Context) Form(key string) string {
@@ -75,6 +91,14 @@ func (c *Context) DefaultForm(key, defaultValue string) string {
 	return defaultValue
 }
 
+func (c *Context) AllQuery() map[string]string {
+	param := map[string]string{}
+	for k, v := range c.Request.URL.Query() {
+		param[k] = v[0]
+	}
+	return param
+}
+
 func (c *Context) Query(key string) string {
 	return c.Request.URL.Query().Get(key)
 }
@@ -83,14 +107,6 @@ func (c *Context) DefaultQuery(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
-}
-
-func (c *Context) Body() string {
-	body, err := ioutil.ReadAll(c.Request.Body)
-	if err != nil {
-		return ""
-	}
-	return string(body)
 }
 
 func (c *Context) FormFile(name string) (*multipart.FileHeader, error) {
