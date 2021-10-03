@@ -2,7 +2,6 @@ package sinking_web
 
 import (
 	"fmt"
-	message2 "github.com/SinKingCloud/sinking-go/sinking-web/constant/message"
 	"net/http"
 	"runtime"
 	"strings"
@@ -26,7 +25,7 @@ func Recovery() HandlerFunc {
 		defer func() {
 			if err := recover(); err != nil {
 				if !debug {
-					c.Fail(http.StatusInternalServerError, message2.InternalServerError)
+					c.Fail(http.StatusInternalServerError, MessageInternalServerError)
 				} else {
 					message := fmt.Sprintf("%s", err)
 					c.Fail(http.StatusInternalServerError, trace(message))
