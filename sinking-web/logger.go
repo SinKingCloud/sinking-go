@@ -15,12 +15,12 @@ func Author(engine *Engine, addr string) {
 	for k := range engine.router.handlers {
 		fmt.Println("RequestHandle:", k)
 	}
-	fmt.Printf("The total handle is %d", len(engine.router.handlers))
-	fmt.Printf("The request url is %s \n", addr)
+	fmt.Printf("The total handle is %d\n", len(engine.router.handlers))
+	fmt.Printf("The request url is %s\n", addr)
 	if debug {
-		fmt.Printf("The run mode is debug")
+		fmt.Printf("The run mode is debug\n")
 	} else {
-		fmt.Printf("The run mode is release")
+		fmt.Printf("The run mode is release\n")
 	}
 }
 
