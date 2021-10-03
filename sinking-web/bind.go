@@ -9,33 +9,31 @@ import (
 )
 
 const (
-	FormTagName  = "form"
-	QueryTagName = "query"
-	ParamTagName = "param"
+	FormTagName = "form"
 )
 
-func (c *Context) BindForm(obj interface{}) {
-	c.bind(c.AllForm(), obj, FormTagName)
+func (c *Context) BindForm(obj interface{}) error {
+	return c.bind(c.AllForm(), obj, FormTagName)
 }
 
-func (c *Context) BindQuery(obj interface{}) {
-	c.bind(c.AllQuery(), obj, QueryTagName)
+func (c *Context) BindQuery(obj interface{}) error {
+	return c.bind(c.AllQuery(), obj, FormTagName)
 }
 
-func (c *Context) BindParam(obj interface{}) {
-	c.bind(c.AllParam(), obj, ParamTagName)
+func (c *Context) BindParam(obj interface{}) error {
+	return c.bind(c.AllParam(), obj, FormTagName)
 }
 
-func (c *Context) BindJson(obj interface{}) {
+func (c *Context) BindJson(obj interface{}) error {
 	body := c.Body()
 	err := json.Unmarshal([]byte(body), &obj)
 	if err != nil {
-		panic(err)
-		return
+		return err
 	}
+	return nil
 }
 
-func (c *Context) bind(params map[string]string, obj interface{}, tagName string) {
+func (c *Context) bind(params map[string]string, obj interface{}, tagName string) error {
 	keys := reflect.TypeOf(obj).Elem()
 	values := reflect.ValueOf(obj).Elem()
 	for i := 0; i < keys.NumField(); i++ {
@@ -45,10 +43,10 @@ func (c *Context) bind(params map[string]string, obj interface{}, tagName string
 		}
 		err := setWithProperType(params[name], values.Field(i), keys.Field(i))
 		if err != nil {
-			panic(err)
-			return
+			return err
 		}
 	}
+	return nil
 }
 
 func setWithProperType(val string, value reflect.Value, field reflect.StructField) error {
