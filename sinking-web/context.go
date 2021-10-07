@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"math"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -14,6 +13,7 @@ import (
 	"time"
 )
 
+// Context 上下文结构体
 type Context struct {
 	Writer     http.ResponseWriter
 	Request    *http.Request
@@ -28,6 +28,7 @@ type Context struct {
 	Keys       map[string]interface{}
 }
 
+// newContext 实例化一个新的上下文
 func newContext(w http.ResponseWriter, req *http.Request) *Context {
 	return &Context{
 		Path:    req.URL.Path,
@@ -38,6 +39,7 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 	}
 }
 
+// Next 中间件执行
 func (c *Context) Next() {
 	c.index++
 	s := len(c.handlers)
@@ -46,16 +48,17 @@ func (c *Context) Next() {
 	}
 }
 
-const abortIndex int = math.MaxInt >> 1
-
+// IsAborted 是否被挂起
 func (c *Context) IsAborted() bool {
 	return c.index >= abortIndex
 }
 
+// Abort 阻止挂起函数
 func (c *Context) Abort() {
 	c.index = abortIndex
 }
 
+// Fail 输出失败响应
 func (c *Context) Fail(code int, err string) {
 	c.index = len(c.handlers)
 	if c.engine.errorHandel != nil && c.engine.errorHandel.Fail != nil {
@@ -65,14 +68,18 @@ func (c *Context) Fail(code int, err string) {
 	}
 }
 
+// AllParam 获取所有路径参数
 func (c *Context) AllParam() map[string]string {
 	return c.Params
 }
+
+// Param 获取单个路径参数
 func (c *Context) Param(key string) string {
 	value, _ := c.Params[key]
 	return value
 }
 
+// DefaultParam 获取路径参数，不存在返回默认参数
 func (c *Context) DefaultParam(key, defaultValue string) string {
 	value, exists := c.Params[key]
 	if exists {
@@ -81,6 +88,7 @@ func (c *Context) DefaultParam(key, defaultValue string) string {
 	return defaultValue
 }
 
+// AllForm 获取所有post参数
 func (c *Context) AllForm() map[string]string {
 	param := map[string]string{}
 	err := c.Request.ParseForm()
@@ -92,9 +100,13 @@ func (c *Context) AllForm() map[string]string {
 	}
 	return param
 }
+
+// Form 获取单个post参数
 func (c *Context) Form(key string) string {
 	return c.Request.FormValue(key)
 }
+
+// DefaultForm 获取单个post参数，不存在则返回默认参数
 func (c *Context) DefaultForm(key, defaultValue string) string {
 	if value := c.Request.FormValue(key); value != "" {
 		return value
@@ -102,6 +114,7 @@ func (c *Context) DefaultForm(key, defaultValue string) string {
 	return defaultValue
 }
 
+// AllQuery 获取所有get参数
 func (c *Context) AllQuery() map[string]string {
 	param := map[string]string{}
 	for k, v := range c.Request.URL.Query() {
@@ -109,9 +122,13 @@ func (c *Context) AllQuery() map[string]string {
 	}
 	return param
 }
+
+// Query 获取单个get参数
 func (c *Context) Query(key string) string {
 	return c.Request.URL.Query().Get(key)
 }
+
+// DefaultQuery 获取单个get参数，不存在则返回默认值
 func (c *Context) DefaultQuery(key, defaultValue string) string {
 	if value := c.Request.URL.Query().Get(key); value != "" {
 		return value
@@ -119,6 +136,7 @@ func (c *Context) DefaultQuery(key, defaultValue string) string {
 	return defaultValue
 }
 
+// Body 获取请求体
 func (c *Context) Body() string {
 	body, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
@@ -128,11 +146,13 @@ func (c *Context) Body() string {
 	return string(body)
 }
 
+// Redirect 重定向跳转
 func (c *Context) Redirect(code int, location string) {
 	c.SetStatus(code)
 	c.SetHeader("Location", location)
 }
 
+// FormFile 获取上传文件
 func (c *Context) FormFile(name string) (*multipart.FileHeader, error) {
 	if c.Request.MultipartForm == nil {
 		if err := c.Request.ParseMultipartForm(c.engine.MaxMultipartMemory); err != nil {
@@ -150,11 +170,13 @@ func (c *Context) FormFile(name string) (*multipart.FileHeader, error) {
 	return fh, err
 }
 
+// MultipartForm 多参数转换
 func (c *Context) MultipartForm() (*multipart.Form, error) {
 	err := c.Request.ParseMultipartForm(c.engine.MaxMultipartMemory)
 	return c.Request.MultipartForm, err
 }
 
+// SaveUploadedFile 保存上传文件
 func (c *Context) SaveUploadedFile(file *multipart.FileHeader, dst string) error {
 	src, err := file.Open()
 	if err != nil {
@@ -180,17 +202,20 @@ func (c *Context) SaveUploadedFile(file *multipart.FileHeader, dst string) error
 	return err
 }
 
+// SetStatus 设置http响应码
 func (c *Context) SetStatus(code int) {
 	c.StatusCode = code
 	c.Writer.WriteHeader(code)
 }
 
+// SetHeader 设置响应头
 func (c *Context) SetHeader(key string, value string) {
 	c.Writer.Header().Set(key, value)
 }
 
+// String 返回字符串内容
 func (c *Context) String(code int, format string, values ...interface{}) {
-	c.SetHeader("Content-Type", "text/plain")
+	c.SetHeader(ContentType, ContentTypeText)
 	c.SetStatus(code)
 	_, err := c.Writer.Write([]byte(fmt.Sprintf(format, values...)))
 	if err != nil {
@@ -198,8 +223,9 @@ func (c *Context) String(code int, format string, values ...interface{}) {
 	}
 }
 
+// JSON 返回json内容
 func (c *Context) JSON(code int, obj interface{}) {
-	c.SetHeader("Content-Type", "application/json")
+	c.SetHeader(ContentType, ContentTypeJson)
 	c.SetStatus(code)
 	encoder := json.NewEncoder(c.Writer)
 	if err := encoder.Encode(obj); err != nil {
@@ -207,6 +233,7 @@ func (c *Context) JSON(code int, obj interface{}) {
 	}
 }
 
+// Data 返回字符内容
 func (c *Context) Data(code int, data []byte) {
 	c.SetStatus(code)
 	_, err := c.Writer.Write(data)
@@ -215,30 +242,34 @@ func (c *Context) Data(code int, data []byte) {
 	}
 }
 
+// HTML 返回html内容
 func (c *Context) HTML(code int, name string, data interface{}) {
-	c.SetHeader("Content-Type", "text/html")
+	c.SetHeader(ContentType, ContentTypeHtml)
 	c.SetStatus(code)
 	if err := c.engine.htmlTemplates.ExecuteTemplate(c.Writer, name, data); err != nil {
 		c.Fail(500, err.Error())
 	}
 }
 
+// Set 中间件设置传递内容
 func (c *Context) Set(key string, value interface{}) {
 	c.lock.Lock()
 	if c.Keys == nil {
 		c.Keys = make(map[string]interface{})
 	}
-
 	c.Keys[key] = value
 	c.lock.Unlock()
 }
 
+// Get 中间件获取传递内容
 func (c *Context) Get(key string) (value interface{}, exists bool) {
 	c.lock.RLock()
 	value, exists = c.Keys[key]
 	c.lock.RUnlock()
 	return value, exists
 }
+
+////  以下为获取不同类型的中间件参数内容  \\\\
 
 func (c *Context) GetString(key string) (s string) {
 	if val, ok := c.Get(key); ok && val != nil {

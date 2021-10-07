@@ -8,23 +8,22 @@ import (
 	"time"
 )
 
-const (
-	FormTagName         = "form"
-	DefaultValueTagName = "default"
-)
-
+// BindForm 绑定post参数
 func (c *Context) BindForm(obj interface{}) error {
 	return c.bind(c.AllForm(), obj)
 }
 
+// BindQuery 绑定get参数
 func (c *Context) BindQuery(obj interface{}) error {
 	return c.bind(c.AllQuery(), obj)
 }
 
+// BindParam 绑定路径参数
 func (c *Context) BindParam(obj interface{}) error {
 	return c.bind(c.AllParam(), obj)
 }
 
+// BindJson 绑定json
 func (c *Context) BindJson(obj interface{}) error {
 	body := c.Body()
 	err := json.Unmarshal([]byte(body), &obj)
@@ -34,16 +33,17 @@ func (c *Context) BindJson(obj interface{}) error {
 	return nil
 }
 
+// bind 通用绑定
 func (c *Context) bind(params map[string]string, obj interface{}) error {
 	keys := reflect.TypeOf(obj).Elem()
 	values := reflect.ValueOf(obj).Elem()
 	for i := 0; i < keys.NumField(); i++ {
-		name := keys.Field(i).Tag.Get(FormTagName)
+		name := keys.Field(i).Tag.Get(BindFormTagName)
 		if name == "" {
 			name = keys.Field(i).Name
 		}
 		if params[name] == "" {
-			defaultValue := keys.Field(i).Tag.Get(DefaultValueTagName)
+			defaultValue := keys.Field(i).Tag.Get(BindDefaultValueTagName)
 			if defaultValue != "" {
 				params[name] = defaultValue
 			}
@@ -56,6 +56,7 @@ func (c *Context) bind(params map[string]string, obj interface{}) error {
 	return nil
 }
 
+// setWithProperType 类型转换
 func setWithProperType(val string, value reflect.Value, field reflect.StructField) error {
 	switch value.Kind() {
 	case reflect.Int:

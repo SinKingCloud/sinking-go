@@ -5,11 +5,13 @@ import (
 	"strings"
 )
 
+// router 路由组
 type router struct {
 	roots    map[string]*node
 	handlers map[string]HandlerFunc
 }
 
+// newRouter 实例化新的路由组
 func newRouter() *router {
 	return &router{
 		roots:    make(map[string]*node),
@@ -32,6 +34,7 @@ func parsePattern(pattern string) []string {
 	return parts
 }
 
+// addRoute 添加路由
 func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
 	parts := parsePattern(pattern)
 	key := method + "-" + pattern
@@ -43,6 +46,7 @@ func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
 	r.handlers[key] = handler
 }
 
+// getRoute 获取路由
 func (r *router) getRoute(method string, path string) (*node, map[string]string) {
 	searchParts := parsePattern(path)
 	params := make(map[string]string)
@@ -71,6 +75,7 @@ func (r *router) getRoute(method string, path string) (*node, map[string]string)
 	return nil, nil
 }
 
+// getRoutes 根据请求类型获取路由
 func (r *router) getRoutes(method string) []*node {
 	root, ok := r.roots[method]
 	if !ok {
@@ -81,6 +86,7 @@ func (r *router) getRoutes(method string) []*node {
 	return nodes
 }
 
+// handle 执行方法
 func (r *router) handle(c *Context) {
 	n, params := r.getRoute(c.Method, c.Path)
 	if n != nil {

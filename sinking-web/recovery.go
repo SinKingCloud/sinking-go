@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// trace 错误消息类型转换
 func trace(message string) string {
 	var pcs [32]uintptr
 	n := runtime.Callers(3, pcs[:])
@@ -20,6 +21,7 @@ func trace(message string) string {
 	return str.String()
 }
 
+// Recovery 捕获错误消息
 func Recovery() HandlerFunc {
 	return func(c *Context) {
 		defer func() {
