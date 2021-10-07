@@ -50,7 +50,7 @@ func (c *Context) bind(params map[string]string, obj interface{}) error {
 		}
 		err := setWithProperType(params[name], values.Field(i), keys.Field(i))
 		if err != nil {
-			return err
+			continue
 		}
 	}
 	return nil
