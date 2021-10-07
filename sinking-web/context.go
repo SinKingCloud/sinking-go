@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -43,6 +44,16 @@ func (c *Context) Next() {
 	for ; c.index < s; c.index++ {
 		c.handlers[c.index](c)
 	}
+}
+
+const abortIndex int = math.MaxInt >> 1
+
+func (c *Context) IsAborted() bool {
+	return c.index >= abortIndex
+}
+
+func (c *Context) Abort() {
+	c.index = abortIndex
 }
 
 func (c *Context) Fail(code int, err string) {
