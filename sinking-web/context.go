@@ -149,7 +149,7 @@ func (c *Context) Body() string {
 // Redirect 重定向跳转
 func (c *Context) Redirect(code int, location string) {
 	c.SetStatus(code)
-	c.SetHeader("Location", location)
+	c.SetHeader(HeaderLocation, location)
 }
 
 // FormFile 获取上传文件

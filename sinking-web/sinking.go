@@ -69,6 +69,22 @@ func (group *RouterGroup) addRoute(method string, comp string, handler HandlerFu
 	group.engine.router.addRoute(method, pattern, handler)
 }
 
+func (group *RouterGroup) ANY(pattern string, handler HandlerFunc) {
+	methods := []string{
+		http.MethodGet,
+		http.MethodPost,
+		http.MethodPut,
+		http.MethodDelete,
+		http.MethodOptions,
+		http.MethodTrace,
+		http.MethodPatch,
+		http.MethodHead,
+	}
+	for _, v := range methods {
+		group.addRoute(v, pattern, handler)
+	}
+}
+
 func (group *RouterGroup) GET(pattern string, handler HandlerFunc) {
 	group.addRoute(http.MethodGet, pattern, handler)
 }

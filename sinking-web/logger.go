@@ -30,6 +30,6 @@ func Logger() HandlerFunc {
 	return func(c *Context) {
 		t := time.Now()
 		c.Next()
-		log.Printf("[PID:%d] [STATUS:%d] [URL:%s TIME:%v] ", os.Getppid(), c.StatusCode, c.Request.RequestURI, time.Since(t))
+		log.Printf("[PID:%d] [METHOD:%s STATUS:%d] [URL:%s TIME:%v] ", os.Getppid(), c.Method, c.StatusCode, c.Request.RequestURI, time.Since(t))
 	}
 }
