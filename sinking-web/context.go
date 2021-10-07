@@ -148,8 +148,8 @@ func (c *Context) Body() string {
 
 // Redirect 重定向跳转
 func (c *Context) Redirect(code int, location string) {
-	c.SetStatus(code)
 	c.SetHeader(HeaderLocation, location)
+	c.SetStatus(code)
 }
 
 // FormFile 获取上传文件
@@ -230,6 +230,7 @@ func (c *Context) JSON(code int, obj interface{}) {
 	encoder := json.NewEncoder(c.Writer)
 	if err := encoder.Encode(obj); err != nil {
 		http.Error(c.Writer, err.Error(), 500)
+		return
 	}
 }
 
@@ -247,8 +248,10 @@ func (c *Context) HTML(code int, name string, data interface{}) {
 	c.SetHeader(ContentType, ContentTypeHtml)
 	c.SetStatus(code)
 	if err := c.engine.htmlTemplates.ExecuteTemplate(c.Writer, name, data); err != nil {
-		c.Fail(500, err.Error())
+		c.Fail(http.StatusInternalServerError, err.Error())
+		return
 	}
+
 }
 
 // Set 中间件设置传递内容

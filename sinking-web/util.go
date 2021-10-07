@@ -24,3 +24,13 @@ func (c *Context) ClientIP(useProxy bool) string {
 	}
 	return ""
 }
+
+// Try 错误捕获实现
+func Try(fun func(), handler func(interface{})) {
+	defer func() {
+		if err := recover(); err != nil {
+			handler(err)
+		}
+	}()
+	fun()
+}
