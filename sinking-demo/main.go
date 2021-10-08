@@ -22,6 +22,12 @@ func TestMiddle() sinking_web.HandlerFunc {
 	}
 }
 
+//示例使用说明
+//1.项目目录启动go mod集成
+//2.项目目录执行go get -u github.com/SinKingCloud/sinking-go/sinking-web
+//3.项目目录执行go get -u github.com/SinKingCloud/sinking-go/sinking-websocket
+//4.复制本示例代码执行main函数
+
 func main() {
 	//设置是否以debug模式运行
 	sinking_web.SetDebugMode(true)
