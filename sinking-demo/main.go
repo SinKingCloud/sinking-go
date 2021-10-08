@@ -173,7 +173,7 @@ func main() {
 	})
 
 	//启动http server
-	err := r.Run("0.0.0.0:80")
+	err := r.Run("0.0.0.0:8888")
 	if err != nil {
 		log.Println(err.Error())
 		return

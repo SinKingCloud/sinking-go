@@ -1,2 +1,6 @@
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211008045123-4992040567aa h1:iXMUcSbjJbQSwU6Lh/FxcDMBYJBfH9edF1SSE1cYTYI=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211008045123-4992040567aa/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20211008045123-4992040567aa h1:qD+N2nbhmQyMG612tIajGKpVwCwQAAnKWCcZYZ2OtpQ=
+github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20211008045123-4992040567aa/go.mod h1:hlJtUA3tf3O9AwpLPjMIK6pmOBa+dPXd6abCLsm14uQ=
 github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0Ufc=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
