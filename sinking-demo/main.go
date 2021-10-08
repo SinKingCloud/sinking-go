@@ -14,6 +14,8 @@ import (
 func TestMiddle() sinking_web.HandlerFunc {
 	return func(c *sinking_web.Context) {
 		log.Println("开始执行请求")
+		c.Set("user", "admin") // 中间件传值
+		//c.Get("user")// 中间件取值 后面的中间件可通过get set 方法传值
 		c.Next()
 		//c.Abort() //挂起请求,不会让后面的中间件执行
 		log.Println("请求执行完毕")
