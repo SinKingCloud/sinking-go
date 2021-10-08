@@ -1,7 +1,6 @@
 package sinking_web
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -9,19 +8,19 @@ import (
 
 // Author 输出框架信息
 func Author(engine *Engine, addr string) {
-	fmt.Println(" ____    ______   __  __  __  __   ______   __  __  ____              ____    _____      \n/\\  _`\\ /\\__  _\\ /\\ \\/\\ \\/\\ \\/\\ \\ /\\__  _\\ /\\ \\/\\ \\/\\  _`\\           /\\  _`\\ /\\  __`\\    \n\\ \\,\\L\\_\\/_/\\ \\/ \\ \\ `\\\\ \\ \\ \\/'/'\\/_/\\ \\/ \\ \\ `\\\\ \\ \\ \\L\\_\\         \\ \\ \\L\\_\\ \\ \\/\\ \\   \n \\/_\\__ \\  \\ \\ \\  \\ \\ , ` \\ \\ , <    \\ \\ \\  \\ \\ , ` \\ \\ \\L_L   _______\\ \\ \\L_L\\ \\ \\ \\ \\  \n   /\\ \\L\\ \\ \\_\\ \\__\\ \\ \\`\\ \\ \\ \\\\`\\   \\_\\ \\__\\ \\ \\`\\ \\ \\ \\/, \\/\\______\\\\ \\ \\/, \\ \\ \\_\\ \\ \n   \\ `\\____\\/\\_____\\\\ \\_\\ \\_\\ \\_\\ \\_\\ /\\_____\\\\ \\_\\ \\_\\ \\____/\\/______/ \\ \\____/\\ \\_____\\\n    \\/_____/\\/_____/ \\/_/\\/_/\\/_/\\/_/ \\/_____/ \\/_/\\/_/\\/___/            \\/___/  \\/_____/\n                                                                                         ")
-	fmt.Println("SinKing-Go Framework " + FrameWorkVersion)
-	fmt.Println("Author:SinKingCloud")
-	fmt.Println("Blog:www.clwl.online")
+	log.Println("The framework is starting...\n ____    ______   __  __  __  __   ______   __  __  ____              ____    _____      \n/\\  _`\\ /\\__  _\\ /\\ \\/\\ \\/\\ \\/\\ \\ /\\__  _\\ /\\ \\/\\ \\/\\  _`\\           /\\  _`\\ /\\  __`\\    \n\\ \\,\\L\\_\\/_/\\ \\/ \\ \\ `\\\\ \\ \\ \\/'/'\\/_/\\ \\/ \\ \\ `\\\\ \\ \\ \\L\\_\\         \\ \\ \\L\\_\\ \\ \\/\\ \\   \n \\/_\\__ \\  \\ \\ \\  \\ \\ , ` \\ \\ , <    \\ \\ \\  \\ \\ , ` \\ \\ \\L_L   _______\\ \\ \\L_L\\ \\ \\ \\ \\  \n   /\\ \\L\\ \\ \\_\\ \\__\\ \\ \\`\\ \\ \\ \\\\`\\   \\_\\ \\__\\ \\ \\`\\ \\ \\ \\/, \\/\\______\\\\ \\ \\/, \\ \\ \\_\\ \\ \n   \\ `\\____\\/\\_____\\\\ \\_\\ \\_\\ \\_\\ \\_\\ /\\_____\\\\ \\_\\ \\_\\ \\____/\\/______/ \\ \\____/\\ \\_____\\\n    \\/_____/\\/_____/ \\/_/\\/_/\\/_/\\/_/ \\/_____/ \\/_/\\/_/\\/___/            \\/___/  \\/_____/\n                                                                                         ")
+	log.Println("SinKing-Go Framework " + FrameWorkVersion)
+	log.Println("Author:SinKingCloud")
+	log.Println("Blog:www.clwl.online")
 	for k := range engine.router.handlers {
-		fmt.Println("RequestHandle:", k)
+		log.Println("RequestHandle:", k)
 	}
-	fmt.Printf("The total handle is %d\n", len(engine.router.handlers))
-	fmt.Printf("The request url is %s\n", addr)
+	log.Printf("The total handle is %d\n", len(engine.router.handlers))
+	log.Printf("The request url is %s\n", addr)
 	if debug {
-		fmt.Printf("The run mode is debug\n")
+		log.Printf("The run mode is debug\n")
 	} else {
-		fmt.Printf("The run mode is release\n")
+		log.Printf("The run mode is release\n")
 	}
 }
 
