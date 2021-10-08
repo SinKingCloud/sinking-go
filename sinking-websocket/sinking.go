@@ -23,6 +23,16 @@ func (handle *Websocket) SetErrorHandle(fun func(err error)) *Websocket {
 	return handle
 }
 
+func (handle *Websocket) SetConnectHandle(fun func(ws *websocket.Conn)) *Websocket {
+	handle.OnConnect = fun
+	return handle
+}
+
+func (handle *Websocket) SetCloseHandle(fun func(err error)) *Websocket {
+	handle.OnClose = fun
+	return handle
+}
+
 func (handle *Websocket) SetOnMessageHandle(fun func(ws *websocket.Conn, messageType int, data []byte)) *Websocket {
 	handle.OnMessage = fun
 	return handle
