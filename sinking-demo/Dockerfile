@@ -1,11 +1,10 @@
 FROM golang as demo
 
 #作者
-MAINTAINER sinkingclous 1178710004@qq.com
+MAINTAINER sinkingcloud 1178710004@qq.com
 
 #修改时区
-RUN echo "Asia/Shanghai" > /etc/timezone \
- && rm /etc/localtime && dpkg-reconfigure -f noninteractive tzdata \
+RUN echo "Asia/Shanghai" > /etc/timezone && rm /etc/localtime && dpkg-reconfigure -f noninteractive tzdata
 
 #修改环境变量
 ENV GO111MODULE on
