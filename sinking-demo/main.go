@@ -27,12 +27,12 @@ func TestMiddle() sinking_web.HandlerFunc {
 func LimitRateMiddle() sinking_web.HandlerFunc {
 	return func(c *sinking_web.Context) {
 		//令牌桶算法限流
-		limitRate := sinking_web.GetLimitRateIns(c.ClientIP(false), 1)
+		limitRate := sinking_web.GetLimitRateIns(c.ClientIP(false), 1) //每秒颁发令牌总数
 		mode := 1
 		switch mode {
 		case 0:
 			//1.等待式限流
-			limitRate.Wait(1)
+			limitRate.Wait(1) //消耗令牌数
 			c.Next()
 		case 1:
 			//2.快速失败式限流
