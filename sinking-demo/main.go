@@ -11,14 +11,38 @@ import (
 	"time"
 )
 
+// TestMiddle 测试中间件
 func TestMiddle() sinking_web.HandlerFunc {
 	return func(c *sinking_web.Context) {
 		log.Println("开始执行请求")
 		c.Set("user", "admin") // 中间件传值
 		//c.Get("user")// 中间件取值 后面的中间件可通过get set 方法传值
 		c.Next()
-		//c.Abort() //挂起请求,不会让后面的中间件执行
+		//c.Abort() //终止后面的方法执行
 		log.Println("请求执行完毕")
+	}
+}
+
+// LimitRateMiddle 限流
+func LimitRateMiddle() sinking_web.HandlerFunc {
+	return func(c *sinking_web.Context) {
+		//令牌桶算法限流
+		limitRate := sinking_web.GetLimitRateIns(c.ClientIP(false), 1)
+		mode := 1
+		switch mode {
+		case 0:
+			//1.等待式限流
+			limitRate.Wait(1)
+			c.Next()
+		case 1:
+			//2.快速失败式限流
+			if limitRate.Check(1) {
+				c.JSON(200, sinking_web.H{"code": 503, "message": "触发限流"})
+				c.Abort()
+			} else {
+				c.Next()
+			}
+		}
 	}
 }
 
@@ -71,8 +95,8 @@ func main() {
 	})
 
 	//路由请求及中间件示例(仅写出常用示例)
-	method := r.Group("/method") // 路由组
-	method.Use(TestMiddle())     // 中间件
+	method := r.Group("/method")                // 路由组
+	method.Use(LimitRateMiddle(), TestMiddle()) // 中间件
 	{
 		method.ANY("/any", func(s *sinking_web.Context) {
 			s.JSON(200, sinking_web.H{"code": "200", "message": "所有请求都可以捕获"})
@@ -171,7 +195,6 @@ func main() {
 		//过滤器 可以执行自定义过滤或修改内容
 		return r
 	})
-
 	//启动http server
 	err := r.Run("0.0.0.0:8888")
 	if err != nil {
