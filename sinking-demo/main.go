@@ -37,9 +37,11 @@ func LimitRateMiddle() sinking_web.HandlerFunc {
 		case 1:
 			//2.快速失败式限流
 			if limitRate.Check(1) {
+				log.Println("触发限流")
 				c.JSON(200, sinking_web.H{"code": 503, "message": "触发限流"})
 				c.Abort()
 			} else {
+				log.Println("请求成功")
 				c.Next()
 			}
 		}

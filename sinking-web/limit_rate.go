@@ -29,10 +29,10 @@ func (tb *LimitRate) Wait(n int) {
 			}
 			<-ticker.C
 		}
-		tb.currentAmount -= n
 	} else {
 		tb.currentAmount = tb.limit
 	}
+	tb.currentAmount -= n
 	tb.lastConsumeTime = currentTime()
 }
 
@@ -45,10 +45,10 @@ func (tb *LimitRate) Check(n int) bool {
 		if tb.currentAmount <= 0 {
 			res = true
 		}
-		tb.currentAmount -= n
 	} else {
 		tb.currentAmount = tb.limit
 	}
+	tb.currentAmount -= n
 	tb.lastConsumeTime = currentTime()
 	return res
 }
