@@ -16,7 +16,7 @@ func Init() {
 			setting.GetConfig().GetString("database.mysql.database"),
 			setting.GetConfig().GetString("database.mysql.prefix"),
 		)
-		if res {
+		if !res {
 			os.Exit(0)
 		}
 	} else {

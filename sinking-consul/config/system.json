@@ -5,6 +5,11 @@
   "title": "sinking-consul",
   "version": "v1.0.0",
   "author": "流逝中沉沦",
+  "app": {
+    "intranet": true,
+    "ip": "127.0.0.1",
+    "port": 8888
+  },
   "database": {
     "mysql": {
       "host": "dns.978g.cn",
