@@ -18,7 +18,6 @@ func TestMiddle() sinking_web.HandlerFunc {
 		c.Set("user", "admin") // 中间件传值
 		//c.Get("user")// 中间件取值 后面的中间件可通过get set 方法传值
 		c.Next()
-		//c.Abort() //终止后面的方法执行
 		log.Println("请求执行完毕")
 	}
 }
@@ -28,21 +27,21 @@ func LimitRateMiddle() sinking_web.HandlerFunc {
 	return func(c *sinking_web.Context) {
 		//令牌桶算法限流
 		limitRate := sinking_web.GetLimitRateIns(c.ClientIP(false), 1) //每秒颁发令牌总数
-		mode := 1
+		mode := 0
 		switch mode {
 		case 0:
 			//1.等待式限流
 			limitRate.Wait(1) //消耗令牌数
-			c.Next()
+			c.Next()          //继续执行
 		case 1:
 			//2.快速失败式限流
 			if limitRate.Check(1) {
 				log.Println("触发限流")
 				c.JSON(200, sinking_web.H{"code": 503, "message": "触发限流"})
-				c.Abort()
+				c.Abort() //终止后面的方法执行
 			} else {
 				log.Println("请求成功")
-				c.Next()
+				c.Next() //继续执行
 			}
 		}
 	}
