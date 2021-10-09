@@ -1,0 +1,27 @@
+{
+  "name": "sinking-consul",
+  "description": "这是一款分布式注册配置中心软件",
+  "minimumCoreVersion": "v1.0.0",
+  "title": "sinking-consul",
+  "version": "v1.0.0",
+  "author": "流逝中沉沦",
+  "database": {
+    "mysql": {
+      "host": "dns.978g.cn",
+      "port": "3306",
+      "user": "root",
+      "pwd": "Qq@1178710004...",
+      "database": "sinking_consul",
+      "prefix": "sinking_"
+    },
+    "logstash": {
+      "host": "dns.978g.cn",
+      "port": "5044",
+      "timeout": 10
+    }
+  },
+  "servers": [
+    "127.0.0.1",
+    "127.0.0.2"
+  ]
+}
