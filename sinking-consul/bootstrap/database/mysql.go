@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/model"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -27,7 +28,7 @@ func GetMysqlInstance() *MySqlPool {
 
 // ConnectionMysql 数据库初始函数
 func (pool *MySqlPool) ConnectionMysql(host string, port string, user string, pwd string, database string, prefix string) bool {
-	log.Println("正在链接数据库...")
+	logs.Println("正在链接数据库...")
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), //io writer（日志输出的目标，前缀和日志包含的内容——译者注）
 		logger.Config{
@@ -42,10 +43,10 @@ func (pool *MySqlPool) ConnectionMysql(host string, port string, user string, pw
 		Logger: newLogger,
 	})
 	if model.DbError != nil {
-		log.Println(model.DbError.Error())
+		logs.Println(model.DbError.Error())
 		return false
 	}
 	model.DbPrefix = prefix
-	log.Println("数据库链接成功")
+	logs.Println("数据库链接成功")
 	return true
 }

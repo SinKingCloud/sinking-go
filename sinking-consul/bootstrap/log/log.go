@@ -15,7 +15,8 @@ func ConnectionLogServer(host string, port int, timeOut int) {
 	_, err := client.Connect()
 	if err != nil {
 		log.Println(err)
+	} else {
+		logs.SetLogClient(client)
+		log.Println("链接Logstash成功")
 	}
-	logs.SetLogClient(client)
-	log.Println("链接Logstash成功")
 }
