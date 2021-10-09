@@ -53,12 +53,9 @@ func (tb *LimitRate) Check(n int) bool {
 	return res
 }
 
-var limitRates map[string]*LimitRate
+var limitRates = make(map[string]*LimitRate)
 
 func GetLimitRateIns(key string, limit int) *LimitRate {
-	if limitRates == nil {
-		limitRates = make(map[string]*LimitRate)
-	}
 	obj := limitRates[key]
 	if obj == nil {
 		obj = NewLimitRate(limit, limit)
