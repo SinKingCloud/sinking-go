@@ -170,7 +170,7 @@ func (c *Context) FormFile(name string) (*multipart.FileHeader, error) {
 	return fh, err
 }
 
-// MultipartForm 多参数转换
+// MultipartForm 多文件上传
 func (c *Context) MultipartForm() (*multipart.Form, error) {
 	err := c.Request.ParseMultipartForm(c.engine.MaxMultipartMemory)
 	return c.Request.MultipartForm, err
