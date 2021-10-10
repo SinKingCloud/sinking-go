@@ -8,6 +8,7 @@
 - [x] sinking-websocket websocket框架包装
 - [ ] sinking-gateway 网关
 - [ ] sinking-consul 注册中心/配置中心/服务限流/服务熔断
+- [x] sinking-demo 使用示例
 
 ### 计划
 
@@ -15,6 +16,7 @@
 - sinking-websocket将成为websocket基础包装类
 - sinking-gateway将实现网关/反向代理
 - sinking-consul将实现可视化配置中心/注册中心/服务限流/服务熔断
+- sinking-demo 框架使用示例
 
 ### 技术栈
 
