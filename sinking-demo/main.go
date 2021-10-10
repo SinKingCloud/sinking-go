@@ -67,7 +67,7 @@ func main() {
 	r.SetErrorHandle(&sinking_web.ErrorHandel{
 		//资源不存在错误
 		NotFound: func(c *sinking_web.Context) {
-			c.JSON(404, sinking_web.H{"code": 404, "message": "资源不不存在"})
+			c.JSON(404, sinking_web.H{"code": 404, "message": "资源不存在"})
 		},
 		//系统错误
 		Fail: func(c *sinking_web.Context, code int, message string) {
