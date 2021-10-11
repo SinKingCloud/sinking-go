@@ -5,6 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/logs"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
+	"strconv"
 	"time"
 )
 
@@ -36,7 +37,7 @@ func loadErrorHandle(s *sinking_web.Engine) {
 
 func Init() {
 	//设置是否以debug模式运行
-	sinking_web.SetDebugMode(setting.GetConfig().GetBool("app.debug"))
+	sinking_web.SetDebugMode(setting.GetSystemConfig().App.Debug)
 	//设置读写超时时间
 	sinking_web.SetTimeOut(600*time.Second, 600*time.Second)
 	//实例化一个http server
@@ -48,7 +49,7 @@ func Init() {
 	//加载路由
 	loadRoute(r)
 	//启动http server
-	err := r.Run(setting.GetConfig().GetString("app.ip") + ":" + setting.GetConfig().GetString("app.port"))
+	err := r.Run(setting.GetSystemConfig().App.Ip + ":" + strconv.Itoa(setting.GetSystemConfig().App.Port))
 	if err != nil {
 		logs.Println(err.Error())
 		return

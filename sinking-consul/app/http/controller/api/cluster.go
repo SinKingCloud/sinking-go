@@ -27,7 +27,7 @@ func ClusterRegister(s *sinking_web.Context) {
 		LastHeartTime: model.DateTime(time.Now()),
 		Status:        0,
 	}
-	service.Clusters[info.Hash] = *info
+	service.Clusters[info.Hash] = info
 	response.Success(s, "注册集群成功", info)
 }
 

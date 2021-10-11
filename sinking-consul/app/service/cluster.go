@@ -3,10 +3,10 @@ package service
 import "github.com/SinKingCloud/sinking-go/sinking-consul/app/model"
 
 // Clusters 集群列表
-var Clusters = make(map[string]Cluster)
+var Clusters = make(map[string]*Cluster)
 
 // RegisterClusters 注册集群列表
-var RegisterClusters = make(map[string]Cluster)
+var RegisterClusters = make(map[string]*Cluster)
 
 // Cluster 集群信息结构
 type Cluster struct {

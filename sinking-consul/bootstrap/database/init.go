@@ -7,9 +7,9 @@ import (
 )
 
 func Init() {
-	if setting.GetConfig() != nil {
+	if setting.GetSystemConfig() != nil {
 		res := false
-		if setting.GetConfig().GetString("database.sql") == "mysql" {
+		if setting.GetSystemConfig().Database.Sql == "mysql" {
 			res = mysqlConn()
 		} else {
 			res = sqliteConn()
@@ -25,18 +25,18 @@ func Init() {
 
 func mysqlConn() bool {
 	return GetMysqlInstance().ConnectionMysql(
-		setting.GetConfig().GetString("database.mysql.host"),
-		setting.GetConfig().GetString("database.mysql.port"),
-		setting.GetConfig().GetString("database.mysql.user"),
-		setting.GetConfig().GetString("database.mysql.pwd"),
-		setting.GetConfig().GetString("database.mysql.database"),
-		setting.GetConfig().GetString("database.mysql.prefix"),
+		setting.GetSystemConfig().Database.Mysql.Host,
+		setting.GetSystemConfig().Database.Mysql.Port,
+		setting.GetSystemConfig().Database.Mysql.User,
+		setting.GetSystemConfig().Database.Mysql.Pwd,
+		setting.GetSystemConfig().Database.Mysql.Database,
+		setting.GetSystemConfig().Database.Mysql.Prefix,
 	)
 }
 
 func sqliteConn() bool {
 	return ConnectionSqlite(
-		setting.GetConfig().GetString("database.sqlite.database"),
-		setting.GetConfig().GetString("database.sqlite.prefix"),
+		setting.GetSystemConfig().Database.Sqlite.Database,
+		setting.GetSystemConfig().Database.Sqlite.Prefix,
 	)
 }

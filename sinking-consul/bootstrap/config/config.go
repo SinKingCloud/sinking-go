@@ -20,13 +20,19 @@ func LoadConfig(configPath string, configName string, configType string) {
 		return
 	}
 	setting.SetSetting(config)
+	var conf setting.SystemConfig
+	if err := config.Unmarshal(&conf); err != nil {
+		panic(err)
+		return
+	}
+	setting.SetSystemSetting(&conf)
 	//加载注册节点
 	loadRegisterServers()
 }
 
 func loadRegisterServers() {
 	//设置注册节点
-	servers := strings.Split(setting.GetConfig().GetString("servers.cluster"), ",")
+	servers := strings.Split(setting.GetSystemConfig().Servers.Cluster, ",")
 	for _, v := range servers {
 		server := strings.Split(v, ":")
 		if len(server) == 2 {
@@ -37,7 +43,7 @@ func loadRegisterServers() {
 				LastHeartTime: model.DateTime(time.Now()),
 				Status:        0,
 			}
-			service.RegisterClusters[info.Hash] = *info
+			service.RegisterClusters[info.Hash] = info
 		}
 	}
 }

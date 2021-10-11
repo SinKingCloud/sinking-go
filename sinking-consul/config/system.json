@@ -26,7 +26,7 @@
     },
     "logstash": {
       "host": "dns.978g.cn",
-      "port": "5044",
+      "port": 5044,
       "timeout": 10
     }
   },

@@ -3,7 +3,8 @@ package service
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/job"
-	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/logs"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/request"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
 	"time"
 )
 
@@ -19,7 +20,17 @@ func register() {
 			}
 		},
 		Consumer: func(hash string) {
-			logs.Println(hash)
+			info := service.RegisterClusters[hash]
+			if info != nil {
+				res := &request.Request{
+					Ip:        info.Ip,
+					Port:      info.Port,
+					TokenName: setting.GetConfig().GetString("servers."),
+					Token:     setting.GetConfig().GetString(""),
+				}
+				res.Register()
+			}
+
 		},
 	}).Run()
 }
