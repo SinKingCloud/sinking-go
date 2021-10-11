@@ -17,7 +17,7 @@ func ClusterRegister(s *sinking_web.Context) {
 	}
 	cluster := &register{}
 	if cluster.Ip == "" || cluster.Port == "" {
-		response.Error(s, "注册集群失败,参数不足", nil)
+		response.Error(s, "参数不足", nil)
 		return
 	}
 	info := &service.Cluster{

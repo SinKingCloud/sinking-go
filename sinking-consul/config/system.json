@@ -31,7 +31,7 @@
     }
   },
   "servers": {
-    "cluster": "127.0.0.1:8888,127.0.0.2:8888",
+    "cluster": "127.0.0.1:8888",
     "token-name": "sinking-token",
     "token": "test_token"
   }
