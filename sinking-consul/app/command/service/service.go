@@ -14,4 +14,5 @@ func registerConfig() {
 
 func Run() {
 	go registerService()
+	go registerConfig()
 }
