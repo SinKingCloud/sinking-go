@@ -93,6 +93,10 @@ func (l *Logstash) Writeln(message string) error {
 	if l.Connection != nil {
 		_, err = l.Connection.Write([]byte(message))
 		if err != nil {
+			l.Connection, err = l.Connect()
+			_, err = l.Connection.Write([]byte(message))
+		}
+		if err != nil {
 			if neterr, ok := err.(net.Error); ok && neterr.Timeout() {
 				err = l.Connection.Close()
 				if err != nil {
