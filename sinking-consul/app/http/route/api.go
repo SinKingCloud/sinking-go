@@ -17,5 +17,4 @@ func InitApiRouter(route *sinking_web.Engine) {
 func loadClusterRoute(route *sinking_web.RouterGroup) {
 	apiGroup := route.Group("/cluster")
 	apiGroup.POST("/register", api.ClusterRegister)
-	apiGroup.GET("/get", api.ClusterGet)
 }

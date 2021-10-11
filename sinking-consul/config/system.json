@@ -6,7 +6,7 @@
   "version": "v1.0.0",
   "author": "流逝中沉沦",
   "app": {
-    "debug": false,
+    "debug": true,
     "ip": "127.0.0.1",
     "port": 8888
   },
