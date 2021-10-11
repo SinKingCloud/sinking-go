@@ -1,22 +1,21 @@
 package request
 
 import (
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
 	"github.com/imroc/req"
 	"log"
 )
 
 type Request struct {
-	Ip        string
-	Port      string
-	TokenName string
-	Token     string
+	Ip   string
+	Port string
 }
 
 func (request *Request) Register() {
 	r := req.New()
 	header := req.Header{
-		"Accept":        "application/json",
-		"Authorization": "Basic YWRtaW46YWRtaW4=",
+		"Accept": "application/json",
+		setting.GetSystemConfig().Servers.TokenName: setting.GetSystemConfig().Servers.Token,
 	}
 	param := req.Param{
 		"name": "imroc",
