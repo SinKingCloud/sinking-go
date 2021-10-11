@@ -6,8 +6,8 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
-// ClusterAuth 集群通信鉴权
-func ClusterAuth() sinking_web.HandlerFunc {
+// ApiAuth 通信鉴权
+func ApiAuth() sinking_web.HandlerFunc {
 	return func(c *sinking_web.Context) {
 		name := setting.GetConfig().GetString("servers.token-name")
 		token := setting.GetConfig().GetString("servers.token")
