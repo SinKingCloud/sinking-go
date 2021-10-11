@@ -8,6 +8,7 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/spf13/viper v1.9.0 // indirect
 	gorm.io/driver/mysql v1.1.2 // indirect
+	gorm.io/driver/sqlite v1.1.6 // indirect
 	gorm.io/gorm v1.21.16 // indirect
 )
 

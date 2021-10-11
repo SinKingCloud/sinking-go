@@ -11,6 +11,11 @@
     "port": 8888
   },
   "database": {
+    "sql": "mysql",
+    "sqlite": {
+      "database": "./config/database.db",
+      "prefix": "sinking_"
+    },
     "mysql": {
       "host": "dns.978g.cn",
       "port": "3306",
