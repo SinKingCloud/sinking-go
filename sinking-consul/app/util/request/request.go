@@ -1,29 +1,40 @@
 package request
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
 	"github.com/imroc/req"
-	"log"
+	"time"
 )
 
 type Request struct {
-	Ip   string
-	Port string
+	Ip   string `form:"ip" json:"ip"`
+	Port string `form:"port" json:"port"`
 }
 
-func (request *Request) Register() {
-	r := req.New()
+func header() req.Header {
 	header := req.Header{
 		"Accept": "application/json",
 		setting.GetSystemConfig().Servers.TokenName: setting.GetSystemConfig().Servers.Token,
 	}
-	param := req.Param{
-		"name": "imroc",
-		"cmd":  "add",
-	}
-	// 只有url必选，其它参数都是可选
-	_, err := r.Post("http://127.0.0.1", header, param)
+	return header
+}
+
+func (request *Request) Register() bool {
+	r := req.New()
+	r.SetTimeout(5 * time.Second)
+	res, err := r.Post(fmt.Sprintf("http://%s:%s/api/cluster/register", request.Ip, request.Port), header(), req.BodyJSON(request))
 	if err != nil {
-		log.Fatal(err)
+		return false
 	}
+	data := &Result{}
+	err = json.Unmarshal(res.Bytes(), data)
+	if err != nil {
+		return false
+	}
+	if data.Code == 200 {
+		return true
+	}
+	return false
 }

@@ -62,7 +62,7 @@ type SystemConfig struct {
 	} `json:"database"`
 	Servers struct {
 		Cluster   string `json:"cluster"`
-		TokenName string `json:"token-name"`
+		TokenName string `json:"tokenName"`
 		Token     string `json:"token"`
 	} `json:"servers"`
 }

@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/job"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/logs"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/request"
 	"time"
 )
@@ -15,7 +16,7 @@ func register() {
 				for k := range service.RegisterClusters {
 					channel <- k
 				}
-				time.Sleep(30 * time.Second)
+				time.Sleep(5 * time.Second)
 			}
 		},
 		Consumer: func(hash string) {
@@ -25,9 +26,10 @@ func register() {
 					Ip:   info.Ip,
 					Port: info.Port,
 				}
-				res.Register()
+				if !res.Register() {
+					logs.Println(info.Hash, "注册失败,节点已下线")
+				}
 			}
-
 		},
 	}).Run()
 }

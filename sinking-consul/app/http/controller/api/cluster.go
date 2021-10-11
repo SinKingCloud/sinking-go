@@ -16,7 +16,8 @@ func ClusterRegister(s *sinking_web.Context) {
 		Port string `form:"port" json:"port"`
 	}
 	cluster := &register{}
-	if cluster.Ip == "" || cluster.Port == "" {
+	err := s.BindJson(&cluster)
+	if err != nil || cluster.Ip == "" || cluster.Port == "" {
 		response.Error(s, "参数不足", nil)
 		return
 	}
@@ -28,7 +29,7 @@ func ClusterRegister(s *sinking_web.Context) {
 		Status:        0,
 	}
 	service.Clusters[info.Hash] = info
-	response.Success(s, "注册集群成功", info)
+	response.Success(s, "注册集群成功", nil)
 }
 
 // ClusterGet 获取集群
