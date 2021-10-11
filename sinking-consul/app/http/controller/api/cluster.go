@@ -31,8 +31,3 @@ func ClusterRegister(s *sinking_web.Context) {
 	service.Clusters[info.Hash] = info
 	response.Success(s, "注册集群成功", nil)
 }
-
-// ClusterGet 获取集群
-func ClusterGet(s *sinking_web.Context) {
-	response.Success(s, "获取集群成功", service.Clusters)
-}

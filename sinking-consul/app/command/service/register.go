@@ -3,7 +3,6 @@ package service
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/job"
-	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/logs"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/request"
 	"time"
 )
@@ -26,9 +25,7 @@ func register() {
 					Ip:   info.Ip,
 					Port: info.Port,
 				}
-				if !res.Register() {
-					logs.Println(info.Hash, "注册失败,节点已下线")
-				}
+				res.Register()
 			}
 		},
 	}).Run()
