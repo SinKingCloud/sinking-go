@@ -38,9 +38,10 @@ type SystemConfig struct {
 	Version            string `json:"version"`
 	Author             string `json:"author"`
 	App                struct {
-		Debug bool   `json:"debug"`
-		Ip    string `json:"ip"`
-		Port  int    `json:"port"`
+		Debug    bool   `json:"debug"`
+		Ip       string `json:"ip"`
+		Port     int    `json:"port"`
+		JwtToken string `json:"JwtToken"`
 	} `json:"app"`
 	Database struct {
 		Sql    string `json:"sql"`
