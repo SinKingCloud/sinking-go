@@ -1,7 +1,7 @@
 package service
 
 // Services 服务列表
-var Services = make(map[string]map[string]*Service)
+var Services = make(map[string]*Service)
 
 // Service 服务列表
 type Service struct {
@@ -9,7 +9,6 @@ type Service struct {
 	AppName       string `json:"app_name"`        //所属应用
 	EnvName       string `json:"env_name"`        //环境标识
 	GroupName     string `json:"group_name"`      //分组名称
-	AppHash       string `json:"app_hash"`        //标识hash(规则md5(AppName))
 	Addr          string `json:"addr"`            //服务地址(规则ip:port)
 	ServiceHash   string `json:"service_hash"`    //标识hash(规则md5(Addr))
 	LastHeartTime int64  `json:"last_heart_time"` //上次心跳时间

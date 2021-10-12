@@ -39,12 +39,11 @@ func ServiceRegister(s *sinking_web.Context) {
 		AppName:       app.Name,
 		EnvName:       env.Name,
 		GroupName:     form.GroupName,
-		AppHash:       encode.Md5Encode(app.Name),
 		Addr:          form.Addr,
-		ServiceHash:   encode.Md5Encode(form.Addr),
+		ServiceHash:   encode.Md5Encode(app.Name + env.Name + form.Addr),
 		LastHeartTime: time.Now().Unix(),
 		Status:        0,
 	}
-	service.Services[info.AppHash][info.ServiceHash] = info
-	response.Success(s, "注册服务成功", nil)
+	service.Services[info.ServiceHash] = info
+	response.Success(s, "注册服务成功", info)
 }

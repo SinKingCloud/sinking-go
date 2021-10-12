@@ -22,7 +22,7 @@ func (r *Role) FindByIdCache() *Role {
 		var info *Role
 		Db.Where("id=?", r.Id).First(&info)
 		return info
-	}, 60*time.Second)
+	}, 600*time.Second)
 	return data.(*Role)
 }
 

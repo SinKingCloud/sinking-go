@@ -23,7 +23,7 @@ func (r *Env) FindByIdCache() *Env {
 		var info *Env
 		Db.Where("id=?", r.Id).First(&info)
 		return info
-	}, 60*time.Second)
+	}, 600*time.Second)
 	return data.(*Env)
 }
 
@@ -32,12 +32,12 @@ func (r *Env) FindByNameCache() *Env {
 		var info *Env
 		Db.Where("name=?", r.Name).First(&info)
 		return info
-	}, 60*time.Second)
+	}, 600*time.Second)
 	return data.(*Env)
 }
 
 func (Env) TableName() string {
-	return DbPrefix + "apps"
+	return DbPrefix + "envs"
 }
 
 // BeforeCreate 创建前

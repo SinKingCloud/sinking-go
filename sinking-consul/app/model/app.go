@@ -22,7 +22,7 @@ func (r *App) FindByIdCache() *App {
 		var info *App
 		Db.Where("id=?", r.Id).First(&info)
 		return info
-	}, 60*time.Second)
+	}, 600*time.Second)
 	return data.(*App)
 }
 
@@ -31,7 +31,7 @@ func (r *App) FindByNameCache() *App {
 		var info *App
 		Db.Where("name=?", r.Name).First(&info)
 		return info
-	}, 60*time.Second)
+	}, 600*time.Second)
 	return data.(*App)
 }
 
