@@ -24,7 +24,7 @@ func ClusterRegister(s *sinking_web.Context) {
 		Hash:          encode.Md5Encode(cluster.Ip + ":" + cluster.Port),
 		Ip:            cluster.Ip,
 		Port:          cluster.Port,
-		LastHeartTime: time.Now(),
+		LastHeartTime: time.Now().Unix(),
 		Status:        0,
 	}
 	service.Clusters[info.Hash] = info

@@ -39,7 +39,7 @@ func loadRegisterServers() {
 				Hash:          encode.Md5Encode(server[0] + ":" + server[1]),
 				Ip:            server[0],
 				Port:          server[1],
-				LastHeartTime: time.Now(),
+				LastHeartTime: time.Now().Unix(),
 				Status:        0,
 			}
 			service.RegisterClusters[info.Hash] = info

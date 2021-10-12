@@ -6,7 +6,8 @@ import (
 )
 
 // HashAndSalt 加密密码
-func HashAndSalt(pwd []byte) string {
+func HashAndSalt(password string) string {
+	pwd := []byte(password)
 	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
 	if err != nil {
 		log.Println(err)

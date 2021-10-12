@@ -11,7 +11,7 @@ func checkCluster() {
 		for {
 			//检测集群状态
 			for k := range service.Clusters {
-				if service.Clusters[k].LastHeartTime.Unix()+int64(setting.GetSystemConfig().Servers.CheckHeartTime) < time.Now().Unix() {
+				if service.Clusters[k].LastHeartTime+int64(setting.GetSystemConfig().Servers.CheckHeartTime) < time.Now().Unix() {
 					service.Clusters[k].Status = 1
 				}
 			}

@@ -4,7 +4,6 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/model"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
 	"github.com/dgrijalva/jwt-go"
-	"strconv"
 	"time"
 )
 
@@ -19,8 +18,7 @@ func getKey() []byte {
 
 // SetToken 生成token
 func SetToken(user model.User) string {
-	e, _ := strconv.Atoi(setting.GetSystemConfig().App.JwtToken)
-	expireTime := time.Now().Add(time.Duration(e) * time.Second) //过期时间
+	expireTime := time.Now().Add(86400 * time.Second) //过期时间
 	setClaim := MyClaims{
 		User: user,
 		StandardClaims: jwt.StandardClaims{
