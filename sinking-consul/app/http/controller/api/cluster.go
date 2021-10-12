@@ -1,7 +1,6 @@
 package api
 
 import (
-	"github.com/SinKingCloud/sinking-go/sinking-consul/app/model"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/encode"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/response"
@@ -25,7 +24,7 @@ func ClusterRegister(s *sinking_web.Context) {
 		Hash:          encode.Md5Encode(cluster.Ip + ":" + cluster.Port),
 		Ip:            cluster.Ip,
 		Port:          cluster.Port,
-		LastHeartTime: model.DateTime(time.Now()),
+		LastHeartTime: time.Now(),
 		Status:        0,
 	}
 	service.Clusters[info.Hash] = info

@@ -10,11 +10,17 @@ func InitApiRouter(route *sinking_web.Engine) {
 	apiGroup := route.Group("/api")
 	apiGroup.Use(middleware.ApiAuth())
 	{
-		loadClusterRoute(apiGroup)
+		loadApiClusterRoute(apiGroup)
+		loadApiServiceRoute(apiGroup)
 	}
 }
 
-func loadClusterRoute(route *sinking_web.RouterGroup) {
+func loadApiClusterRoute(route *sinking_web.RouterGroup) {
 	apiGroup := route.Group("/cluster")
 	apiGroup.POST("/register", api.ClusterRegister)
+}
+
+func loadApiServiceRoute(route *sinking_web.RouterGroup) {
+	apiGroup := route.Group("/service")
+	apiGroup.POST("/register", api.ServiceRegister)
 }

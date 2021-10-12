@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func register() {
+func registerCluster() {
 	(&job.Task{
 		Thread: len(service.RegisterClusters),
 		Producer: func(channel chan string) {
@@ -16,7 +16,7 @@ func register() {
 				for k := range service.RegisterClusters {
 					channel <- k
 				}
-				time.Sleep(setting.GetSystemConfig().Servers.HeartTime * time.Second)
+				time.Sleep(time.Duration(setting.GetSystemConfig().Servers.HeartTime) * time.Second)
 			}
 		},
 		Consumer: func(hash string) {

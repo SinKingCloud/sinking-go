@@ -2,7 +2,6 @@ package setting
 
 import (
 	"github.com/spf13/viper"
-	"time"
 )
 
 var (
@@ -64,9 +63,10 @@ type SystemConfig struct {
 		} `json:"logstash"`
 	} `json:"database"`
 	Servers struct {
-		Cluster   string        `json:"cluster"`
-		TokenName string        `json:"tokenName"`
-		Token     string        `json:"token"`
-		HeartTime time.Duration `json:"heartTime"`
+		Cluster        string `json:"cluster"`
+		TokenName      string `json:"tokenName"`
+		Token          string `json:"token"`
+		HeartTime      int    `json:"heartTime"`
+		CheckHeartTime int    `json:"checkHeartTime"`
 	} `json:"servers"`
 }

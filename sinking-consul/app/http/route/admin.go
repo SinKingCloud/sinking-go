@@ -9,6 +9,17 @@ func InitAdminRouter(route *sinking_web.Engine) {
 	apiGroup := route.Group("/admin")
 	apiGroup.Use()
 	{
-		apiGroup.GET("/index", admin.Index)
+		loadAdminClusterRoute(apiGroup)
+		loadAdminServiceRoute(apiGroup)
 	}
+}
+
+func loadAdminClusterRoute(route *sinking_web.RouterGroup) {
+	apiGroup := route.Group("/cluster")
+	apiGroup.GET("/list", admin.ClusterList)
+}
+
+func loadAdminServiceRoute(route *sinking_web.RouterGroup) {
+	apiGroup := route.Group("/service")
+	apiGroup.GET("/list", admin.ServiceList)
 }
