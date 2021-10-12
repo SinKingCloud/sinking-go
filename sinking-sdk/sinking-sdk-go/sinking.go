@@ -40,5 +40,5 @@ func New(server string, tokenName string, token string, name string, appName str
 
 // Listen 监听配置变动及发送服务心跳
 func (r *Register) Listen() {
-	r.registerServers() //注册节点
+	r.registerServers() //注册节点并维持心跳
 }
