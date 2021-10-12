@@ -47,3 +47,12 @@ func ServiceRegister(s *sinking_web.Context) {
 	service.Services[info.ServiceHash] = info
 	response.Success(s, "注册服务成功", info)
 }
+
+// ServiceList 获取服务列表
+func ServiceList(s *sinking_web.Context) {
+	var list []*service.Service
+	for _, v := range service.Services {
+		list = append(list, v)
+	}
+	response.Success(s, "获取服务列表成功", list)
+}
