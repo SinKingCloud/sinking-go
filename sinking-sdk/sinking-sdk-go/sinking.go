@@ -25,9 +25,10 @@ type Register struct {
 }
 
 // New 实例化
-func New(server string, token string, name string, appName string, envName string, groupName string, addr string) *Register {
+func New(server string, tokenName string, token string, name string, appName string, envName string, groupName string, addr string) *Register {
 	return &Register{
 		Servers:   server,
+		TokenName: tokenName,
 		Token:     token,
 		Name:      name,
 		AppName:   appName,
