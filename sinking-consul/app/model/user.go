@@ -9,7 +9,7 @@ import (
 )
 
 type User struct {
-	Id         int64    `gorm:"column:id"`
+	Id         int64    `gorm:"column:id" json:"id"`
 	RoleId     int64    `gorm:"column:role_id" json:"role_id"`
 	User       string   `gorm:"column:user" json:"user"`
 	Pwd        string   `gorm:"column:pwd" json:"pwd"`

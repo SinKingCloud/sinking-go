@@ -9,8 +9,8 @@ import (
 )
 
 type Env struct {
-	Id         int64    `gorm:"column:id"`
-	AppId      int64    `gorm:"column:app_id"`
+	Id         int64    `gorm:"column:id" json:"id"`
+	AppId      int64    `gorm:"column:app_id" json:"app_id"`
 	Title      string   `gorm:"column:title" json:"title"`
 	Name       string   `gorm:"column:name" json:"name"`
 	CreateTime DateTime `gorm:"column:create_time" json:"create_time"`

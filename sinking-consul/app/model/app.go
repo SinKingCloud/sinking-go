@@ -9,7 +9,7 @@ import (
 )
 
 type App struct {
-	Id         int64    `gorm:"column:id"`
+	Id         int64    `gorm:"column:id" json:"id"`
 	Title      string   `gorm:"column:title" json:"title"`
 	Name       string   `gorm:"column:name" json:"name"`
 	CreateTime DateTime `gorm:"column:create_time" json:"create_time"`
