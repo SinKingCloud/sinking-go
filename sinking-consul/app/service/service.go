@@ -5,7 +5,7 @@ import (
 )
 
 // Services 服务列表
-var Services = make(map[string]map[string]*Service)
+var Services = make(map[string][]map[string]*Service)
 
 // Service 服务列表
 type Service struct {
