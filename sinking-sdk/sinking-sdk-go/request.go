@@ -45,11 +45,11 @@ func toJson(data interface{}) string {
 }
 
 // sendRequest 发送请求
-func (r *RequestServer) sendRequest(req *http.Request) string {
+func (r *RequestServer) sendRequest(req *http.Request) []byte {
 	r.getHttpHeader(req)
 	resp, err := client.Do(req)
 	if err != nil {
-		return ""
+		return nil
 	}
 	if resp != nil && resp.Body != nil {
 		defer func(Body io.ReadCloser) {
@@ -61,25 +61,60 @@ func (r *RequestServer) sendRequest(req *http.Request) string {
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return ""
+		return nil
 	}
-	return string(body)
+	return body
+}
+
+// registerResult 结果
+type registerResult struct {
+	Code    int         `json:"code"`
+	Data    interface{} `json:"data"`
+	Message string      `json:"message"`
 }
 
 // registerServer 服务注册
-func (r *RequestServer) registerServer(name string, appName string, envName string, groupName string, addr string) {
+func (r *RequestServer) registerServer(name string, appName string, envName string, groupName string, addr string) *registerResult {
 	url := fmt.Sprintf("http://%s/api/service/register", r.Server)
 	post := toJson(param{
-		"Name":      name,
-		"AppName":   appName,
-		"EnvName":   envName,
-		"GroupName": groupName,
-		"Addr":      addr,
+		"name":       name,
+		"app_name":   appName,
+		"env_name":   envName,
+		"group_name": groupName,
+		"addr":       addr,
 	})
 	req, err := http.NewRequest("POST", url, strings.NewReader(post))
 	if err != nil {
-		return
+		return nil
 	}
 	body := r.sendRequest(req)
-	fmt.Println(body)
+	var res *registerResult
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return nil
+	}
+	return res
+}
+
+// getServerListResult 服务列表结果
+type getServerListResult struct {
+	Code    int    `json:"code"`
+	Data    Server `json:"data"`
+	Message string `json:"message"`
+}
+
+// getServerList 拉取服务列表
+func (r *RequestServer) getServerList() *getServerListResult {
+	url := fmt.Sprintf("http://%s/api/service/list", r.Server)
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		return nil
+	}
+	body := r.sendRequest(req)
+	var res *getServerListResult
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return nil
+	}
+	return res
 }

@@ -45,7 +45,7 @@ func ServiceRegister(s *sinking_web.Context) {
 		Status:        0,
 	}
 	service.Services[info.ServiceHash] = info
-	response.Success(s, "注册服务成功", info)
+	response.Success(s, "注册服务成功", nil)
 }
 
 // ServiceList 获取服务列表
