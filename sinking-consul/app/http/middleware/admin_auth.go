@@ -3,11 +3,9 @@ package middleware
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/constant/cachePrefix"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/model"
-	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/cache"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/jwt"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/response"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -35,12 +33,7 @@ func AdminAuth() sinking_web.HandlerFunc {
 		}
 		//判断权限
 		if key.User.RoleId != 0 {
-			data := cache.Remember(cachePrefix.Role+strconv.FormatInt(key.User.RoleId, 10), func() interface{} {
-				var info model.Role
-				model.Db.Where("id=?", key.User.RoleId).First(&info)
-				return info
-			}, 60*time.Second)
-			role := data.(model.Role)
+			role := (&model.Role{Id: key.User.RoleId}).FindByCache()
 			if !strings.Contains(role.Auths, c.Request.RequestURI) {
 				response.NotAllow(c, "权限不足", nil)
 				c.Abort()

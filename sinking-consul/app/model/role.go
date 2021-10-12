@@ -1,7 +1,10 @@
 package model
 
 import (
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/constant/cachePrefix"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/cache"
 	"gorm.io/gorm"
+	"strconv"
 	"time"
 )
 
@@ -12,6 +15,15 @@ type Role struct {
 	CreateTime DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime DateTime `gorm:"column:update_time" json:"update_time"`
 	IsDelete   int64    `gorm:"column:is_delete" json:"is_delete"`
+}
+
+func (r *Role) FindByCache() *Role {
+	data := cache.Remember(cachePrefix.Role+strconv.FormatInt(r.Id, 10), func() interface{} {
+		var info *Role
+		Db.Where("id=?", r.Id).First(&info)
+		return info
+	}, 60*time.Second)
+	return data.(*Role)
 }
 
 func (Role) TableName() string {

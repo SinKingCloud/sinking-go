@@ -6,6 +6,7 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/jwt"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/response"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
+	"time"
 )
 
 // UserLogin 账户登陆
@@ -29,6 +30,10 @@ func UserLogin(s *sinking_web.Context) {
 	}
 	if encode.ComparePasswords(user.Pwd, form.Pwd) {
 		token := jwt.SetToken(user)
+		model.Db.Where("id = ?", user.Id).Updates(&model.User{
+			LoginTime: model.DateTime(time.Now()),
+			LoginIp:   s.ClientIP(false),
+		})
 		response.Success(s, "登陆成功", token)
 	} else {
 		response.Error(s, "密码错误", nil)
