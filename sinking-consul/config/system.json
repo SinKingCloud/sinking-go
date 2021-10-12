@@ -33,6 +33,7 @@
   "servers": {
     "cluster": "127.0.0.1:8888,127.0.0.1:9999",
     "tokenName": "sinking-token",
-    "token": "test_token"
+    "token": "test_token",
+    "heartTime": 5
   }
 }

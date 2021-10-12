@@ -4,6 +4,7 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/job"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/request"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
 	"time"
 )
 
@@ -15,7 +16,7 @@ func register() {
 				for k := range service.RegisterClusters {
 					channel <- k
 				}
-				time.Sleep(5 * time.Second)
+				time.Sleep(setting.GetSystemConfig().Servers.HeartTime * time.Second)
 			}
 		},
 		Consumer: func(hash string) {
