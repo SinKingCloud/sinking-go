@@ -9,9 +9,9 @@ type Service struct {
 	AppName       string `json:"app_name"`        //所属应用
 	EnvName       string `json:"env_name"`        //环境标识
 	GroupName     string `json:"group_name"`      //分组名称
-	AppHash       string `json:"app_hash"`        //标识hash(规则md5(AppName-EnvName-GroupName))
+	AppHash       string `json:"app_hash"`        //标识hash(规则md5(AppName))
 	Addr          string `json:"addr"`            //服务地址(规则ip:port)
-	ServiceHash   string `json:"service_hash"`    //标识hash(规则md5(AppName-EnvName-GroupName-Addr))
+	ServiceHash   string `json:"service_hash"`    //标识hash(规则md5(Addr))
 	LastHeartTime int64  `json:"last_heart_time"` //上次心跳时间
 	Status        int    `json:"status"`          //服务状态(0:正常/1:异常)
 }

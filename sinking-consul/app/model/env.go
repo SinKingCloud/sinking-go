@@ -18,10 +18,19 @@ type Env struct {
 	IsDelete   int64    `gorm:"column:is_delete" json:"is_delete"`
 }
 
-func (r *Env) FindByCache() *Env {
+func (r *Env) FindByIdCache() *Env {
 	data := cache.Remember(cachePrefix.Env+strconv.FormatInt(r.Id, 10), func() interface{} {
 		var info *Env
 		Db.Where("id=?", r.Id).First(&info)
+		return info
+	}, 60*time.Second)
+	return data.(*Env)
+}
+
+func (r *Env) FindByNameCache() *Env {
+	data := cache.Remember(cachePrefix.Env+r.Name, func() interface{} {
+		var info *Env
+		Db.Where("name=?", r.Name).First(&info)
 		return info
 	}, 60*time.Second)
 	return data.(*Env)

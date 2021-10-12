@@ -17,10 +17,19 @@ type App struct {
 	IsDelete   int64    `gorm:"column:is_delete" json:"is_delete"`
 }
 
-func (r *App) FindByCache() *App {
+func (r *App) FindByIdCache() *App {
 	data := cache.Remember(cachePrefix.App+strconv.FormatInt(r.Id, 10), func() interface{} {
 		var info *App
 		Db.Where("id=?", r.Id).First(&info)
+		return info
+	}, 60*time.Second)
+	return data.(*App)
+}
+
+func (r *App) FindByNameCache() *App {
+	data := cache.Remember(cachePrefix.App+r.Name, func() interface{} {
+		var info *App
+		Db.Where("name=?", r.Name).First(&info)
 		return info
 	}, 60*time.Second)
 	return data.(*App)

@@ -21,7 +21,7 @@ type User struct {
 	IsDelete   int64    `gorm:"column:is_delete" json:"is_delete"`
 }
 
-func (r *User) FindByCache() *User {
+func (r *User) FindByIdCache() *User {
 	data := cache.Remember(cachePrefix.User+strconv.FormatInt(r.Id, 10), func() interface{} {
 		var info *User
 		Db.Where("id=?", r.Id).First(&info)

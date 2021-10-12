@@ -17,7 +17,7 @@ type Role struct {
 	IsDelete   int64    `gorm:"column:is_delete" json:"is_delete"`
 }
 
-func (r *Role) FindByCache() *Role {
+func (r *Role) FindByIdCache() *Role {
 	data := cache.Remember(cachePrefix.Role+strconv.FormatInt(r.Id, 10), func() interface{} {
 		var info *Role
 		Db.Where("id=?", r.Id).First(&info)

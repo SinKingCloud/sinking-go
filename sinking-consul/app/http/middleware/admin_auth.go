@@ -33,7 +33,7 @@ func AdminAuth() sinking_web.HandlerFunc {
 		}
 		//判断权限
 		if key.User.RoleId != 0 {
-			role := (&model.Role{Id: key.User.RoleId}).FindByCache()
+			role := (&model.Role{Id: key.User.RoleId}).FindByIdCache()
 			if !strings.Contains(role.Auths, c.Request.RequestURI) {
 				response.NotAllow(c, "权限不足", nil)
 				c.Abort()
