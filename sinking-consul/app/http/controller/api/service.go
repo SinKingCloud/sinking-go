@@ -40,7 +40,7 @@ func ServiceRegister(s *sinking_web.Context) {
 		EnvName:       env.Name,
 		GroupName:     form.GroupName,
 		Addr:          form.Addr,
-		ServiceHash:   encode.Md5Encode(app.Name + env.Name + form.Addr),
+		ServiceHash:   encode.Md5Encode(app.Name + env.Name + form.GroupName + form.Addr),
 		LastHeartTime: time.Now().Unix(),
 		Status:        0,
 	}
