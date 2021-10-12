@@ -8,7 +8,7 @@ import (
 type Role struct {
 	Id         int64    `gorm:"column:id"`
 	Name       string   `gorm:"column:name" json:"name"`
-	Auths      string   `gorm:"column:auth" json:"auth"`
+	Auths      string   `gorm:"column:auths" json:"auths"`
 	CreateTime DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime DateTime `gorm:"column:update_time" json:"update_time"`
 	IsDelete   int64    `gorm:"column:is_delete" json:"is_delete"`

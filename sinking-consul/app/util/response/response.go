@@ -9,6 +9,8 @@ const (
 	SuccessCode    = 200 //请求成功
 	ErrorCode      = 500 //请求失败
 	TokenErrorCode = 503 //token认证失败
+	NotLoginCode   = 403 //未登录
+	NotAllowCode   = 401 //无权限
 )
 
 func response(c *sinking_web.Context, code int32, message interface{}, data interface{}) {
@@ -33,4 +35,12 @@ func Error(c *sinking_web.Context, message interface{}, data interface{}) {
 
 func TokenError(c *sinking_web.Context, message interface{}, data interface{}) {
 	response(c, TokenErrorCode, message, data)
+}
+
+func NotLogin(c *sinking_web.Context, message interface{}, data interface{}) {
+	response(c, NotLoginCode, message, data)
+}
+
+func NotAllow(c *sinking_web.Context, message interface{}, data interface{}) {
+	response(c, NotAllowCode, message, data)
 }
