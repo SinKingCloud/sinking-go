@@ -10,9 +10,15 @@ func InitAdminRouter(route *sinking_web.Engine) {
 	apiGroup := route.Group("/admin")
 	apiGroup.Use(middleware.AdminAuth())
 	{
+		loadAdminIndexRoute(apiGroup)
 		loadAdminClusterRoute(apiGroup)
 		loadAdminServiceRoute(apiGroup)
 	}
+}
+
+func loadAdminIndexRoute(route *sinking_web.RouterGroup) {
+	apiGroup := route.Group("/index")
+	apiGroup.GET("/login", admin.UserLogin)
 }
 
 func loadAdminClusterRoute(route *sinking_web.RouterGroup) {
