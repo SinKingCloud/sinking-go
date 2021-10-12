@@ -1,1 +1,5 @@
-package sinking_sdk_go
+package main
+
+func main() {
+
+}
