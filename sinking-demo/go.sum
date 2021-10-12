@@ -1,6 +1,6 @@
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211008065154-eb6948aeb02a h1:Qv2VVceIJAq0LvaiykEPYDJOZnZxYT+j5vOHWzMHtGY=
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211008065154-eb6948aeb02a/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
-github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20211008065154-eb6948aeb02a h1:uwO3GhYp/8T5B0rP4V9zz3fg1E605XUbENW/qpn0cxQ=
-github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20211008065154-eb6948aeb02a/go.mod h1:hlJtUA3tf3O9AwpLPjMIK6pmOBa+dPXd6abCLsm14uQ=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211012114015-f249644cbf78 h1:st7JD0RnWkJc8wUz1QTC0Rumr7V9SOuvs9/FkMhwRqo=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211012114015-f249644cbf78/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20211012114015-f249644cbf78 h1:xw774+/cdEMou95N/gOkddqeGNFQ/pv/sF6cuIFFQpo=
+github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20211012114015-f249644cbf78/go.mod h1:hlJtUA3tf3O9AwpLPjMIK6pmOBa+dPXd6abCLsm14uQ=
 github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0Ufc=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=

@@ -13,5 +13,3 @@ require (
 	gorm.io/driver/sqlite v1.1.6
 	gorm.io/gorm v1.21.16
 )
-
-//replace github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211008065154-eb6948aeb02a => ../sinking-web
