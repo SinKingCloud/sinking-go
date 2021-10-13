@@ -21,7 +21,7 @@ func ServiceRegister(s *sinking_web.Context) {
 	form := &register{}
 	err := s.BindJson(&form)
 	if err != nil || form.Name == "" || form.AppName == "" || form.EnvName == "" || form.GroupName == "" || form.Addr == "" {
-		response.Error(s, "参数不足", form)
+		response.Error(s, "参数不足", nil)
 		return
 	}
 	app := (&model.App{Name: form.AppName}).FindByNameCache()
