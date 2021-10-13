@@ -118,3 +118,23 @@ func (r *RequestServer) getServerList() *getServerListResult {
 	}
 	return res
 }
+
+// changeServerStatus 更改服务状态
+func (r *RequestServer) changeServerStatus(serviceHash string, status int) *registerResult {
+	url := fmt.Sprintf("http://%s/api/service/status", r.Server)
+	post := toJson(param{
+		"service_hash": serviceHash,
+		"status":       status,
+	})
+	req, err := http.NewRequest("POST", url, strings.NewReader(post))
+	if err != nil {
+		return nil
+	}
+	body := r.sendRequest(req)
+	var res *registerResult
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return nil
+	}
+	return res
+}

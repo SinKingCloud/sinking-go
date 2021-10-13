@@ -48,6 +48,26 @@ func ServiceRegister(s *sinking_web.Context) {
 	response.Success(s, "注册服务成功", nil)
 }
 
+// ServiceStatus 更改服务状态
+func ServiceStatus(s *sinking_web.Context) {
+	type register struct {
+		ServiceHash string `form:"service_hash" json:"service_hash"` //服务hash
+		Status      int    `form:"addr" json:"addr"`                 //服务状态
+	}
+	form := &register{}
+	err := s.BindJson(&form)
+	if err != nil || form.ServiceHash == "" {
+		response.Error(s, "参数不足", nil)
+		return
+	}
+	if service.Services[form.ServiceHash] == nil {
+		response.Error(s, "服务不存在", nil)
+		return
+	}
+	service.Services[form.ServiceHash].Status = form.Status
+	response.Success(s, "服务状态更改成功", nil)
+}
+
 // ServiceList 获取服务列表
 func ServiceList(s *sinking_web.Context) {
 	var list []*service.Service
