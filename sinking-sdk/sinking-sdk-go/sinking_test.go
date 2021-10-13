@@ -21,7 +21,7 @@ func Test_main(t *testing.T) {
 	go func() {
 		time.Sleep(5 * time.Second)
 		for {
-			data, err := server5.Rpc("sinking-go-api-order").Method(http.MethodPost).Call("/api/service/register", Param{
+			data, err := server5.Rpc("sinking-go-api-order").Method(http.MethodPost).Call("/api/service/register", &Param{
 				"test": "test",
 			})
 			fmt.Println(data, err)
