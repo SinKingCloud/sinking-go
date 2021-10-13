@@ -7,16 +7,20 @@ import (
 )
 
 func Test_main(t *testing.T) {
-	server := New("127.0.0.1:8888", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8888")
+	server := New("106.52.89.187:80", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8888")
 	server.Listen()
-	server2 := New("127.0.0.1:8888", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8887")
+	server2 := New("106.52.89.187:80", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8887")
 	server2.Listen()
-	server3 := New("127.0.0.1:8888", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8886")
+	server3 := New("106.52.89.187:80", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8886")
 	server3.Listen()
+	server4 := New("106.52.89.187:80", "sinking-token", "test_token", "sinking-go-api-pay", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8885")
+	server4.Listen()
+	server5 := New("106.52.89.187:80", "sinking-token", "test_token", "sinking-go-api-pay", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8884")
+	server5.Listen()
 	go func() {
 		time.Sleep(5 * time.Second)
 		for {
-			fmt.Println(server3.GetService("sinking-go-api-order"))
+			fmt.Println(server5.GetService("sinking-go-api-pay"))
 			time.Sleep(time.Second)
 		}
 	}()
