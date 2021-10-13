@@ -13,7 +13,7 @@ type Register struct {
 	AppName   string `json:"app_name"`   //所属应用
 	EnvName   string `json:"env_name"`   //环境标识
 	GroupName string `json:"group_name"` //分组名称
-	Addr      string `json:"addr"`       //服务地址(规则ip:port)
+	Addr      string `json:"service"`    //服务地址(规则ip:port)
 }
 
 // New 实例化

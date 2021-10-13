@@ -20,18 +20,18 @@ type Service struct {
 	AppName       string `json:"app_name"`
 	EnvName       string `json:"env_name"`
 	GroupName     string `json:"group_name"`
-	Addr          string `json:"addr"`
+	Addr          string `json:"service"`
 	ServiceHash   string `json:"service_hash"`
 	LastHeartTime int64  `json:"last_heart_time"`
 	Status        int    `json:"status"`
 }
 
 // GetService 获取随机节点(负载均衡)
-func (r *Register) GetService(name string) (string, bool) {
+func (r *Register) GetService(name string) (*Service, bool) {
 	key := Md5Encode(r.AppName + r.EnvName + r.GroupName + name)
 	addr := services[r.AppName][r.EnvName][r.GroupName][name]
 	if addr == nil {
-		return "", false
+		return nil, false
 	}
 	serviceIndex[key]++
 	if serviceIndex[key] >= len(addr) {
@@ -41,13 +41,13 @@ func (r *Register) GetService(name string) (string, bool) {
 	for _, v := range addr {
 		i++
 		if i == serviceIndex[key] {
-			return v.Addr, true
+			return v, true
 		}
 	}
-	return "", false
+	return nil, false
 }
 
-// getServices 获取节点
+// getServices 获取并更新节点
 func (r *Register) getServices() {
 	//设置注册节点
 	go func() {
@@ -87,6 +87,22 @@ func (r *Register) getServices() {
 			services = servicesTemp
 			servicesLock.Unlock()
 			time.Sleep(time.Duration(checkTime) * time.Second)
+		}
+	}()
+}
+
+// changeServerStatus 广播更改节点服务状态
+func (r *Register) changeServerStatus(serviceHash string, status int) {
+	//下线节点
+	go func() {
+		servers := strings.Split(r.Servers, ",")
+		for _, v := range servers {
+			test := &RequestServer{
+				Server:    v,
+				TokenName: r.TokenName,
+				Token:     r.Token,
+			}
+			test.changeServerStatus(serviceHash, status)
 		}
 	}()
 }

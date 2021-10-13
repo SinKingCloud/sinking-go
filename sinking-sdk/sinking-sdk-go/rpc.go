@@ -11,11 +11,11 @@ import (
 // rpcRequestBuild rpc消息构建
 type rpcRequestBuild struct {
 	name     string
-	addr     string
 	url      string
 	method   string
 	header   map[string]string
-	param    Param
+	service  *Service
+	param    *Param
 	register *Register
 }
 
@@ -37,14 +37,20 @@ func (r *rpcRequestBuild) Method(method string) *rpcRequestBuild {
 }
 
 // Call 远程调用
-func (r *rpcRequestBuild) Call(url string, param Param) (string, error) {
-	r.addr, _ = r.register.GetService(r.name)
-	if r.addr == "" {
+func (r *rpcRequestBuild) Call(url string, param *Param) (string, error) {
+	r.service, _ = r.register.GetService(r.name)
+	if r.service == nil {
 		return "", errors.New("not found online service")
 	}
 	r.url = url
 	r.param = param
-	return r.sendRequest()
+	body, err := r.sendRequest()
+	if err != nil {
+		//下线服务
+		r.register.changeServerStatus(r.service.ServiceHash, 1)
+		return "", err
+	}
+	return body, nil
 }
 
 // sendRequest 发送请求
@@ -52,7 +58,7 @@ func (r *rpcRequestBuild) sendRequest() (string, error) {
 	if r.method == "" {
 		r.method = http.MethodPost
 	}
-	req, err := http.NewRequest(r.method, "http://"+r.addr+r.url, strings.NewReader(toJson(r.param)))
+	req, err := http.NewRequest(r.method, "http://"+r.service.Addr+r.url, strings.NewReader(toJson(r.param)))
 	if err != nil {
 		return "", err
 	}
