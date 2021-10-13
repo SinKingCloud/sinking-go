@@ -26,6 +26,7 @@ func (r *Register) getServices() {
 	go func() {
 		for {
 			servers := strings.Split(r.Servers, ",")
+			servicesTemp := make(map[string]map[string]map[string]map[string]map[string]*Service)
 			for _, v := range servers {
 				test := &RequestServer{
 					Server:    v,
@@ -37,21 +38,22 @@ func (r *Register) getServices() {
 					if v2.Status == 1 {
 						continue
 					}
-					if services[v2.AppName] == nil {
-						services[v2.AppName] = map[string]map[string]map[string]map[string]*Service{}
+					if servicesTemp[v2.AppName] == nil {
+						servicesTemp[v2.AppName] = map[string]map[string]map[string]map[string]*Service{}
 					}
-					if services[v2.AppName][v2.EnvName] == nil {
-						services[v2.AppName][v2.EnvName] = map[string]map[string]map[string]*Service{}
+					if servicesTemp[v2.AppName][v2.EnvName] == nil {
+						servicesTemp[v2.AppName][v2.EnvName] = map[string]map[string]map[string]*Service{}
 					}
-					if services[v2.AppName][v2.EnvName][v2.GroupName] == nil {
-						services[v2.AppName][v2.EnvName][v2.GroupName] = map[string]map[string]*Service{}
+					if servicesTemp[v2.AppName][v2.EnvName][v2.GroupName] == nil {
+						servicesTemp[v2.AppName][v2.EnvName][v2.GroupName] = map[string]map[string]*Service{}
 					}
-					if services[v2.AppName][v2.EnvName][v2.GroupName][v2.Name] == nil {
-						services[v2.AppName][v2.EnvName][v2.GroupName][v2.Name] = map[string]*Service{}
+					if servicesTemp[v2.AppName][v2.EnvName][v2.GroupName][v2.Name] == nil {
+						servicesTemp[v2.AppName][v2.EnvName][v2.GroupName][v2.Name] = map[string]*Service{}
 					}
-					services[v2.AppName][v2.EnvName][v2.GroupName][v2.Name][v2.ServiceHash] = v2
+					servicesTemp[v2.AppName][v2.EnvName][v2.GroupName][v2.Name][v2.ServiceHash] = v2
 				}
 			}
+			services = servicesTemp
 			time.Sleep(time.Duration(checkTime) * time.Second)
 		}
 	}()
