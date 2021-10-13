@@ -1,16 +1,8 @@
 package sinking_sdk_go
 
-// Server 服务列表
-type Server struct {
-	Name          string `json:"name"`
-	AppName       string `json:"app_name"`
-	EnvName       string `json:"env_name"`
-	GroupName     string `json:"group_name"`
-	Addr          string `json:"addr"`
-	ServiceHash   string `json:"service_hash"`
-	LastHeartTime int64  `json:"last_heart_time"`
-	Status        int    `json:"status"`
-}
+var (
+	checkTime = 5 //轮询间隔
+)
 
 // Register 注册中心
 type Register struct {
@@ -40,5 +32,6 @@ func New(server string, tokenName string, token string, name string, appName str
 
 // Listen 监听配置变动及发送服务心跳
 func (r *Register) Listen() {
-	r.registerServers() //注册节点并维持心跳
+	r.registerServices() //注册节点并维持心跳
+	r.getServices()      //获取服务列表
 }

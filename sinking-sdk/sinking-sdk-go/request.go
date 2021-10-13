@@ -98,9 +98,9 @@ func (r *RequestServer) registerServer(name string, appName string, envName stri
 
 // getServerListResult 服务列表结果
 type getServerListResult struct {
-	Code    int    `json:"code"`
-	Data    Server `json:"data"`
-	Message string `json:"message"`
+	Code    int        `json:"code"`
+	Data    []*Service `json:"data"`
+	Message string     `json:"message"`
 }
 
 // getServerList 拉取服务列表

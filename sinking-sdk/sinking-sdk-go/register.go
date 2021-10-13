@@ -6,7 +6,7 @@ import (
 )
 
 // registerServers 注册节点
-func (r *Register) registerServers() {
+func (r *Register) registerServices() {
 	//设置注册节点
 	go func() {
 		for {
@@ -19,7 +19,7 @@ func (r *Register) registerServers() {
 				}
 				test.registerServer(r.Name, r.AppName, r.EnvName, r.GroupName, r.Addr)
 			}
-			time.Sleep(5 * time.Second)
+			time.Sleep(time.Duration(checkTime) * time.Second)
 		}
 	}()
 }
