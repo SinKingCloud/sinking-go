@@ -2,6 +2,7 @@ package sinking_sdk_go
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 )
@@ -20,7 +21,10 @@ func Test_main(t *testing.T) {
 	go func() {
 		time.Sleep(5 * time.Second)
 		for {
-			fmt.Println(server5.GetService("sinking-go-api-pay"))
+			data, err := server5.Rpc("sinking-go-api-order").Method(http.MethodPost).Call("/api/service/register", Param{
+				"test": "test",
+			})
+			fmt.Println(data, err)
 			time.Sleep(time.Second)
 		}
 	}()

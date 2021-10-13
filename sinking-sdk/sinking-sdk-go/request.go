@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
-	"time"
 )
 
 type RequestServer struct {
@@ -16,35 +15,12 @@ type RequestServer struct {
 	Token     string //通信密匙
 }
 
-var client = &http.Client{
-	Timeout: 3 * time.Second, //超时时间
-}
-
-type param map[string]interface{}
-
-// setHttpHeader 批量设置header
-func setHttpHeader(headers map[string]string, curl *http.Request) *http.Request {
-	for k, v := range headers {
-		curl.Header.Set(k, v)
-	}
-	return curl
-}
-
 // getHttpHeader 获取通用请求头
 func (r *RequestServer) getHttpHeader(curl *http.Request) *http.Request {
 	return setHttpHeader(map[string]string{
 		"content-type": "application/json",
 		r.TokenName:    r.Token,
 	}, curl)
-}
-
-// toJson 转json
-func toJson(data interface{}) string {
-	jsonBytes, err := json.Marshal(data)
-	if err != nil {
-		return ""
-	}
-	return string(jsonBytes)
 }
 
 // sendRequest 发送请求
@@ -79,7 +55,7 @@ type registerResult struct {
 // registerServer 服务注册
 func (r *RequestServer) registerServer(name string, appName string, envName string, groupName string, addr string) *registerResult {
 	url := fmt.Sprintf("http://%s/api/service/register", r.Server)
-	post := toJson(param{
+	post := toJson(Param{
 		"name":       name,
 		"app_name":   appName,
 		"env_name":   envName,
@@ -125,7 +101,7 @@ func (r *RequestServer) getServerList() *getServerListResult {
 // changeServerStatus 更改服务状态
 func (r *RequestServer) changeServerStatus(serviceHash string, status int) *registerResult {
 	url := fmt.Sprintf("http://%s/api/service/status", r.Server)
-	post := toJson(param{
+	post := toJson(Param{
 		"service_hash": serviceHash,
 		"status":       status,
 	})
