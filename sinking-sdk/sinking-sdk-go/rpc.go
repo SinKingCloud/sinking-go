@@ -39,11 +39,10 @@ func (r *rpcRequestBuild) Method(method string) *rpcRequestBuild {
 // Call 远程调用
 func (r *rpcRequestBuild) Call(url string, param Param) (string, error) {
 	if r.addr == "" {
-		return "", errors.New("未找到有效服务")
+		return "", errors.New("not found online service")
 	}
 	r.url = url
 	r.param = param
-
 	return r.sendRequest()
 }
 
