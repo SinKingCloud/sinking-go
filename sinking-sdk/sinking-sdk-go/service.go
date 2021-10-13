@@ -5,8 +5,12 @@ import (
 	"time"
 )
 
-// services 服务列表 AppName.EnvName.GroupName.Name.ServiceHash
-var services = make(map[string]map[string]map[string]map[string]map[string]*Service)
+var (
+	// services 服务列表 AppName.EnvName.GroupName.Name.ServiceHash
+	services = make(map[string]map[string]map[string]map[string]map[string]*Service)
+	// serviceIndex 轮询获取服务地址下标
+	serviceIndex = make(map[string]int)
+)
 
 // Service 服务列表
 type Service struct {
@@ -18,6 +22,27 @@ type Service struct {
 	ServiceHash   string `json:"service_hash"`
 	LastHeartTime int64  `json:"last_heart_time"`
 	Status        int    `json:"status"`
+}
+
+// GetService 获取节点(轮询)
+func (r *Register) GetService(name string) (string, bool) {
+	key := Md5Encode(r.AppName + r.EnvName + r.GroupName + name)
+	addr := services[r.AppName][r.EnvName][r.GroupName][name]
+	if addr == nil {
+		return "", false
+	}
+	serviceIndex[key]++
+	if serviceIndex[key] >= len(addr) {
+		serviceIndex[key] = 0
+	}
+	i := 0
+	for _, v := range addr {
+		if i == serviceIndex[key] {
+			return v.Addr, true
+		}
+		i++
+	}
+	return "", false
 }
 
 // getServices 获取节点
