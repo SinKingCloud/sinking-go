@@ -26,7 +26,7 @@ type Service struct {
 	Status        int    `json:"status"`
 }
 
-// GetService 获取节点(轮询)
+// GetService 获取随机节点(负载均衡)
 func (r *Register) GetService(name string) (string, bool) {
 	key := Md5Encode(r.AppName + r.EnvName + r.GroupName + name)
 	addr := services[r.AppName][r.EnvName][r.GroupName][name]
