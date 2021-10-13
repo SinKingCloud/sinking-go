@@ -1,6 +1,7 @@
 package sinking_web
 
 import (
+	"sync"
 	"time"
 )
 
@@ -53,13 +54,18 @@ func (tb *LimitRate) Check(n int) bool {
 	return res
 }
 
-var limitRates = make(map[string]*LimitRate)
+var (
+	limitRates     = make(map[string]*LimitRate)
+	limitRatesLock sync.Mutex
+)
 
 func GetLimitRateIns(key string, limit int) *LimitRate {
 	obj := limitRates[key]
 	if obj == nil {
 		obj = NewLimitRate(limit, limit)
+		limitRatesLock.Lock()
 		limitRates[key] = obj
+		limitRatesLock.Unlock()
 	}
 	return obj
 }

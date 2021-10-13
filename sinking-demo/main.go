@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -140,6 +141,7 @@ func main() {
 
 	//websocket功能
 	wsConn := make(map[string]*websocket.Conn) //ws连接池
+	var wsConnLock sync.Mutex
 	ws := r.Group("/ws")
 	//ws本质是get长连接,可使用get建立短连接在升级为长连接最后使用协程监听消息
 	ws.GET("/message/listen/:id", func(s *sinking_web.Context) {
@@ -148,15 +150,21 @@ func main() {
 		wsServer := sinking_websocket.Websocket{
 			OnError: func(err error) {
 				_ = wsConn[uid].Close()
+				wsConnLock.Lock()
 				wsConn[uid] = nil
+				wsConnLock.Unlock()
 				log.Println("websocket错误", err)
 			},
 			OnConnect: func(ws *websocket.Conn) {
 				log.Println("websocket连接", ws)
+				wsConnLock.Lock()
 				wsConn[uid] = ws
+				wsConnLock.Unlock()
 			},
 			OnClose: func(err error) {
+				wsConnLock.Lock()
 				wsConn[uid] = nil
+				wsConnLock.Unlock()
 				log.Println("websocket关闭", err)
 			},
 			OnMessage: func(ws *websocket.Conn, messageType int, data []byte) {
