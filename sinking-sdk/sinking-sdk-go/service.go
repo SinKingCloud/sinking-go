@@ -20,7 +20,7 @@ type Service struct {
 	AppName       string `json:"app_name"`
 	EnvName       string `json:"env_name"`
 	GroupName     string `json:"group_name"`
-	Addr          string `json:"service"`
+	Addr          string `json:"addr"`
 	ServiceHash   string `json:"service_hash"`
 	LastHeartTime int64  `json:"last_heart_time"`
 	Status        int    `json:"status"`

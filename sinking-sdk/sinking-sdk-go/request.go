@@ -60,7 +60,7 @@ func (r *RequestServer) registerServer(name string, appName string, envName stri
 		"app_name":   appName,
 		"env_name":   envName,
 		"group_name": groupName,
-		"service":    addr,
+		"addr":       addr,
 	})
 	req, err := http.NewRequest("POST", url, strings.NewReader(post))
 	if err != nil {

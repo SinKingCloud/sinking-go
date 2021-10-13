@@ -8,20 +8,20 @@ import (
 )
 
 func Test_main(t *testing.T) {
-	server := New("106.52.89.187:80", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8888")
+	server := New("127.0.0.1:8888", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8888")
 	server.Listen()
-	server2 := New("106.52.89.187:80", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8887")
+	server2 := New("127.0.0.1:8888", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8887")
 	server2.Listen()
-	server3 := New("106.52.89.187:80", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8886")
+	server3 := New("127.0.0.1:8888", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8886")
 	server3.Listen()
-	server4 := New("106.52.89.187:80", "sinking-token", "test_token", "sinking-go-api-pay", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8885")
+	server4 := New("127.0.0.1:8888", "sinking-token", "test_token", "sinking-go-api-pay", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8885")
 	server4.Listen()
-	server5 := New("106.52.89.187:80", "sinking-token", "test_token", "sinking-go-api-pay", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8884")
+	server5 := New("127.0.0.1:8888", "sinking-token", "test_token", "sinking-go-api-pay", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8884")
 	server5.Listen()
 	go func() {
 		time.Sleep(5 * time.Second)
 		for {
-			data, err := server5.Rpc("sinking-go-api-order").Method(http.MethodPost).Call("/api/service/register", &Param{
+			data, err := server.Rpc("sinking-go-api-order").Method(http.MethodPost).Call("/api/service/register", &Param{
 				"test": "test",
 			})
 			fmt.Println(data, err)
