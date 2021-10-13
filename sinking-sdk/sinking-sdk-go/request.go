@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type RequestServer struct {
@@ -15,7 +16,9 @@ type RequestServer struct {
 	Token     string //通信密匙
 }
 
-var client = &http.Client{}
+var client = &http.Client{
+	Timeout: 5 * time.Second, //超时时间设置5s
+}
 
 type param map[string]interface{}
 

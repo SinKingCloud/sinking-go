@@ -34,6 +34,9 @@ func (r *Register) getServices() {
 					Token:     r.Token,
 				}
 				list := test.getServerList()
+				if list.Code != 200 {
+					continue
+				}
 				for _, v2 := range list.Data {
 					if v2.Status == 1 {
 						continue
