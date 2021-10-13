@@ -17,7 +17,7 @@ type RequestServer struct {
 }
 
 var client = &http.Client{
-	Timeout: 5 * time.Second, //超时时间设置5s
+	Timeout: 3 * time.Second, //超时时间
 }
 
 type param map[string]interface{}
