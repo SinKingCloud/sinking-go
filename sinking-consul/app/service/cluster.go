@@ -1,10 +1,18 @@
 package service
 
+import "sync"
+
 // Clusters 集群列表
-var Clusters = make(map[string]*Cluster)
+var (
+	Clusters     = make(map[string]*Cluster)
+	ClustersLock sync.Mutex
+)
 
 // RegisterClusters 需注册集群列表
-var RegisterClusters = make(map[string]*Cluster)
+var (
+	RegisterClusters     = make(map[string]*Cluster)
+	RegisterClustersLock sync.Mutex
+)
 
 // Cluster 集群信息结构
 type Cluster struct {

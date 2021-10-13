@@ -42,7 +42,9 @@ func loadRegisterServers() {
 				LastHeartTime: time.Now().Unix(),
 				Status:        0,
 			}
+			service.RegisterClustersLock.Lock()
 			service.RegisterClusters[info.Hash] = info
+			service.RegisterClustersLock.Unlock()
 		}
 	}
 }

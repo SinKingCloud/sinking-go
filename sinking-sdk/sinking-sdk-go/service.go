@@ -2,12 +2,14 @@ package sinking_sdk_go
 
 import (
 	"strings"
+	"sync"
 	"time"
 )
 
 var (
 	// services 服务列表 AppName.EnvName.GroupName.Name.ServiceHash
-	services = make(map[string]map[string]map[string]map[string]map[string]*Service)
+	services     = make(map[string]map[string]map[string]map[string]map[string]*Service)
+	servicesLock sync.Mutex
 	// serviceIndex 轮询获取服务地址下标
 	serviceIndex = make(map[string]int)
 )
@@ -35,12 +37,12 @@ func (r *Register) GetService(name string) (string, bool) {
 	if serviceIndex[key] >= len(addr) {
 		serviceIndex[key] = 0
 	}
-	i := 0
+	i := -1
 	for _, v := range addr {
+		i++
 		if i == serviceIndex[key] {
 			return v.Addr, true
 		}
-		i++
 	}
 	return "", false
 }
@@ -59,7 +61,7 @@ func (r *Register) getServices() {
 					Token:     r.Token,
 				}
 				list := test.getServerList()
-				if list.Code != 200 {
+				if list == nil || list.Code != 200 {
 					continue
 				}
 				for _, v2 := range list.Data {
@@ -81,7 +83,9 @@ func (r *Register) getServices() {
 					servicesTemp[v2.AppName][v2.EnvName][v2.GroupName][v2.Name][v2.ServiceHash] = v2
 				}
 			}
+			servicesLock.Lock()
 			services = servicesTemp
+			servicesLock.Unlock()
 			time.Sleep(time.Duration(checkTime) * time.Second)
 		}
 	}()

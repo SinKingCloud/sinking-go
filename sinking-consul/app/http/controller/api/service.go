@@ -44,7 +44,9 @@ func ServiceRegister(s *sinking_web.Context) {
 		LastHeartTime: time.Now().Unix(),
 		Status:        0,
 	}
+	service.ServicesLock.Lock()
 	service.Services[info.ServiceHash] = info
+	service.ServicesLock.Unlock()
 	response.Success(s, "注册服务成功", nil)
 }
 
@@ -64,7 +66,9 @@ func ServiceStatus(s *sinking_web.Context) {
 		response.Error(s, "服务不存在", nil)
 		return
 	}
+	service.ServicesLock.Lock()
 	service.Services[form.ServiceHash].Status = form.Status
+	service.ServicesLock.Unlock()
 	response.Success(s, "服务状态更改成功", nil)
 }
 

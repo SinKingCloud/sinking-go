@@ -27,6 +27,8 @@ func ClusterRegister(s *sinking_web.Context) {
 		LastHeartTime: time.Now().Unix(),
 		Status:        0,
 	}
+	service.ClustersLock.Lock()
 	service.Clusters[info.Hash] = info
+	service.ClustersLock.Unlock()
 	response.Success(s, "注册集群成功", nil)
 }

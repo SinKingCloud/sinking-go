@@ -1,7 +1,12 @@
 package service
 
+import "sync"
+
 // Services 服务列表
-var Services = make(map[string]*Service)
+var (
+	Services     = make(map[string]*Service)
+	ServicesLock sync.Mutex
+)
 
 // Service 服务列表
 type Service struct {
