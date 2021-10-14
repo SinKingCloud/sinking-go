@@ -45,8 +45,8 @@ dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211014130242-44d7dde6dd3e h1:y22Sl/8Z+nXXUkN65X0g5iYGmoRsgZ7IEnIK5d+AGMY=
-github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211014130242-44d7dde6dd3e/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211014132613-778bbfd2f1c0 h1:zhbBGvcC0EIV2pXUU304dnFbczR6NFKOYe/gDxev1Ac=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20211014132613-778bbfd2f1c0/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
