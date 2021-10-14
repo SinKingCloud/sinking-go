@@ -41,10 +41,10 @@ func (r *Register) SetOnline(online bool) {
 	OnlineStatusLock.Lock()
 	OnlineStatus = online
 	OnlineStatusLock.Unlock()
+	//更改服务状态(即时)
+	status := 0
 	if !OnlineStatus {
-		//下线服务
-		r.changeServerStatus(Md5Encode(r.AppName+r.EnvName+r.GroupName+r.Addr), 1)
-	} else {
-		r.changeServerStatus(Md5Encode(r.AppName+r.EnvName+r.GroupName+r.Addr), 0)
+		status = 1
 	}
+	r.changeServerStatus(Md5Encode(r.AppName+r.EnvName+r.GroupName+r.Addr), status)
 }
