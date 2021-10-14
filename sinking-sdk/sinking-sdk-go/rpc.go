@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // rpcRequestBuild rpc消息构建
@@ -13,6 +14,7 @@ type rpcRequestBuild struct {
 	name     string
 	url      string
 	method   string
+	timeout  int
 	header   map[string]string
 	service  *Service
 	param    *Param
@@ -33,6 +35,12 @@ func (r *rpcRequestBuild) Header(header map[string]string) *rpcRequestBuild {
 // Method 构建远程调用Method
 func (r *rpcRequestBuild) Method(method string) *rpcRequestBuild {
 	r.method = method
+	return r
+}
+
+// Timeout 超时熔断
+func (r *rpcRequestBuild) Timeout(timeout int) *rpcRequestBuild {
+	r.timeout = timeout
 	return r
 }
 
@@ -65,6 +73,9 @@ func (r *rpcRequestBuild) sendRequest() (string, error) {
 	req.Header.Set("content-type", "application/json")
 	for k, v := range r.header {
 		req.Header.Set(k, v)
+	}
+	if r.timeout > 0 {
+		client.Timeout = time.Duration(r.timeout) * time.Second
 	}
 	resp, err := client.Do(req)
 	if err != nil {

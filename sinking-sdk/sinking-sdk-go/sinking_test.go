@@ -21,9 +21,12 @@ func Test_main(t *testing.T) {
 	go func() {
 		time.Sleep(5 * time.Second)
 		for {
-			data, err := server.Rpc("sinking-go-api-order").Method(http.MethodPost).Call("/api/service/register", &Param{
-				"test": "test",
-			})
+			data, err := server.
+				Rpc("sinking-go-api-order").                          //调用服务名
+				Method(http.MethodPost).                              //请求方式
+				Header(map[string]string{"test": "test_data"}).       //请求头
+				Timeout(5).                                           //超时熔断
+				Call("/api/service/register", &Param{"test": "test"}) //调用地址及内容
 			fmt.Println(data, err)
 			time.Sleep(time.Second)
 		}
