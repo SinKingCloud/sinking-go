@@ -20,7 +20,7 @@ type Role struct {
 func (r *Role) FindByIdCache() *Role {
 	data := cache.Remember(cachePrefix.Role+strconv.FormatInt(r.Id, 10), func() interface{} {
 		var info *Role
-		Db.Where("id=?", r.Id).First(&info)
+		Db.Where("id=? and is_delete=0", r.Id).First(&info)
 		return info
 	}, 600*time.Second)
 	return data.(*Role)

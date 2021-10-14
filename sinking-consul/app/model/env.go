@@ -21,7 +21,7 @@ type Env struct {
 func (r *Env) FindByIdCache() *Env {
 	data := cache.Remember(cachePrefix.Env+strconv.FormatInt(r.Id, 10), func() interface{} {
 		var info *Env
-		Db.Where("id=?", r.Id).First(&info)
+		Db.Where("id=? and is_delete=0", r.Id).First(&info)
 		return info
 	}, 600*time.Second)
 	return data.(*Env)
@@ -30,7 +30,7 @@ func (r *Env) FindByIdCache() *Env {
 func (r *Env) FindByNameCache() *Env {
 	data := cache.Remember(cachePrefix.Env+r.Name, func() interface{} {
 		var info *Env
-		Db.Where("name=?", r.Name).First(&info)
+		Db.Where("name=? and is_delete=0", r.Name).First(&info)
 		return info
 	}, 600*time.Second)
 	return data.(*Env)

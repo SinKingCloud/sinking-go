@@ -24,7 +24,7 @@ type User struct {
 func (r *User) FindByIdCache() *User {
 	data := cache.Remember(cachePrefix.User+strconv.FormatInt(r.Id, 10), func() interface{} {
 		var info *User
-		Db.Where("id=?", r.Id).First(&info)
+		Db.Where("id=? and is_delete=0", r.Id).First(&info)
 		return info
 	}, 60*time.Second)
 	return data.(*User)
