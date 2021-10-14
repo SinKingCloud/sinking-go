@@ -7,7 +7,7 @@ import (
 )
 
 func Test_main(t *testing.T) {
-	for i := 80; i <= 80; i++ {
+	for i := 80; i < 280; i++ {
 		server := New("106.52.89.187", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:"+strconv.Itoa(i))
 		server.Listen()
 	}

@@ -227,9 +227,14 @@ func (c *Context) String(code int, format string, values ...interface{}) {
 func (c *Context) JSON(code int, obj interface{}) {
 	c.SetHeader(ContentType, ContentTypeJson)
 	c.SetStatus(code)
-	encoder := json.NewEncoder(c.Writer)
-	if err := encoder.Encode(obj); err != nil {
-		http.Error(c.Writer, err.Error(), 500)
+	data, err := json.Marshal(obj)
+	if err != nil {
+		panic(err)
+		return
+	}
+	_, err = c.Writer.Write(data)
+	if err != nil {
+		panic(err)
 		return
 	}
 }
