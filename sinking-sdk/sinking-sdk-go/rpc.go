@@ -15,6 +15,7 @@ type rpcRequestBuild struct {
 	url      string
 	method   string
 	timeout  int
+	retry    int
 	header   map[string]string
 	service  *Service
 	param    *Param
@@ -44,8 +45,14 @@ func (r *rpcRequestBuild) Timeout(timeout int) *rpcRequestBuild {
 	return r
 }
 
+// ReTry 最大重试次数
+func (r *rpcRequestBuild) ReTry(num int) *rpcRequestBuild {
+	r.retry = num
+	return r
+}
+
 // Call 远程调用
-func (r *rpcRequestBuild) Call(url string, param *Param) (string, error) {
+func (r *rpcRequestBuild) call(url string, param *Param) (string, error) {
 	r.service, _ = r.register.GetService(r.name)
 	if r.service == nil {
 		return "", errors.New("not found online service")
@@ -55,10 +62,29 @@ func (r *rpcRequestBuild) Call(url string, param *Param) (string, error) {
 	body, err := r.sendRequest()
 	if err != nil {
 		//下线服务
-		r.register.changeServerStatus(r.service.ServiceHash, 1)
+		if r.service != nil && r.service.ServiceHash != "" {
+			r.register.changeServerStatus(r.service.ServiceHash, 1)
+		}
 		return "", err
 	}
 	return body, nil
+}
+
+// Call 远程调用
+func (r *rpcRequestBuild) Call(url string, param *Param) (string, error) {
+	num := 1
+	if r.retry > 1 {
+		num = r.retry
+	}
+	data := ""
+	err := errors.New("the request is fail")
+	for i := 0; i < num; i++ {
+		data, err = r.call(url, param)
+		if err == nil {
+			break
+		}
+	}
+	return data, err
 }
 
 // sendRequest 发送请求

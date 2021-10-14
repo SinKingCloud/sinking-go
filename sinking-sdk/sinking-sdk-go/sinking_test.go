@@ -26,6 +26,7 @@ func Test_main(t *testing.T) {
 				Method(http.MethodPost).                              //请求方式
 				Header(map[string]string{"test": "test_data"}).       //请求头
 				Timeout(5).                                           //超时熔断
+				ReTry(5).                                             //最大重试次数
 				Call("/api/service/register", &Param{"test": "test"}) //调用地址及内容
 			fmt.Println(data, err)
 			time.Sleep(time.Second)
