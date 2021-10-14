@@ -18,7 +18,7 @@ type Config struct {
 }
 
 func (Config) TableName() string {
-	return DbPrefix + "envs"
+	return DbPrefix + "configs"
 }
 
 // BeforeCreate 创建前
