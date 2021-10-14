@@ -64,10 +64,31 @@ func ChangeServiceStatus(name string, appName string, envName string, groupName 
 	return true
 }
 
+// GetAllServiceList 获取所有服务列表
+func GetAllServiceList() []*Service {
+	ServicesLock.Lock()
+	serviceList := Services
+	ServicesLock.Unlock()
+	var list []*Service
+	for _, v := range serviceList {
+		for _, v1 := range v {
+			for _, v2 := range v1 {
+				for _, v3 := range v2 {
+					for _, v4 := range v3 {
+						list = append(list, v4)
+					}
+				}
+			}
+		}
+	}
+	return list
+}
+
 // GetServiceList 获取服务列表
 func GetServiceList(appName string, envName string) []*Service {
 	ServicesLock.Lock()
 	list := Services[appName][envName]
+	ServicesLock.Unlock()
 	var temp []*Service
 	for _, v := range list {
 		for _, v1 := range v {
@@ -76,6 +97,5 @@ func GetServiceList(appName string, envName string) []*Service {
 			}
 		}
 	}
-	ServicesLock.Unlock()
 	return temp
 }

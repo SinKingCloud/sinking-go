@@ -8,5 +8,5 @@ import (
 
 // ServiceList 服务列表
 func ServiceList(s *sinking_web.Context) {
-	response.Success(s, "获取服务列表成功", service.ClustersList())
+	response.Success(s, "获取服务列表成功", service.GetAllServiceList())
 }

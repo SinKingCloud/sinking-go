@@ -205,7 +205,9 @@ func (c *Context) SaveUploadedFile(file *multipart.FileHeader, dst string) error
 // SetStatus 设置http响应码
 func (c *Context) SetStatus(code int) {
 	c.StatusCode = code
-	c.Writer.WriteHeader(code)
+	if c.StatusCode == 0 {
+		c.Writer.WriteHeader(code)
+	}
 }
 
 // SetHeader 设置响应头

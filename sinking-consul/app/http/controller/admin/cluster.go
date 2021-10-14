@@ -8,9 +8,5 @@ import (
 
 // ClusterList 集群列表
 func ClusterList(s *sinking_web.Context) {
-	var list []*service.Cluster
-	for _, v := range service.Clusters {
-		list = append(list, v)
-	}
-	response.Success(s, "获取集群列表成功", list)
+	response.Success(s, "获取集群列表成功", service.ClustersList())
 }
