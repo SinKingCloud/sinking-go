@@ -2,7 +2,6 @@ package service
 
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/encode"
-	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/str"
 	"sync"
 	"time"
 )
@@ -88,7 +87,7 @@ func GetAllServiceList() []*Service {
 // GetServiceList 获取服务列表
 func GetServiceList(appName string, envName string) []*Service {
 	ServicesLock.Lock()
-	data := str.DeepCopy(&Services).(map[string]map[string]map[string]map[string]map[string]*Service)
+	data := Services
 	ServicesLock.Unlock()
 	list := data[appName][envName]
 	var temp []*Service
