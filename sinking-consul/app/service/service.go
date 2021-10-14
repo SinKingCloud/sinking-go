@@ -51,7 +51,6 @@ func RegisterService(name string, appName string, envName string, groupName stri
 		Services[appName][envName][groupName][name] = map[string]*Service{}
 	}
 	Services[appName][envName][groupName][name][info.ServiceHash] = info
-
 }
 
 // ChangeServiceStatus 更改服务状态
@@ -62,7 +61,6 @@ func ChangeServiceStatus(name string, appName string, envName string, groupName 
 	ServicesLock.Lock()
 	defer ServicesLock.Unlock()
 	Services[appName][envName][groupName][name][hash].Status = status
-
 	return true
 }
 
@@ -82,7 +80,6 @@ func GetAllServiceList() []*Service {
 			}
 		}
 	}
-
 	return list
 }
 
