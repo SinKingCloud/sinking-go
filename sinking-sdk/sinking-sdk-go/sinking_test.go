@@ -7,11 +7,11 @@ import (
 )
 
 func Test_main(t *testing.T) {
-	for i := 80; i <= 280; i++ {
-		server := New("106.52.89.187:80", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:"+strconv.Itoa(i))
+	for i := 80; i <= 80; i++ {
+		server := New("106.52.89.187", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:"+strconv.Itoa(i))
 		server.Listen()
 	}
-	//time.Sleep(999999 * time.Second)
+	time.Sleep(999999 * time.Second)
 	//server := New("106.52.89.187", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8888")
 	//server.Listen()
 	//server2 := New("127.0.0.1:8888", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8887")

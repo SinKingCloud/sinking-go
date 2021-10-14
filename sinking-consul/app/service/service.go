@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/encode"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/str"
 	"sync"
 	"time"
 )
@@ -87,8 +88,9 @@ func GetAllServiceList() []*Service {
 // GetServiceList 获取服务列表
 func GetServiceList(appName string, envName string) []*Service {
 	ServicesLock.Lock()
-	list := Services[appName][envName]
+	data := str.DeepCopy(&Services).(map[string]map[string]map[string]map[string]map[string]*Service)
 	ServicesLock.Unlock()
+	list := data[appName][envName]
 	var temp []*Service
 	for _, v := range list {
 		for _, v1 := range v {
@@ -97,5 +99,6 @@ func GetServiceList(appName string, envName string) []*Service {
 			}
 		}
 	}
+
 	return temp
 }
