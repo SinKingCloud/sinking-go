@@ -1,19 +1,18 @@
 package sinking_sdk_go
 
 import (
-	"strconv"
 	"testing"
 	"time"
 )
 
 func Test_main(t *testing.T) {
-	for i := 80; i < 380; i++ {
-		server := New("42.157.128.40:978", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:"+strconv.Itoa(i))
-		server.Listen()
-	}
-	time.Sleep(999999 * time.Second)
-	//server := New("106.52.89.187", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8888")
-	//server.Listen()
+	//for i := 80; i < 380; i++ {
+	//	server := New("42.157.128.40:978", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:"+strconv.Itoa(i))
+	//	server.Listen()
+	//}
+	//time.Sleep(999999 * time.Second)
+	server := New("127.0.0.1:8888", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8888")
+	server.Listen()
 	//server2 := New("127.0.0.1:8888", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8887")
 	//server2.Listen()
 	//server3 := New("127.0.0.1:8888", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8886")

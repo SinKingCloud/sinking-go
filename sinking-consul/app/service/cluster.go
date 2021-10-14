@@ -62,3 +62,14 @@ func CopyClusters() map[string]*Cluster {
 	}
 	return temp
 }
+
+// CopyRegisterClusters 复制节点数据
+func CopyRegisterClusters() map[string]*Cluster {
+	var temp = make(map[string]*Cluster)
+	RegisterClustersLock.Lock()
+	defer RegisterClustersLock.Unlock()
+	for k, v := range RegisterClusters {
+		temp[k] = v
+	}
+	return temp
+}

@@ -9,25 +9,21 @@ import (
 )
 
 func registerCluster() {
-	(&job.Task{
-		Thread: len(service.RegisterClusters),
-		Producer: func(channel chan string) {
+	go func() {
+		clusterList := service.CopyRegisterClusters()
+		(&job.Task{Thread: len(clusterList), Producer: func(channel chan string) {
 			for {
-				for k := range service.RegisterClusters {
+				for k := range clusterList {
 					channel <- k
 				}
 				time.Sleep(time.Duration(setting.GetSystemConfig().Servers.HeartTime) * time.Second)
 			}
-		},
-		Consumer: func(hash string) {
-			info := service.RegisterClusters[hash]
-			if info != nil {
-				res := &request.Request{
-					Ip:   info.Ip,
-					Port: info.Port,
-				}
-				res.Register()
+		}, Consumer: func(k string) {
+			res := &request.Request{
+				Ip:   clusterList[k].Ip,
+				Port: clusterList[k].Port,
 			}
-		},
-	}).Run()
+			res.Register()
+		}}).Run()
+	}()
 }
