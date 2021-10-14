@@ -99,17 +99,29 @@ func GetServiceList(appName string, envName string) []*Service {
 			}
 		}
 	}
-
 	return temp
 }
 
 func CopyService() map[string]map[string]map[string]map[string]map[string]*Service {
 	var temp = make(map[string]map[string]map[string]map[string]map[string]*Service)
 	ServicesLock.Lock()
+	defer ServicesLock.Unlock()
 	for k, v := range Services {
+		if temp[k] == nil {
+			temp[k] = map[string]map[string]map[string]map[string]*Service{}
+		}
 		for k1, v1 := range v {
+			if temp[k][k1] == nil {
+				temp[k][k1] = map[string]map[string]map[string]*Service{}
+			}
 			for k2, v2 := range v1 {
+				if temp[k][k1][k2] == nil {
+					temp[k][k1][k2] = map[string]map[string]*Service{}
+				}
 				for k3, v3 := range v2 {
+					if temp[k][k1][k2][k3] == nil {
+						temp[k][k1][k2][k3] = map[string]*Service{}
+					}
 					for k4, v4 := range v3 {
 						temp[k][k1][k2][k3][k4] = v4
 					}
@@ -117,6 +129,5 @@ func CopyService() map[string]map[string]map[string]map[string]map[string]*Servi
 			}
 		}
 	}
-	ServicesLock.Unlock()
 	return temp
 }
