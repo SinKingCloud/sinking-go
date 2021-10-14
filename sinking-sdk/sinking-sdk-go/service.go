@@ -60,7 +60,7 @@ func (r *Register) getServices() {
 					TokenName: r.TokenName,
 					Token:     r.Token,
 				}
-				list := test.getServerList()
+				list := test.getServerList(r.AppName, r.EnvName)
 				if list == nil || list.Code != 200 {
 					continue
 				}
