@@ -12,7 +12,7 @@ func checkCluster() {
 			//检测集群状态
 			clusterList := service.CopyClusters()
 			for k := range clusterList {
-				if service.Clusters[k].LastHeartTime+int64(setting.GetSystemConfig().Servers.CheckHeartTime) < time.Now().Unix() {
+				if clusterList[k].LastHeartTime+int64(setting.GetSystemConfig().Servers.CheckHeartTime) < time.Now().Unix() {
 					service.ClustersLock.Lock()
 					service.Clusters[k].Status = 1
 					service.ClustersLock.Unlock()
