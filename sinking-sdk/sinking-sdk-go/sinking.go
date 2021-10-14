@@ -34,6 +34,7 @@ func New(server string, tokenName string, token string, name string, appName str
 func (r *Register) Listen() {
 	r.registerServices() //注册节点并维持心跳
 	r.getServices()      //监听服务列表
+	r.getConfigs()       //监听配置列表
 }
 
 // SetOnline 设置服务上线下线

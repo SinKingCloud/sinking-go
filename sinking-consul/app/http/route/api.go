@@ -12,6 +12,7 @@ func InitApiRouter(route *sinking_web.Engine) {
 	{
 		loadApiClusterRoute(apiGroup)
 		loadApiServiceRoute(apiGroup)
+		loadApiConfigRoute(apiGroup)
 	}
 }
 

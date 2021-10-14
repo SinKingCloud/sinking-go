@@ -3,6 +3,7 @@ package model
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/constant/cachePrefix"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/constant/cacheTime"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/cache"
 	"gorm.io/gorm"
 	"time"
@@ -24,13 +25,13 @@ type Config struct {
 	IsDelete   int64    `gorm:"column:is_delete" json:"is_delete"`
 }
 
-func (r *Config) SelectByNameCache() []*Config {
+func (r *Config) SelectByNameCache() []*service.Config {
 	data := cache.Remember(cachePrefix.Config+r.AppName+r.EnvName, func() interface{} {
-		var info []*Config
-		Db.Where("app_name=? and env_name=? and status=0 and is_delete=0", r.AppName, r.EnvName).Select(&info)
+		var info []*service.Config
+		Db.Model(&Config{}).Where("app_name=? and env_name=? and status=0 and is_delete=0", r.AppName, r.EnvName).Find(&info)
 		return info
 	}, cacheTime.Time*time.Second)
-	return data.([]*Config)
+	return data.([]*service.Config)
 }
 
 func (Config) TableName() string {

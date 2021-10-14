@@ -121,3 +121,30 @@ func (r *RequestServer) changeServerStatus(serviceHash string, status int) *regi
 	}
 	return res
 }
+
+// configResult 获取
+type configResult struct {
+	Code    int       `json:"code"`
+	Data    []*Config `json:"data"`
+	Message string    `json:"message"`
+}
+
+// getConfigs 获取系统配置
+func (r *RequestServer) getConfigs(appName string, envName string) *configResult {
+	url := fmt.Sprintf("http://%s/api/config/list", r.Server)
+	post := toJson(Param{
+		"app_name": appName,
+		"env_name": envName,
+	})
+	req, err := http.NewRequest("POST", url, strings.NewReader(post))
+	if err != nil {
+		return nil
+	}
+	body := r.sendRequest(req)
+	var res *configResult
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return nil
+	}
+	return res
+}
