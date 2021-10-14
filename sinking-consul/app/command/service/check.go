@@ -10,9 +10,7 @@ func checkCluster() {
 	go func() {
 		for {
 			//检测集群状态
-			service.ClustersLock.Lock()
-			clusterList := service.Clusters
-			service.ClustersLock.Unlock()
+			clusterList := service.CopyClusters()
 			for k := range clusterList {
 				if service.Clusters[k].LastHeartTime+int64(setting.GetSystemConfig().Servers.CheckHeartTime) < time.Now().Unix() {
 					service.ClustersLock.Lock()
@@ -21,9 +19,7 @@ func checkCluster() {
 				}
 			}
 			//检测服务状态
-			service.ServicesLock.Lock()
-			serviceList := service.Services
-			service.ServicesLock.Unlock()
+			serviceList := service.CopyService()
 			for k, v := range serviceList {
 				for k1, v1 := range v {
 					for k2, v2 := range v1 {

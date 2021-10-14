@@ -51,3 +51,14 @@ func ClustersList() []*Cluster {
 	ClustersLock.Unlock()
 	return list
 }
+
+// CopyClusters 复制节点数据
+func CopyClusters() map[string]*Cluster {
+	var temp = make(map[string]*Cluster)
+	ClustersLock.Lock()
+	defer ClustersLock.Unlock()
+	for k, v := range Clusters {
+		temp[k] = v
+	}
+	return temp
+}

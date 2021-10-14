@@ -37,6 +37,7 @@ func RegisterService(name string, appName string, envName string, groupName stri
 		Status:        0,
 	}
 	ServicesLock.Lock()
+	defer ServicesLock.Unlock()
 	if Services[appName] == nil {
 		Services[appName] = map[string]map[string]map[string]map[string]*Service{}
 	}
@@ -50,7 +51,7 @@ func RegisterService(name string, appName string, envName string, groupName stri
 		Services[appName][envName][groupName][name] = map[string]*Service{}
 	}
 	Services[appName][envName][groupName][name][info.ServiceHash] = info
-	ServicesLock.Unlock()
+
 }
 
 // ChangeServiceStatus 更改服务状态
@@ -59,18 +60,18 @@ func ChangeServiceStatus(name string, appName string, envName string, groupName 
 		return false
 	}
 	ServicesLock.Lock()
+	defer ServicesLock.Unlock()
 	Services[appName][envName][groupName][name][hash].Status = status
-	ServicesLock.Unlock()
+
 	return true
 }
 
 // GetAllServiceList 获取所有服务列表
 func GetAllServiceList() []*Service {
 	ServicesLock.Lock()
-	serviceList := Services
-	ServicesLock.Unlock()
+	defer ServicesLock.Unlock()
 	var list []*Service
-	for _, v := range serviceList {
+	for _, v := range Services {
 		for _, v1 := range v {
 			for _, v2 := range v1 {
 				for _, v3 := range v2 {
@@ -81,15 +82,15 @@ func GetAllServiceList() []*Service {
 			}
 		}
 	}
+
 	return list
 }
 
 // GetServiceList 获取服务列表
 func GetServiceList(appName string, envName string) []*Service {
 	ServicesLock.Lock()
-	data := Services
-	ServicesLock.Unlock()
-	list := data[appName][envName]
+	defer ServicesLock.Unlock()
+	list := Services[appName][envName]
 	var temp []*Service
 	for _, v := range list {
 		for _, v1 := range v {
@@ -99,5 +100,23 @@ func GetServiceList(appName string, envName string) []*Service {
 		}
 	}
 
+	return temp
+}
+
+func CopyService() map[string]map[string]map[string]map[string]map[string]*Service {
+	var temp = make(map[string]map[string]map[string]map[string]map[string]*Service)
+	ServicesLock.Lock()
+	for k, v := range Services {
+		for k1, v1 := range v {
+			for k2, v2 := range v1 {
+				for k3, v3 := range v2 {
+					for k4, v4 := range v3 {
+						temp[k][k1][k2][k3][k4] = v4
+					}
+				}
+			}
+		}
+	}
+	ServicesLock.Unlock()
 	return temp
 }
