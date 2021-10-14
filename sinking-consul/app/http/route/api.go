@@ -29,5 +29,5 @@ func loadApiServiceRoute(route *sinking_web.RouterGroup) {
 
 func loadApiConfigRoute(route *sinking_web.RouterGroup) {
 	apiGroup := route.Group("/config")
-	apiGroup.POST("/list", api.ServiceList)
+	apiGroup.POST("/list", api.ConfigList)
 }

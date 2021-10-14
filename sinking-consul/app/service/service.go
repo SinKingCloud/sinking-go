@@ -24,8 +24,8 @@ type Service struct {
 	Status        int    `json:"status"`          //服务状态(0:正常/1:异常)
 }
 
-// ServiceRegister 服务注册
-func ServiceRegister(name string, appName string, envName string, groupName string, addr string) {
+// RegisterService 服务注册
+func RegisterService(name string, appName string, envName string, groupName string, addr string) {
 	info := &Service{
 		Name:          name,
 		AppName:       appName,

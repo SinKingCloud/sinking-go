@@ -1,16 +1,20 @@
 package model
 
 import (
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/constant/cachePrefix"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/constant/cacheTime"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/cache"
 	"gorm.io/gorm"
 	"time"
 )
 
 type Config struct {
 	Id         int64    `gorm:"column:id" json:"id"`
-	EnvId      int64    `gorm:"column:env_id" json:"env_id"`
-	Title      string   `gorm:"column:title" json:"title"`
-	Name       string   `gorm:"column:name" json:"name"`
+	AppName    string   `gorm:"column:app_name" json:"app_name"`
+	EnvName    string   `gorm:"column:env_name" json:"env_name"`
 	GroupName  string   `gorm:"column:group_name" json:"group_name"`
+	Name       string   `gorm:"column:name" json:"name"`
+	Title      string   `gorm:"column:title" json:"title"`
 	Content    string   `gorm:"column:content" json:"content"`
 	Hash       string   `gorm:"column:hash" json:"hash"`
 	Type       string   `gorm:"column:type" json:"type"`
@@ -18,6 +22,15 @@ type Config struct {
 	CreateTime DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime DateTime `gorm:"column:update_time" json:"update_time"`
 	IsDelete   int64    `gorm:"column:is_delete" json:"is_delete"`
+}
+
+func (r *Config) SelectByNameCache() []*Config {
+	data := cache.Remember(cachePrefix.Config+r.AppName+r.EnvName, func() interface{} {
+		var info []*Config
+		Db.Where("app_name=? and env_name=? and status=0 and is_delete=0", r.AppName, r.EnvName).Select(&info)
+		return info
+	}, cacheTime.Time*time.Second)
+	return data.([]*Config)
 }
 
 func (Config) TableName() string {

@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/constant/cachePrefix"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/constant/cacheTime"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/cache"
 	"gorm.io/gorm"
 	"strconv"
@@ -31,7 +32,7 @@ func (r *App) FindByNameCache() *App {
 		var info *App
 		Db.Where("name=? and is_delete=0", r.Name).First(&info)
 		return info
-	}, 600*time.Second)
+	}, cacheTime.Time*time.Second)
 	return data.(*App)
 }
 

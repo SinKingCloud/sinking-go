@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/constant/cachePrefix"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/constant/cacheTime"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/cache"
 	"gorm.io/gorm"
 	"strconv"
@@ -26,7 +27,7 @@ func (r *User) FindByIdCache() *User {
 		var info *User
 		Db.Where("id=? and is_delete=0", r.Id).First(&info)
 		return info
-	}, 60*time.Second)
+	}, cacheTime.Time*time.Second)
 	return data.(*User)
 }
 

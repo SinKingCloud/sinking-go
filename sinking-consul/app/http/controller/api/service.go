@@ -32,7 +32,7 @@ func ServiceRegister(s *sinking_web.Context) {
 		response.Error(s, "环境不存在", nil)
 		return
 	}
-	service.ServiceRegister(form.Name, app.Name, env.Name, form.GroupName, form.Addr)
+	service.RegisterService(form.Name, app.Name, env.Name, form.GroupName, form.Addr)
 	response.Success(s, "注册服务成功", nil)
 }
 
