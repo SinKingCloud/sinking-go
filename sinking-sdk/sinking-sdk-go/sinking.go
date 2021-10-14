@@ -37,10 +37,13 @@ func (r *Register) Listen() {
 }
 
 // SetOnline 设置服务上线下线
-func (r *Register) SetOnline(online bool) {
+func (r *Register) SetOnline(online bool, imEf bool) {
 	OnlineStatusLock.Lock()
 	OnlineStatus = online
 	OnlineStatusLock.Unlock()
+	if !imEf {
+		return
+	}
 	//更改服务状态(即时)
 	status := 0
 	if !OnlineStatus {
