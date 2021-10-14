@@ -3,10 +3,8 @@ package api
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/model"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
-	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/encode"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/response"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
-	"time"
 )
 
 // ServiceRegister 注册服务
@@ -34,19 +32,7 @@ func ServiceRegister(s *sinking_web.Context) {
 		response.Error(s, "环境不存在", nil)
 		return
 	}
-	info := &service.Service{
-		Name:          form.Name,
-		AppName:       app.Name,
-		EnvName:       env.Name,
-		GroupName:     form.GroupName,
-		Addr:          form.Addr,
-		ServiceHash:   encode.Md5Encode(app.Name + env.Name + form.GroupName + form.Addr),
-		LastHeartTime: time.Now().Unix(),
-		Status:        0,
-	}
-	service.ServicesLock.Lock()
-	service.Services[info.ServiceHash] = info
-	service.ServicesLock.Unlock()
+	service.ServiceRegister(form.Name, app.Name, env.Name, form.GroupName, form.Addr)
 	response.Success(s, "注册服务成功", nil)
 }
 
@@ -62,21 +48,14 @@ func ServiceStatus(s *sinking_web.Context) {
 		response.Error(s, "参数不足", nil)
 		return
 	}
-	if service.Services[form.ServiceHash] == nil {
-		response.Error(s, "服务不存在", nil)
-		return
+	if service.ChangeServiceStatus(form.ServiceHash, form.Status) {
+		response.Success(s, "服务状态更改成功", nil)
+	} else {
+		response.Error(s, "服务状态更改失败", nil)
 	}
-	service.ServicesLock.Lock()
-	service.Services[form.ServiceHash].Status = form.Status
-	service.ServicesLock.Unlock()
-	response.Success(s, "服务状态更改成功", nil)
 }
 
 // ServiceList 获取服务列表
 func ServiceList(s *sinking_web.Context) {
-	var list []*service.Service
-	for _, v := range service.Services {
-		list = append(list, v)
-	}
-	response.Success(s, "获取服务列表成功", list)
+	response.Success(s, "获取服务列表成功", service.GetServiceList("", "", "", ""))
 }

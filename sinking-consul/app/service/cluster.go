@@ -1,6 +1,10 @@
 package service
 
-import "sync"
+import (
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/encode"
+	"sync"
+	"time"
+)
 
 // Clusters 集群列表
 var (
@@ -21,4 +25,18 @@ type Cluster struct {
 	Port          string `json:"port"`            //集群端口
 	LastHeartTime int64  `json:"last_heart_time"` //上次心跳时间
 	Status        int    `json:"status"`          //集群状态(0:正常/1:异常)
+}
+
+// ClustersRegister 集群注册
+func ClustersRegister(ip string, port string) {
+	info := &Cluster{
+		Hash:          encode.Md5Encode(ip + ":" + port),
+		Ip:            ip,
+		Port:          port,
+		LastHeartTime: time.Now().Unix(),
+		Status:        0,
+	}
+	ClustersLock.Lock()
+	Clusters[info.Hash] = info
+	ClustersLock.Unlock()
 }
