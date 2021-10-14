@@ -11,6 +11,9 @@ type Config struct {
 	Title      string   `gorm:"column:title" json:"title"`
 	Name       string   `gorm:"column:name" json:"name"`
 	GroupName  string   `gorm:"column:group_name" json:"group_name"`
+	Content    string   `gorm:"column:content" json:"content"`
+	Hash       string   `gorm:"column:hash" json:"hash"`
+	Type       string   `gorm:"column:type" json:"type"`
 	Status     int      `gorm:"column:status" json:"status"`
 	CreateTime DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime DateTime `gorm:"column:update_time" json:"update_time"`
