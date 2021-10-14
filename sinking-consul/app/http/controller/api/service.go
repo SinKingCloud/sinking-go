@@ -39,6 +39,10 @@ func ServiceRegister(s *sinking_web.Context) {
 // ServiceStatus 更改服务状态
 func ServiceStatus(s *sinking_web.Context) {
 	type register struct {
+		Name        string `form:"name" json:"name"`                 //服务名称
+		AppName     string `form:"app_name" json:"app_name"`         //所属应用
+		EnvName     string `form:"env_name" json:"env_name"`         //环境标识
+		GroupName   string `form:"group_name" json:"group_name"`     //分组名称
 		ServiceHash string `form:"service_hash" json:"service_hash"` //服务hash
 		Status      int    `form:"addr" json:"addr"`                 //服务状态
 	}
@@ -48,7 +52,7 @@ func ServiceStatus(s *sinking_web.Context) {
 		response.Error(s, "参数不足", nil)
 		return
 	}
-	if service.ChangeServiceStatus(form.ServiceHash, form.Status) {
+	if service.ChangeServiceStatus(form.Name, form.AppName, form.EnvName, form.GroupName, form.ServiceHash, form.Status) {
 		response.Success(s, "服务状态更改成功", nil)
 	} else {
 		response.Error(s, "服务状态更改失败", nil)
@@ -67,5 +71,5 @@ func ServiceList(s *sinking_web.Context) {
 		response.Error(s, "参数不足", nil)
 		return
 	}
-	response.Success(s, "获取服务列表成功", service.GetServiceList("", form.AppName, form.EnvName, ""))
+	response.Success(s, "获取服务列表成功", service.GetServiceList(form.AppName, form.EnvName))
 }

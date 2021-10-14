@@ -40,3 +40,14 @@ func ClustersRegister(ip string, port string) {
 	Clusters[info.Hash] = info
 	ClustersLock.Unlock()
 }
+
+// ClustersList 集群列表
+func ClustersList() []*Cluster {
+	var list []*Cluster
+	ClustersLock.Lock()
+	for _, v := range Clusters {
+		list = append(list, v)
+	}
+	ClustersLock.Unlock()
+	return list
+}

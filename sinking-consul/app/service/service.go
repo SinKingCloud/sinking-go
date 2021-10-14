@@ -6,9 +6,9 @@ import (
 	"time"
 )
 
-// Services 服务列表
+// Services 服务列表 AppName.EnvName.GroupName.Name.ServiceHash
 var (
-	Services     = make(map[string]*Service)
+	Services     = make(map[string]map[string]map[string]map[string]map[string]*Service)
 	ServicesLock sync.Mutex
 )
 
@@ -37,46 +37,45 @@ func RegisterService(name string, appName string, envName string, groupName stri
 		Status:        0,
 	}
 	ServicesLock.Lock()
-	Services[info.ServiceHash] = info
+	if Services[appName] == nil {
+		Services[appName] = map[string]map[string]map[string]map[string]*Service{}
+	}
+	if Services[appName][envName] == nil {
+		Services[appName][envName] = map[string]map[string]map[string]*Service{}
+	}
+	if Services[appName][envName][groupName] == nil {
+		Services[appName][envName][groupName] = map[string]map[string]*Service{}
+	}
+	if Services[appName][envName][groupName][name] == nil {
+		Services[appName][envName][groupName][name] = map[string]*Service{}
+	}
+	Services[appName][envName][groupName][name][info.ServiceHash] = info
 	ServicesLock.Unlock()
 }
 
 // ChangeServiceStatus 更改服务状态
-func ChangeServiceStatus(hash string, status int) bool {
+func ChangeServiceStatus(name string, appName string, envName string, groupName string, hash string, status int) bool {
 	if Services[hash] == nil {
 		return false
 	}
 	ServicesLock.Lock()
-	Services[hash].Status = status
+	Services[appName][envName][groupName][name][hash].Status = status
 	ServicesLock.Unlock()
 	return true
 }
 
 // GetServiceList 获取服务列表
-func GetServiceList(name string, appName string, envName string, groupName string) []*Service {
-	var list []*Service
-	for _, v := range Services {
-		if name != "" {
-			if name != v.Name {
-				continue
+func GetServiceList(appName string, envName string) []*Service {
+	ServicesLock.Lock()
+	list := Services[appName][envName]
+	var temp []*Service
+	for _, v := range list {
+		for _, v1 := range v {
+			for _, v2 := range v1 {
+				temp = append(temp, v2)
 			}
 		}
-		if appName != "" {
-			if appName != v.AppName {
-				continue
-			}
-		}
-		if envName != "" {
-			if envName != v.EnvName {
-				continue
-			}
-		}
-		if groupName != "" {
-			if groupName != v.GroupName {
-				continue
-			}
-		}
-		list = append(list, v)
 	}
-	return list
+	ServicesLock.Unlock()
+	return temp
 }

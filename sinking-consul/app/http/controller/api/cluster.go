@@ -21,3 +21,8 @@ func ClusterRegister(s *sinking_web.Context) {
 	service.ClustersRegister(cluster.Ip, cluster.Port)
 	response.Success(s, "注册集群成功", nil)
 }
+
+// ClusterList 集群列表
+func ClusterList(s *sinking_web.Context) {
+	response.Success(s, "获取集群列表成功", service.ClustersList())
+}
