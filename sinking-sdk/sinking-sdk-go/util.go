@@ -20,7 +20,7 @@ func toJson(data interface{}) string {
 
 // client 请求对象
 var client = &http.Client{
-	Timeout: 3 * time.Second, //超时时间
+	Timeout: 5 * time.Second, //超时时间
 }
 
 // setHttpHeader 批量设置header
