@@ -27,7 +27,7 @@ func synchronize() {
 				Timeout: 5,
 			}
 			syncService(res)
-			syncConfig(res)
+			//syncConfig(res)
 		}}).Run()
 	}()
 }

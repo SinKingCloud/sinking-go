@@ -81,7 +81,6 @@ func (request *Request) ConfigList() ([]*model.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(res.String())
 	data := &ConfigResult{}
 	err = json.Unmarshal(res.Bytes(), data)
 	if err != nil {
