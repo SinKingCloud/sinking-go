@@ -1,7 +1,6 @@
 package api
 
 import (
-	"github.com/SinKingCloud/sinking-go/sinking-consul/app/model"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/response"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
@@ -23,18 +22,8 @@ func ServiceRegister(s *sinking_web.Context) {
 		response.Error(s, "参数不足", nil)
 		return
 	}
-	app := (&model.App{Name: form.AppName}).FindByNameCache()
-	if app.Id <= 0 {
-		response.Error(s, "应用不存在", nil)
-		return
-	}
-	env := (&model.Env{Name: form.EnvName}).FindByNameCache()
-	if env.Id <= 0 || app.Id != env.AppId {
-		response.Error(s, "环境不存在", nil)
-		return
-	}
-	service.RegisterService(form.Name, app.Name, env.Name, form.GroupName, form.Addr, time.Now().Unix(), 0)
-	service.RegisterLocalService(form.Name, app.Name, env.Name, form.GroupName, form.Addr, time.Now().Unix(), 0)
+	service.RegisterService(form.Name, form.AppName, form.EnvName, form.GroupName, form.Addr, time.Now().Unix(), 0)
+	service.RegisterLocalService(form.Name, form.AppName, form.EnvName, form.GroupName, form.Addr, time.Now().Unix(), 0)
 	response.Success(s, "注册服务成功", nil)
 }
 
