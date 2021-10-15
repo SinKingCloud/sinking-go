@@ -1,5 +1,10 @@
 package sinking_sdk_go
 
+import (
+	"math/rand"
+	"strings"
+)
+
 var (
 	checkTime = 5 //轮询间隔
 )
@@ -14,6 +19,7 @@ type Register struct {
 	EnvName   string `json:"env_name"`   //环境标识
 	GroupName string `json:"group_name"` //分组名称
 	Addr      string `json:"addr"`       //服务地址(规则ip:port)
+	server    string `json:"-"`          //使用节点
 }
 
 // New 实例化
@@ -30,11 +36,51 @@ func New(server string, tokenName string, token string, name string, appName str
 	}
 }
 
+// changeServer 更改注册中心
+func (r *Register) changeServer(rand bool) {
+	if !rand {
+		r.changeServerByHash() //根据hash修改server
+	} else {
+		r.changeServerByRand() //根据rand修改server
+	}
+}
+
+// changeServerByHash 根据hash获取server
+func (r *Register) changeServerByRand() {
+	data := strings.Split(r.Servers, ",")
+	if len(data) <= 1 {
+		return
+	}
+	var temp []string
+	for _, v := range data {
+		if v != r.server {
+			temp = append(temp, v)
+		}
+	}
+	r.server = temp[rand.Intn(len(temp))]
+}
+
+// changeServerByHash 根据hash获取server
+func (r *Register) changeServerByHash() {
+	key := Md5Encode(r.AppName + r.EnvName + r.GroupName + r.Name + r.Addr)
+	test := NewConsistent()
+	data := strings.Split(r.Servers, ",")
+	for _, v := range data {
+		test.Add(v)
+	}
+	server, err := test.Get(key)
+	if err != nil {
+		return
+	}
+	r.server = server
+}
+
 // Listen 监听配置变动及发送服务心跳
 func (r *Register) Listen() {
-	r.registerServices() //注册节点并维持心跳
-	r.getServices()      //监听服务列表
-	r.getConfigs()       //监听配置列表
+	r.changeServer(false) //初始化节点根据hash获取
+	r.registerServices()  //注册节点并维持心跳
+	r.getServices()       //监听服务列表
+	r.getConfigs()        //监听配置列表
 }
 
 // SetOnline 设置服务上线下线

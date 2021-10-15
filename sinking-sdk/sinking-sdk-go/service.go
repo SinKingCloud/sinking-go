@@ -52,18 +52,16 @@ func (r *Register) getServices() {
 	//设置注册节点
 	go func() {
 		for {
-			servers := strings.Split(r.Servers, ",")
 			servicesTemp := make(map[string]map[string]map[string]map[string]map[string]*Service)
-			for _, v := range servers {
-				test := &RequestServer{
-					Server:    v,
-					TokenName: r.TokenName,
-					Token:     r.Token,
-				}
-				list := test.getServerList(r.AppName, r.EnvName)
-				if list == nil || list.Code != 200 {
-					continue
-				}
+			test := &RequestServer{
+				Server:    r.server,
+				TokenName: r.TokenName,
+				Token:     r.Token,
+			}
+			list := test.getServerList(r.AppName, r.EnvName)
+			if list == nil || list.Code != 200 {
+				r.changeServer(true)
+			} else {
 				for _, v2 := range list.Data {
 					if v2.Status == 1 {
 						continue
@@ -82,10 +80,10 @@ func (r *Register) getServices() {
 					}
 					servicesTemp[v2.AppName][v2.EnvName][v2.GroupName][v2.Name][v2.ServiceHash] = v2
 				}
+				servicesLock.Lock()
+				services = servicesTemp
+				servicesLock.Unlock()
 			}
-			servicesLock.Lock()
-			services = servicesTemp
-			servicesLock.Unlock()
 			time.Sleep(time.Duration(checkTime) * time.Second)
 		}
 	}()
