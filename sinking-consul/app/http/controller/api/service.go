@@ -65,14 +65,16 @@ func ServiceStatus(s *sinking_web.Context) {
 // ServiceList 获取服务列表
 func ServiceList(s *sinking_web.Context) {
 	type register struct {
-		AppName string `form:"app_name" json:"app_name"` //所属应用
-		EnvName string `form:"env_name" json:"env_name"` //环境标识
+		Name      string `form:"name" json:"name"`             //服务名称
+		AppName   string `form:"app_name" json:"app_name"`     //所属应用
+		EnvName   string `form:"env_name" json:"env_name"`     //环境标识
+		GroupName string `form:"group_name" json:"group_name"` //分组名称
 	}
 	form := &register{}
 	err := s.BindJson(&form)
-	if err != nil || form.AppName == "" || form.EnvName == "" {
+	if err != nil || form.Name == "" || form.AppName == "" || form.EnvName == "" || form.GroupName == "" {
 		response.Error(s, "参数不足", nil)
 		return
 	}
-	response.Success(s, "获取服务列表成功", service.GetServiceList(form.AppName, form.EnvName))
+	response.Success(s, "获取服务列表成功", service.GetServiceList(form.AppName, form.EnvName, form.GroupName, form.Name))
 }

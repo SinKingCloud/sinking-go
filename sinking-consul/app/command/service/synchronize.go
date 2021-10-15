@@ -21,13 +21,13 @@ func synchronize() {
 				time.Sleep(time.Duration(setting.GetSystemConfig().Servers.HeartTime) * time.Second)
 			}
 		}, Consumer: func(k string) {
-			res := &request.Request{
+			req := &request.Request{
 				Ip:      clusterList[k].Ip,
 				Port:    clusterList[k].Port,
 				Timeout: 5,
 			}
-			syncService(res)
-			//syncConfig(res)
+			syncService(req)
+			syncConfig(req)
 		}}).Run()
 	}()
 }
@@ -39,10 +39,6 @@ func syncService(req *request.Request) {
 		return
 	}
 	for _, v := range list {
-		//status := 0
-		//if v.LastHeartTime+int64(setting.GetSystemConfig().Servers.CheckHeartTime) < time.Now().Unix() {
-		//	status = 1
-		//}
 		service.RegisterService(v.Name, v.AppName, v.EnvName, v.GroupName, v.Addr, v.LastHeartTime, v.Status)
 	}
 }

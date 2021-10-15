@@ -144,17 +144,13 @@ func GetAllLocalServiceList() []*Service {
 }
 
 // GetServiceList 获取服务列表
-func GetServiceList(appName string, envName string) []*Service {
+func GetServiceList(appName string, envName string, groupName string, name string) []*Service {
 	ServicesLock.Lock()
 	defer ServicesLock.Unlock()
-	list := Services[appName][envName]
+	list := Services[appName][envName][groupName][name]
 	var temp []*Service
-	for _, v := range list {
-		for _, v1 := range v {
-			for _, v2 := range v1 {
-				temp = append(temp, v2)
-			}
-		}
+	for _, v2 := range list {
+		temp = append(temp, v2)
 	}
 	return temp
 }
