@@ -19,7 +19,7 @@ func checkCluster() {
 				}
 			}
 			//检测服务状态
-			serviceList := service.CopyLocalService()
+			serviceList := service.CopyService()
 			for k, v := range serviceList {
 				for k1, v1 := range v {
 					for k2, v2 := range v1 {
@@ -30,7 +30,9 @@ func checkCluster() {
 									service.Services[k][k1][k2][k3][k4].Status = 1
 									service.ServicesLock.Unlock()
 									service.LocalServicesLock.Lock()
-									service.LocalServices[k][k1][k2][k3][k4].Status = 1
+									if service.LocalServices[k][k1][k2][k3][k4] != nil {
+										service.LocalServices[k][k1][k2][k3][k4].Status = 1
+									}
 									service.LocalServicesLock.Unlock()
 								}
 							}

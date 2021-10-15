@@ -39,11 +39,11 @@ func syncService(req *request.Request) {
 		return
 	}
 	for _, v := range list {
-		status := 0
-		if v.LastHeartTime+int64(setting.GetSystemConfig().Servers.CheckHeartTime) < time.Now().Unix() {
-			status = 1
-		}
-		service.RegisterService(v.Name, v.AppName, v.EnvName, v.GroupName, v.Addr, v.LastHeartTime, status)
+		//status := 0
+		//if v.LastHeartTime+int64(setting.GetSystemConfig().Servers.CheckHeartTime) < time.Now().Unix() {
+		//	status = 1
+		//}
+		service.RegisterService(v.Name, v.AppName, v.EnvName, v.GroupName, v.Addr, v.LastHeartTime, v.Status)
 	}
 }
 
