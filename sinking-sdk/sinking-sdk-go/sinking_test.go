@@ -2,6 +2,7 @@ package sinking_sdk_go
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 )
@@ -12,12 +13,19 @@ func Test_main(t *testing.T) {
 	//	server.Listen()
 	//}
 	//time.Sleep(999999 * time.Second)
-	server := New("127.0.0.1:8888,106.52.89.187:80,42.157.128.40:978", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:8888")
-	server.changeServer(false)
-	fmt.Println(server.server)
+	server := New("127.0.0.1:8888,106.52.89.187:80,42.157.128.40:978", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "106.52.89.187")
+	//注册并监听服务
+	server.UseService(map[string]string{
+		"sinking-go-api": "sinking-go-api-order",
+	}).Listen()
 	for {
-		server.changeServer(true)
 		fmt.Println(server.server)
+		fmt.Println(services)
+		body, err := server.Rpc("sinking-go-api-order").Timeout(5).Method(http.MethodPost).ReTry(5).Call("/index/login", &Param{
+			"user": "admin",
+			"pwd":  "123456",
+		})
+		fmt.Println(body, err)
 		time.Sleep(time.Second)
 	}
 	//server.Listen()

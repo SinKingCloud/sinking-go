@@ -58,31 +58,31 @@ func (r *Register) getServices() {
 				TokenName: r.TokenName,
 				Token:     r.Token,
 			}
-			list := test.getServerList(r.AppName, r.EnvName)
-			if list == nil || list.Code != 200 {
-				r.changeServer(true)
-			} else {
-				for _, v2 := range list.Data {
-					if v2.Status == 1 {
-						continue
+			for k, v := range r.useService {
+				list := test.getServerList(r.AppName, r.EnvName, k, v)
+				if list != nil && list.Code == 200 {
+					for _, v2 := range list.Data {
+						if v2.Status == 1 {
+							continue
+						}
+						if servicesTemp[v2.AppName] == nil {
+							servicesTemp[v2.AppName] = map[string]map[string]map[string]map[string]*Service{}
+						}
+						if servicesTemp[v2.AppName][v2.EnvName] == nil {
+							servicesTemp[v2.AppName][v2.EnvName] = map[string]map[string]map[string]*Service{}
+						}
+						if servicesTemp[v2.AppName][v2.EnvName][v2.GroupName] == nil {
+							servicesTemp[v2.AppName][v2.EnvName][v2.GroupName] = map[string]map[string]*Service{}
+						}
+						if servicesTemp[v2.AppName][v2.EnvName][v2.GroupName][v2.Name] == nil {
+							servicesTemp[v2.AppName][v2.EnvName][v2.GroupName][v2.Name] = map[string]*Service{}
+						}
+						servicesTemp[v2.AppName][v2.EnvName][v2.GroupName][v2.Name][v2.ServiceHash] = v2
 					}
-					if servicesTemp[v2.AppName] == nil {
-						servicesTemp[v2.AppName] = map[string]map[string]map[string]map[string]*Service{}
-					}
-					if servicesTemp[v2.AppName][v2.EnvName] == nil {
-						servicesTemp[v2.AppName][v2.EnvName] = map[string]map[string]map[string]*Service{}
-					}
-					if servicesTemp[v2.AppName][v2.EnvName][v2.GroupName] == nil {
-						servicesTemp[v2.AppName][v2.EnvName][v2.GroupName] = map[string]map[string]*Service{}
-					}
-					if servicesTemp[v2.AppName][v2.EnvName][v2.GroupName][v2.Name] == nil {
-						servicesTemp[v2.AppName][v2.EnvName][v2.GroupName][v2.Name] = map[string]*Service{}
-					}
-					servicesTemp[v2.AppName][v2.EnvName][v2.GroupName][v2.Name][v2.ServiceHash] = v2
+					servicesLock.Lock()
+					services = servicesTemp
+					servicesLock.Unlock()
 				}
-				servicesLock.Lock()
-				services = servicesTemp
-				servicesLock.Unlock()
 			}
 			time.Sleep(time.Duration(checkTime) * time.Second)
 		}

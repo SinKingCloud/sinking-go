@@ -83,11 +83,13 @@ type getServerListResult struct {
 }
 
 // getServerList 拉取服务列表
-func (r *RequestServer) getServerList(appName string, envName string) *getServerListResult {
+func (r *RequestServer) getServerList(appName string, envName string, groupName string, name string) *getServerListResult {
 	url := fmt.Sprintf("http://%s/api/service/list", r.Server)
 	post := toJson(Param{
-		"app_name": appName,
-		"env_name": envName,
+		"app_name":   appName,
+		"env_name":   envName,
+		"group_name": groupName,
+		"name":       name,
 	})
 	req, err := http.NewRequest("POST", url, strings.NewReader(post))
 	if err != nil {

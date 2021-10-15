@@ -22,7 +22,7 @@ func (r *Register) registerServices() {
 					Token:     r.Token,
 				}
 				res := test.registerServer(r.Name, r.AppName, r.EnvName, r.GroupName, r.Addr)
-				if res.Code != 200 {
+				if res == nil || res.Code != 200 {
 					r.changeServer(true)
 				}
 			}

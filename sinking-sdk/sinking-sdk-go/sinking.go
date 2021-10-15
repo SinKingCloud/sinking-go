@@ -11,15 +11,16 @@ var (
 
 // Register 注册中心
 type Register struct {
-	Servers   string `json:"-"`          //注册中心
-	TokenName string `json:"-"`          //通信密匙名称
-	Token     string `json:"-"`          //通信密匙
-	Name      string `json:"name"`       //服务名称
-	AppName   string `json:"app_name"`   //所属应用
-	EnvName   string `json:"env_name"`   //环境标识
-	GroupName string `json:"group_name"` //分组名称
-	Addr      string `json:"addr"`       //服务地址(规则ip:port)
-	server    string `json:"-"`          //使用节点
+	Servers    string            `json:"-"`          //注册中心
+	TokenName  string            `json:"-"`          //通信密匙名称
+	Token      string            `json:"-"`          //通信密匙
+	Name       string            `json:"name"`       //服务名称
+	AppName    string            `json:"app_name"`   //所属应用
+	EnvName    string            `json:"env_name"`   //环境标识
+	GroupName  string            `json:"group_name"` //分组名称
+	Addr       string            `json:"addr"`       //服务地址(规则ip:port)
+	server     string            //使用节点
+	useService map[string]string //使用服务
 }
 
 // New 实例化
@@ -34,6 +35,12 @@ func New(server string, tokenName string, token string, name string, appName str
 		GroupName: groupName,
 		Addr:      addr,
 	}
+}
+
+// UseService 使用服务
+func (r *Register) UseService(use map[string]string) *Register {
+	r.useService = use
+	return r
 }
 
 // changeServer 更改注册中心
@@ -80,7 +87,7 @@ func (r *Register) Listen() {
 	r.changeServer(false) //初始化节点根据hash获取
 	r.registerServices()  //注册节点并维持心跳
 	r.getServices()       //监听服务列表
-	r.getConfigs()        //监听配置列表
+	//r.getConfigs()        //监听配置列表
 }
 
 // SetOnline 设置服务上线下线
