@@ -48,7 +48,7 @@ func Init() {
 	//加载路由
 	loadRoute(r)
 	//启动http server
-	err := r.Run(setting.GetSystemConfig().App.Ip + ":" + strconv.Itoa(setting.GetSystemConfig().App.Port))
+	err := r.Run(":" + strconv.Itoa(setting.GetSystemConfig().App.Port))
 	if err != nil {
 		logs.Println(err.Error())
 		return

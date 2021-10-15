@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
 	"time"
@@ -20,6 +21,7 @@ func checkCluster() {
 			}
 			//检测服务状态
 			serviceList := service.CopyService()
+			fmt.Println(serviceList)
 			for k, v := range serviceList {
 				for k1, v1 := range v {
 					for k2, v2 := range v1 {
@@ -27,8 +29,7 @@ func checkCluster() {
 							for k4, v4 := range v3 {
 								if v4.LastHeartTime+int64(setting.GetSystemConfig().Servers.CheckHeartTime) < time.Now().Unix() {
 									service.ServicesLock.Lock()
-									//service.Services[k][k1][k2][k3][k4].Status = 1
-									delete(service.Services[k][k1][k2][k3], k4)
+									service.Services[k][k1][k2][k3][k4].Status = 1
 									service.ServicesLock.Unlock()
 								}
 							}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
+	sinking_web "github.com/SinKingCloud/sinking-go/sinking-web"
 	"github.com/imroc/req"
 	"time"
 )
@@ -33,10 +34,13 @@ func (request *Request) SetTimeout(time int) *Request {
 	return request
 }
 
-func (request *Request) Register() bool {
+func (request *Request) Register(ip string, port string) bool {
 	r := req.New()
 	r.SetTimeout(time.Duration(request.Timeout) * time.Second)
-	res, err := r.Post(fmt.Sprintf("http://%s:%s/api/cluster/register", request.Ip, request.Port), header(), req.BodyJSON(request))
+	res, err := r.Post(fmt.Sprintf("http://%s:%s/api/cluster/register", request.Ip, request.Port), header(), req.BodyJSON(sinking_web.H{
+		"ip":   ip,
+		"port": port,
+	}))
 	if err != nil {
 		return false
 	}

@@ -5,6 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/job"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/request"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
+	"strconv"
 	"time"
 )
 
@@ -24,7 +25,7 @@ func registerCluster() {
 				Port:    clusterList[k].Port,
 				Timeout: 5,
 			}
-			res.Register()
+			res.Register(setting.GetSystemConfig().App.Ip, strconv.Itoa(setting.GetSystemConfig().App.Port))
 		}}).Run()
 	}()
 }
