@@ -34,6 +34,15 @@ func (r *Config) SelectByNameCache() []*service.Config {
 	return data.([]*service.Config)
 }
 
+func (r *Config) SelectAllCache() []*service.Config {
+	data := cache.Remember(cachePrefix.Config, func() interface{} {
+		var info []*service.Config
+		Db.Model(&Config{}).Find(&info)
+		return info
+	}, cacheTime.Time*time.Second)
+	return data.([]*service.Config)
+}
+
 func (Config) TableName() string {
 	return DbPrefix + "configs"
 }

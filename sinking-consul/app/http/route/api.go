@@ -20,6 +20,8 @@ func loadApiClusterRoute(route *sinking_web.RouterGroup) {
 	apiGroup := route.Group("/cluster")
 	apiGroup.POST("/list", api.ClusterList)
 	apiGroup.POST("/register", api.ClusterRegister)
+	apiGroup.POST("/services", api.ClusterServiceList)
+	apiGroup.POST("/configs", api.ClusterConfigList)
 }
 
 func loadApiServiceRoute(route *sinking_web.RouterGroup) {

@@ -20,8 +20,9 @@ func registerCluster() {
 			}
 		}, Consumer: func(k string) {
 			res := &request.Request{
-				Ip:   clusterList[k].Ip,
-				Port: clusterList[k].Port,
+				Ip:      clusterList[k].Ip,
+				Port:    clusterList[k].Port,
+				Timeout: 5,
 			}
 			res.Register()
 		}}).Run()

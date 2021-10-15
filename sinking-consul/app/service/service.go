@@ -3,7 +3,6 @@ package service
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/encode"
 	"sync"
-	"time"
 )
 
 // Services 服务列表 AppName.EnvName.GroupName.Name.ServiceHash
@@ -25,7 +24,7 @@ type Service struct {
 }
 
 // RegisterService 服务注册
-func RegisterService(name string, appName string, envName string, groupName string, addr string) {
+func RegisterService(name string, appName string, envName string, groupName string, addr string, lastHeartTime int64) {
 	info := &Service{
 		Name:          name,
 		AppName:       appName,
@@ -33,7 +32,7 @@ func RegisterService(name string, appName string, envName string, groupName stri
 		GroupName:     groupName,
 		Addr:          addr,
 		ServiceHash:   encode.Md5Encode(appName + envName + groupName + addr),
-		LastHeartTime: time.Now().Unix(),
+		LastHeartTime: lastHeartTime,
 		Status:        0,
 	}
 	ServicesLock.Lock()

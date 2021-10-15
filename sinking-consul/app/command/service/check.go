@@ -27,7 +27,8 @@ func checkCluster() {
 							for k4, v4 := range v3 {
 								if v4.LastHeartTime+int64(setting.GetSystemConfig().Servers.CheckHeartTime) < time.Now().Unix() {
 									service.ServicesLock.Lock()
-									service.Services[k][k1][k2][k3][k4].Status = 1
+									//service.Services[k][k1][k2][k3][k4].Status = 1
+									delete(service.Services[k][k1][k2][k3], k4)
 									service.ServicesLock.Unlock()
 								}
 							}

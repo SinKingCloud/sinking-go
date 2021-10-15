@@ -5,6 +5,7 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/response"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
+	"time"
 )
 
 // ServiceRegister 注册服务
@@ -32,7 +33,7 @@ func ServiceRegister(s *sinking_web.Context) {
 		response.Error(s, "环境不存在", nil)
 		return
 	}
-	service.RegisterService(form.Name, app.Name, env.Name, form.GroupName, form.Addr)
+	service.RegisterService(form.Name, app.Name, env.Name, form.GroupName, form.Addr, time.Now().Unix())
 	response.Success(s, "注册服务成功", nil)
 }
 
