@@ -1,6 +1,7 @@
 package route
 
 import (
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/http/middleware"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/logs"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
@@ -10,7 +11,7 @@ import (
 
 // loadCommonMiddleware 加载全局中间件
 func loadCommonMiddleware(s *sinking_web.Engine) {
-
+	s.Use(middleware.Cors())
 }
 
 // loadRoute 加载路由
