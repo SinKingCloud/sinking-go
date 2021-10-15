@@ -42,12 +42,6 @@ func (t *User) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
-// AfterFind 查询前
-func (u *User) AfterFind(tx *gorm.DB) (err error) {
-	u.IsDelete = 0
-	return
-}
-
 // BeforeUpdate 更新前
 func (t *User) BeforeUpdate(tx *gorm.DB) error {
 	t.UpdateTime = DateTime(time.Now())

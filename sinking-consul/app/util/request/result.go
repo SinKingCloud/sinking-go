@@ -1,6 +1,9 @@
 package request
 
-import "github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
+import (
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/model"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
+)
 
 type Result struct {
 	Code    int         `json:"code"`
@@ -9,9 +12,9 @@ type Result struct {
 }
 
 type ConfigResult struct {
-	Code    int               `json:"code"`
-	Data    []*service.Config `json:"data"`
-	Message string            `json:"message"`
+	Code    int             `json:"code"`
+	Data    []*model.Config `json:"data"`
+	Message string          `json:"message"`
 }
 
 type ServiceResult struct {

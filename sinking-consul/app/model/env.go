@@ -48,12 +48,6 @@ func (t *Env) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
-// AfterFind 查询前
-func (u *Env) AfterFind(tx *gorm.DB) (err error) {
-	u.IsDelete = 0
-	return
-}
-
 // BeforeUpdate 更新前
 func (t *Env) BeforeUpdate(tx *gorm.DB) error {
 	t.UpdateTime = DateTime(time.Now())

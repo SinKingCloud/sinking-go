@@ -34,13 +34,13 @@ func (r *Config) SelectByNameCache() []*service.Config {
 	return data.([]*service.Config)
 }
 
-func (r *Config) SelectAllCache() []*service.Config {
+func (r *Config) SelectAllCache() []*Config {
 	data := cache.Remember(cachePrefix.Config, func() interface{} {
-		var info []*service.Config
+		var info []*Config
 		Db.Model(&Config{}).Find(&info)
 		return info
 	}, cacheTime.Time*time.Second)
-	return data.([]*service.Config)
+	return data.([]*Config)
 }
 
 func (Config) TableName() string {
@@ -52,12 +52,6 @@ func (t *Config) BeforeCreate(tx *gorm.DB) error {
 	t.CreateTime = DateTime(time.Now())
 	t.IsDelete = 0
 	return nil
-}
-
-// AfterFind 查询前
-func (u *Config) AfterFind(tx *gorm.DB) (err error) {
-	u.IsDelete = 0
-	return
 }
 
 // BeforeUpdate 更新前

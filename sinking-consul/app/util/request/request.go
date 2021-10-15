@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/app/model"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
 	sinking_web "github.com/SinKingCloud/sinking-go/sinking-web"
@@ -73,13 +74,14 @@ func (request *Request) ServiceList() ([]*service.Service, error) {
 	return nil, errors.New(data.Message)
 }
 
-func (request *Request) ConfigList() ([]*service.Config, error) {
+func (request *Request) ConfigList() ([]*model.Config, error) {
 	r := req.New()
 	r.SetTimeout(time.Duration(request.Timeout) * time.Second)
 	res, err := r.Post(fmt.Sprintf("http://%s:%s/api/cluster/configs", request.Ip, request.Port), header(), req.BodyJSON(request))
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(res.String())
 	data := &ConfigResult{}
 	err = json.Unmarshal(res.Bytes(), data)
 	if err != nil {
