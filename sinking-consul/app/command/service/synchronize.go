@@ -3,7 +3,6 @@ package service
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/job"
-	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/logs"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/request"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
 	"time"
@@ -27,7 +26,6 @@ func synchronize() {
 				Timeout: 5,
 			}
 			syncService(req)
-			syncDatabase(req)
 		}}).Run()
 	}()
 }
@@ -40,16 +38,5 @@ func syncService(req *request.Request) {
 	}
 	for _, v := range list {
 		service.RegisterService(v.Name, v.AppName, v.EnvName, v.GroupName, v.Addr, v.LastHeartTime, v.Status)
-	}
-}
-
-// syncDatabase 同步数据库
-func syncDatabase(req *request.Request) {
-	list, err := req.SetTimeout(10).ConfigList()
-	if err != nil {
-		return
-	}
-	for _, v := range list {
-		logs.Println(v)
 	}
 }
