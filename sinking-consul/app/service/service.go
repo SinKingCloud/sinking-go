@@ -24,7 +24,7 @@ type Service struct {
 }
 
 // RegisterService 服务注册
-func RegisterService(name string, appName string, envName string, groupName string, addr string, lastHeartTime int64) {
+func RegisterService(name string, appName string, envName string, groupName string, addr string, lastHeartTime int64, status int) {
 	info := &Service{
 		Name:          name,
 		AppName:       appName,
@@ -33,7 +33,7 @@ func RegisterService(name string, appName string, envName string, groupName stri
 		Addr:          addr,
 		ServiceHash:   encode.Md5Encode(appName + envName + groupName + addr),
 		LastHeartTime: lastHeartTime,
-		Status:        0,
+		Status:        status,
 	}
 	ServicesLock.Lock()
 	defer ServicesLock.Unlock()

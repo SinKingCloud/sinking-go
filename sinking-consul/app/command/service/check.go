@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
 	"time"
@@ -21,7 +20,6 @@ func checkCluster() {
 			}
 			//检测服务状态
 			serviceList := service.CopyService()
-			fmt.Println(serviceList)
 			for k, v := range serviceList {
 				for k1, v1 := range v {
 					for k2, v2 := range v1 {

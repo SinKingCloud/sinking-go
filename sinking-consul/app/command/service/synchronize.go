@@ -38,7 +38,7 @@ func syncService(req *request.Request) {
 		return
 	}
 	for _, v := range list {
-		service.RegisterService(v.Name, v.AppName, v.EnvName, v.GroupName, v.Addr, v.LastHeartTime)
+		service.RegisterService(v.Name, v.AppName, v.EnvName, v.GroupName, v.Addr, v.LastHeartTime, v.Status)
 	}
 }
 
