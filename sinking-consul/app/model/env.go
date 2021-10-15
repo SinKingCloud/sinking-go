@@ -37,6 +37,15 @@ func (r *Env) FindByNameCache() *Env {
 	return data.(*Env)
 }
 
+func (r *Env) SelectAllCache() []*Env {
+	data := cache.Remember(cachePrefix.Env, func() interface{} {
+		var info []*Env
+		Db.Model(&Env{}).Find(&info)
+		return info
+	}, cacheTime.Time*time.Second)
+	return data.([]*Env)
+}
+
 func (Env) TableName() string {
 	return DbPrefix + "envs"
 }

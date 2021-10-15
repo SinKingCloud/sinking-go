@@ -31,6 +31,15 @@ func (r *User) FindByIdCache() *User {
 	return data.(*User)
 }
 
+func (r *User) SelectAllCache() []*User {
+	data := cache.Remember(cachePrefix.User, func() interface{} {
+		var info []*User
+		Db.Model(&User{}).Find(&info)
+		return info
+	}, cacheTime.Time*time.Second)
+	return data.([]*User)
+}
+
 func (User) TableName() string {
 	return DbPrefix + "users"
 }

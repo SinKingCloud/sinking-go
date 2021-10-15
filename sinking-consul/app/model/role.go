@@ -27,6 +27,15 @@ func (r *Role) FindByIdCache() *Role {
 	return data.(*Role)
 }
 
+func (r *Role) SelectAllCache() []*Role {
+	data := cache.Remember(cachePrefix.Role, func() interface{} {
+		var info []*Role
+		Db.Model(&Role{}).Find(&info)
+		return info
+	}, cacheTime.Time*time.Second)
+	return data.([]*Role)
+}
+
 func (Role) TableName() string {
 	return DbPrefix + "roles"
 }

@@ -36,6 +36,15 @@ func (r *App) FindByNameCache() *App {
 	return data.(*App)
 }
 
+func (r *App) SelectAllCache() []*App {
+	data := cache.Remember(cachePrefix.App, func() interface{} {
+		var info []*App
+		Db.Model(&App{}).Find(&info)
+		return info
+	}, cacheTime.Time*time.Second)
+	return data.([]*App)
+}
+
 func (App) TableName() string {
 	return DbPrefix + "apps"
 }
