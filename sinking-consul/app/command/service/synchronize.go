@@ -27,7 +27,7 @@ func synchronize() {
 				Timeout: 5,
 			}
 			syncService(req)
-			syncConfig(req)
+			syncDatabase(req)
 		}}).Run()
 	}()
 }
@@ -43,8 +43,8 @@ func syncService(req *request.Request) {
 	}
 }
 
-// syncConfig 同步配置
-func syncConfig(req *request.Request) {
+// syncDatabase 同步数据库
+func syncDatabase(req *request.Request) {
 	list, err := req.SetTimeout(10).ConfigList()
 	if err != nil {
 		return
