@@ -30,7 +30,7 @@ func ClusterList(s *sinking_web.Context) {
 
 // ClusterServiceList 集群服务列表
 func ClusterServiceList(s *sinking_web.Context) {
-	list := service.GetAllServiceList()
+	list := service.GetAllLocalServiceList()
 	response.Success(s, "获取集群服务信息成功", list)
 }
 

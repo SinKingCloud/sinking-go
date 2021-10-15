@@ -34,6 +34,7 @@ func ServiceRegister(s *sinking_web.Context) {
 		return
 	}
 	service.RegisterService(form.Name, app.Name, env.Name, form.GroupName, form.Addr, time.Now().Unix(), 0)
+	service.RegisterLocalService(form.Name, app.Name, env.Name, form.GroupName, form.Addr, time.Now().Unix(), 0)
 	response.Success(s, "注册服务成功", nil)
 }
 
@@ -53,7 +54,8 @@ func ServiceStatus(s *sinking_web.Context) {
 		response.Error(s, "参数不足", nil)
 		return
 	}
-	if service.ChangeServiceStatus(form.Name, form.AppName, form.EnvName, form.GroupName, form.ServiceHash, form.Status) {
+	if service.ChangeServiceStatus(form.Name, form.AppName, form.EnvName, form.GroupName, form.ServiceHash, form.Status) &&
+		service.ChangeLocalServiceStatus(form.Name, form.AppName, form.EnvName, form.GroupName, form.ServiceHash, form.Status) {
 		response.Success(s, "服务状态更改成功", nil)
 	} else {
 		response.Error(s, "服务状态更改失败", nil)
