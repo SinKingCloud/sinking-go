@@ -87,7 +87,7 @@ func (r *Register) Listen() {
 	r.changeServer(false) //初始化节点根据hash获取
 	r.registerServices()  //注册节点并维持心跳
 	r.getServices()       //监听服务列表
-	//r.getConfigs()        //监听配置列表
+	r.getConfigs()        //监听配置列表
 }
 
 // SetOnline 设置服务上线下线

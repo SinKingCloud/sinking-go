@@ -27,7 +27,7 @@ func (r *Register) getConfigs() {
 				Token:     r.Token,
 			}
 			result := test.getConfigs(r.AppName, r.EnvName)
-			fmt.Println(result.Data[0])
+			fmt.Println(result)
 			time.Sleep(time.Duration(checkTime) * time.Second)
 		}
 	}()
