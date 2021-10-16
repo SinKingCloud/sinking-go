@@ -11,7 +11,7 @@ var server *Register
 
 func Test_main(t *testing.T) {
 	//实例化一个server
-	server = New("106.52.89.187:80", "sinking-token", "test_token", "sinking.go", "dev")
+	server = New("106.52.89.187:80", "sinking-token", "test_token", "default", "dev")
 	//注册并监听服务
 	server.Register("sinking-go-api", "sinking-go-api-order", "106.52.89.187").UseService(map[string]string{
 		"sinking-go-api": "sinking-go-api-order", //需要使用的服务
