@@ -14,7 +14,7 @@
 
 - sinking-web将成为http基础框架并实现网关/反向代理
 - sinking-websocket将成为websocket基础包装类
-- sinking-consul将实现可视化配置中心/注册中心/服务限流/服务熔断
+- sinking-consul将实现配置中心/注册中心/服务限流/服务熔断
 - sinking-sdk 集成sdk
 - sinking-demo 框架使用示例
 
