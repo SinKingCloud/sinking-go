@@ -24,17 +24,22 @@ type Register struct {
 }
 
 // New 实例化
-func New(server string, tokenName string, token string, name string, appName string, envName string, groupName string, addr string) *Register {
+func New(server string, tokenName string, token string, appName string, envName string) *Register {
 	return &Register{
 		Servers:   server,
 		TokenName: tokenName,
 		Token:     token,
-		Name:      name,
 		AppName:   appName,
 		EnvName:   envName,
-		GroupName: groupName,
-		Addr:      addr,
 	}
+}
+
+// Register 注册服务
+func (r *Register) Register(groupName string, name string, addr string) *Register {
+	r.GroupName = groupName
+	r.Name = name
+	r.Addr = addr
+	return r
 }
 
 // UseService 使用服务
@@ -84,10 +89,10 @@ func (r *Register) changeServerByHash() {
 
 // Listen 监听配置变动及发送服务心跳
 func (r *Register) Listen() {
-	r.changeServer(false) //初始化节点根据hash获取
-	r.registerServices()  //注册节点并维持心跳
-	r.getServices()       //监听服务列表
-	r.getConfigs()        //监听配置列表
+	r.changeServer(false)    //初始化节点根据hash获取
+	r.getConfigs(true)       //监听配置列表
+	r.registerServices(true) //注册节点并维持心跳
+	r.getServices(true)      //监听服务列表
 }
 
 // SetOnline 设置服务上线下线

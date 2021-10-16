@@ -14,6 +14,7 @@ func LoadConfig(configPath string, configName string, configType string) {
 	config.AddConfigPath(configPath)
 	config.SetConfigName(configName)
 	config.SetConfigType(configType)
+	config.WatchConfig()
 	if err := config.ReadInConfig(); err != nil {
 		panic(err)
 		return

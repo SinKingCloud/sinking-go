@@ -11,9 +11,9 @@ var (
 )
 
 // registerServers 注册节点
-func (r *Register) registerServices() {
+func (r *Register) registerServices(sync bool) {
 	//设置注册节点
-	go func() {
+	fun := func() {
 		for {
 			if OnlineStatus {
 				test := &RequestServer{
@@ -28,5 +28,10 @@ func (r *Register) registerServices() {
 			}
 			time.Sleep(time.Duration(checkTime) * time.Second)
 		}
-	}()
+	}
+	if sync {
+		go fun()
+	} else {
+		fun()
+	}
 }

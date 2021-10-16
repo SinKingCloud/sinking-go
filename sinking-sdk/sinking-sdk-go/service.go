@@ -48,9 +48,9 @@ func (r *Register) GetService(name string) (*Service, bool) {
 }
 
 // getServices 获取并更新节点
-func (r *Register) getServices() {
+func (r *Register) getServices(sync bool) {
 	//设置注册节点
-	go func() {
+	fun := func() {
 		for {
 			servicesTemp := make(map[string]map[string]map[string]map[string]map[string]*Service)
 			test := &RequestServer{
@@ -79,14 +79,19 @@ func (r *Register) getServices() {
 						}
 						servicesTemp[v2.AppName][v2.EnvName][v2.GroupName][v2.Name][v2.ServiceHash] = v2
 					}
-					servicesLock.Lock()
-					services = servicesTemp
-					servicesLock.Unlock()
 				}
 			}
+			servicesLock.Lock()
+			services = servicesTemp
+			servicesLock.Unlock()
 			time.Sleep(time.Duration(checkTime) * time.Second)
 		}
-	}()
+	}
+	if sync {
+		go fun()
+	} else {
+		fun()
+	}
 }
 
 // changeServerStatus 广播更改节点服务状态
