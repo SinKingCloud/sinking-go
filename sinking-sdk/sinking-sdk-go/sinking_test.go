@@ -10,11 +10,7 @@ import (
 var server *Register
 
 func Test_main(t *testing.T) {
-	//for i := 2080; i < 2080; i++ {
-	//	server := New("106.52.89.187", "sinking-token", "test_token", "sinking-go-api-order", "sinking.go", "dev", "sinking-go-api", "127.0.0.1:"+strconv.Itoa(i))
-	//	server.Listen()
-	//}
-	//time.Sleep(999999 * time.Second)
+	//实例化一个server
 	server = New("106.52.89.187:80", "sinking-token", "test_token", "sinking.go", "dev")
 	//注册并监听服务
 	server.Register("sinking-go-api", "sinking-go-api-order", "106.52.89.187").UseService(map[string]string{
