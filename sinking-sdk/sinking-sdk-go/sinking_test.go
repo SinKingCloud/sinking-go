@@ -18,7 +18,7 @@ func Test_main(t *testing.T) {
 	}).Listen()
 	time.Sleep(5 * time.Second) //延迟5s等待初始化完毕
 	//rpc调用服务
-	body, err := server.Rpc("sinking-go-api-order").Timeout(5).Method(http.MethodPost).ReTry(5).Call("/index/login", &Param{
+	body, err := server.Rpc("sinking-go-api", "sinking-go-api-order").Timeout(5).Method(http.MethodPost).ReTry(5).Call("/index/login", &Param{
 		"user": "admin",
 		"pwd":  "123456",
 	})

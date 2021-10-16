@@ -11,20 +11,21 @@ import (
 
 // rpcRequestBuild rpc消息构建
 type rpcRequestBuild struct {
-	name     string
-	url      string
-	method   string
-	timeout  int
-	retry    int
-	header   map[string]string
-	service  *Service
-	param    *Param
-	register *Register
+	groupName string
+	name      string
+	url       string
+	method    string
+	timeout   int
+	retry     int
+	header    map[string]string
+	service   *Service
+	param     *Param
+	register  *Register
 }
 
 // Rpc 构建远程调用服务名
-func (r *Register) Rpc(name string) *rpcRequestBuild {
-	return &rpcRequestBuild{register: r, name: name}
+func (r *Register) Rpc(groupName string, name string) *rpcRequestBuild {
+	return &rpcRequestBuild{register: r, name: name, groupName: groupName}
 }
 
 // Header 构建远程调用header
@@ -53,7 +54,7 @@ func (r *rpcRequestBuild) ReTry(num int) *rpcRequestBuild {
 
 // Call 远程调用
 func (r *rpcRequestBuild) call(url string, param *Param) (string, error) {
-	r.service, _ = r.register.GetService(r.name)
+	r.service, _ = r.register.GetService(r.groupName, r.name)
 	if r.service == nil {
 		return "", errors.New("not found online service")
 	}

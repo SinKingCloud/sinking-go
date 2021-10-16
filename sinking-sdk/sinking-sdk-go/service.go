@@ -11,7 +11,8 @@ var (
 	services     = make(map[string]map[string]map[string]map[string]map[string]*Service)
 	servicesLock sync.Mutex
 	// serviceIndex 轮询获取服务地址下标
-	serviceIndex = make(map[string]int)
+	serviceIndex     = make(map[string]int)
+	serviceIndexLock sync.Mutex
 )
 
 // Service 服务列表
@@ -27,9 +28,13 @@ type Service struct {
 }
 
 // GetService 获取随机节点(负载均衡)
-func (r *Register) GetService(name string) (*Service, bool) {
-	key := Md5Encode(r.AppName + r.EnvName + r.GroupName + name)
-	addr := services[r.AppName][r.EnvName][r.GroupName][name]
+func (r *Register) GetService(groupName string, name string) (*Service, bool) {
+	servicesLock.Lock()
+	serviceIndexLock.Lock()
+	defer servicesLock.Unlock()
+	defer serviceIndexLock.Unlock()
+	key := Md5Encode(r.AppName + r.EnvName + groupName + name)
+	addr := services[r.AppName][r.EnvName][groupName][name]
 	if addr == nil {
 		return nil, false
 	}
