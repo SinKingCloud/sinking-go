@@ -9,7 +9,7 @@
 - [x] sinking-consul 注册中心/配置中心/服务限流/服务熔断 (后端完成前端待开发)
 - [x] sinking-sdk 项目集成sdk (提供语言:go)
 - [x] sinking-demo 框架使用示例
-- [x] sinking-env 常规开发docker-compose环境整合
+- [x] sinking-env 常规开发docker环境依赖整理(docker-compose)
 
 ### 计划
 
