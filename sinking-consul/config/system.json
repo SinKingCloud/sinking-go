@@ -8,7 +8,7 @@
   "app": {
     "debug": true,
     "ip": "127.0.0.1",
-    "port": 8888,
+    "port": 1817,
     "jwtToken": "SinKingCloud"
   },
   "database": {
@@ -21,18 +21,18 @@
       "host": "dns.978g.cn",
       "port": "3306",
       "user": "root",
-      "pwd": "Qq@1178710004...",
+      "pwd": "root",
       "database": "sinking_consul",
       "prefix": "sinking_"
     },
     "logstash": {
-      "host": "dns.978g.cn",
+      "host": "",
       "port": 5044,
       "timeout": 10
     }
   },
   "servers": {
-    "cluster": "127.0.0.1:817",
+    "cluster": "127.0.0.1:1817",
     "tokenName": "sinking-token",
     "token": "test_token",
     "heartTime": 2,

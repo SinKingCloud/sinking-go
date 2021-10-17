@@ -33,7 +33,7 @@ COPY --from=sinking-consul-builder /data/sinking-consul/sinking-consul .
 COPY --from=sinking-consul-builder /data/sinking-consul/config/ ./config/
 
 #映射端口
-EXPOSE 817
+EXPOSE 1817
 
 #启动
 ENTRYPOINT  ["./sinking-consul"]
