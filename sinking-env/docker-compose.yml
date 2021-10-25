@@ -9,6 +9,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:rw
       - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
       - ./nginx/log:/var/log/nginx:rw
       - ./nginx/www/:/etc/nginx/www/:rw
