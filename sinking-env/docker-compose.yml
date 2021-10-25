@@ -1,5 +1,19 @@
 version: "3"
 services:
+  ####################### nginx #######################
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
+      - ./nginx/log:/var/log/nginx:rw
+      - ./nginx/www/:/etc/nginx/www/:rw
+    environment:
+      - TZ=Asia/Shanghai
 
   ####################### mysql #######################
   mysql-5.7:
@@ -17,7 +31,7 @@ services:
       - "3306:3306"
 
   phpmyadmin:
-    image: "phpmyadmin/phpmyadmin"
+    image: phpmyadmin/phpmyadmin
     container_name: "phpmyadmin"
     restart: always
     ports:
@@ -31,7 +45,7 @@ services:
     container_name: rocket-namesrv
     restart: always
     ports:
-      - 9876:9876
+      - "9876:9876"
     volumes:
       - ./rocket/logs:/home/rocketmq/logs
       - ./rocket/store:/home/rocketmq/store
@@ -45,8 +59,8 @@ services:
     container_name: rocket-broker
     restart: always
     ports:
-      - 10909:10909
-      - 10911:10911
+      - "10909:10909"
+      - "10911:10911"
     volumes:
       - ./rocket/logs:/home/rocketmq/logs
       - ./rocket/store:/home/rocketmq/store
@@ -63,7 +77,7 @@ services:
     container_name: rocket-console
     restart: always
     ports:
-      - 8180:8080
+      - "8180:8080"
     environment:
       TZ: Asia/Shanghai
       JAVA_OPTS: "-Drocketmq.namesrv.addr=rocket-namesrv:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
@@ -74,7 +88,7 @@ services:
     container_name: redis
     restart: always
     ports:
-      - 6379:6379
+      - "6379:6379"
     environment:
       TZ: Asia/Shanghai
       LANG: en_US.UTF-8
@@ -98,15 +112,15 @@ services:
       - ./es/data:/usr/share/elasticsearch/data
       - ./es/plugins:/usr/share/elasticsearch/plugins
     ports:
-      - 9200:9200
-      - 9300:9300
+      - "9200:9200"
+      - "9300:9300"
 
   kibana:
     image: kibana:7.12.0
     container_name: kibana
     restart: always
     ports:
-      - 5601:5601
+      - "5601:5601"
     volumes:
       - ./es/config/kibana.yml:/usr/share/kibana/config/kibana.yml
     environment:
@@ -120,8 +134,8 @@ services:
     volumes:
       - ./es/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     ports:
-      - 9600:9600
-      - 5044:5044
+      - "9600:9600"
+      - "5044:5044"
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
 
@@ -131,7 +145,7 @@ services:
     container_name: canal
     restart: always
     ports:
-      - 11111:11111
+      - "11111:11111"
     environment:
       - canal.instance.mysql.slaveId=200
       - canal.auto.scan=false
@@ -152,7 +166,7 @@ services:
       - ./mongodb/db:/data/db
       - ./mongodb/log:/var/log/mongodb
     ports:
-      - 27017:27017
+      - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: mongodbpassword
@@ -162,7 +176,7 @@ services:
     container_name: mongo-express
     restart: always
     ports:
-      - 8181:8081
+      - "8181:8081"
     environment:
       ME_CONFIG_OPTIONS_EDITORTHEME: 3024-night
       ME_CONFIG_MONGODB_SERVER: mongodb
@@ -204,7 +218,7 @@ services:
     container_name: alibaba-seata
     restart: always
     ports:
-      - 8091:8091
+      - "8091:8091"
     depends_on:
       - alibaba-nacos
     environment:
@@ -223,6 +237,6 @@ services:
     container_name: alibaba-sentinel
     restart: always
     ports:
-      - 8858:8858
+      - "8858:8858"
     environment:
       TZ: Asia/Shanghai
