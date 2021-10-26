@@ -3,8 +3,6 @@ package sinking_web
 import (
 	"html/template"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 	"path"
 	"strings"
 )
@@ -152,21 +150,7 @@ func (engine *Engine) LoadHtmlGlob(pattern string) {
 
 func (group *RouterGroup) PROXY(pattern string, uri string, filter func(r *http.Request) *http.Request) {
 	fun := func(c *Context) {
-		Try(func() {
-			target, err := url.Parse(uri)
-			if err != nil {
-				c.JSON(500, "url format error.")
-				return
-			}
-			c.StatusCode = 200
-			c.Request.Host = c.Request.URL.Host
-			c.Request.URL.Path = strings.Replace(c.Request.URL.Path, pattern[0:strings.Index(pattern, "*")], "/", 1)
-			filter(c.Request)
-			proxy := httputil.NewSingleHostReverseProxy(target)
-			proxy.ServeHTTP(c.Writer, c.Request)
-		}, func(err interface{}) {
-			c.StatusCode = 500
-		})
+		c.Proxy(pattern, uri, filter)
 	}
 	group.ANY(pattern, fun)
 }

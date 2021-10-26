@@ -2,6 +2,9 @@ package sinking_web
 
 import (
 	"net"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"strings"
 )
 
@@ -23,6 +26,25 @@ func (c *Context) ClientIP(useProxy bool) string {
 		}
 	}
 	return ""
+}
+
+// Proxy 反向代理
+func (c *Context) Proxy(pattern string, uri string, filter func(r *http.Request) *http.Request) {
+	Try(func() {
+		target, err := url.Parse(uri)
+		if err != nil {
+			c.JSON(500, "url format error.")
+			return
+		}
+		c.StatusCode = 200
+		c.Request.Host = c.Request.URL.Host
+		c.Request.URL.Path = strings.Replace(c.Request.URL.Path, pattern[0:strings.Index(pattern, "*")], "/", 1)
+		filter(c.Request)
+		proxy := httputil.NewSingleHostReverseProxy(target)
+		proxy.ServeHTTP(c.Writer, c.Request)
+	}, func(err interface{}) {
+		c.StatusCode = 500
+	})
 }
 
 // Try 错误捕获实现
