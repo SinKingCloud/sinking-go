@@ -209,16 +209,6 @@ func setArray(vals []string, value reflect.Value, field reflect.StructField) err
 	return nil
 }
 
-func setSlice(vals []string, value reflect.Value, field reflect.StructField) error {
-	slice := reflect.MakeSlice(value.Type(), len(vals), len(vals))
-	err := setArray(vals, slice, field)
-	if err != nil {
-		return err
-	}
-	value.Set(slice)
-	return nil
-}
-
 func setTimeDuration(val string, value reflect.Value) error {
 	d, err := time.ParseDuration(val)
 	if err != nil {
