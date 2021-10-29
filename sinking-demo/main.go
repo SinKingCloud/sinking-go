@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"github.com/SinKingCloud/sinking-go/sinking-websocket"
-	"github.com/gorilla/websocket"
 	"html/template"
 	"log"
 	"net/http"
-	"sync"
 	"time"
 )
 
@@ -59,7 +57,7 @@ func main() {
 	sinking_web.SetDebugMode(true)
 
 	//设置读写超时时间
-	sinking_web.SetTimeOut(60*time.Second, 60*time.Second)
+	sinking_web.SetTimeOut(10*time.Second, 10*time.Second)
 
 	//实例化一个http server
 	r := sinking_web.Default()
@@ -138,36 +136,27 @@ func main() {
 			s.JSON(200, sinking_web.H{"code": "200", "message": "绑定参数成功", "data": login})
 		}
 	})
-
 	//websocket功能
-	wsConn := make(map[string]*websocket.Conn) //ws连接池
-	var wsConnLock sync.Mutex
+	wsConn := sinking_websocket.NewWebSocketConnections() //ws连接池
 	ws := r.Group("/ws")
 	//ws本质是get长连接,可使用get建立短连接在升级为长连接最后使用协程监听消息
 	ws.GET("/message/listen/:id", func(s *sinking_web.Context) {
 		//生成uid
 		uid := "user-" + s.Param("id")
-		wsServer := sinking_websocket.Websocket{
+		wsServer := sinking_websocket.WebSocket{
 			OnError: func(err error) {
-				_ = wsConn[uid].Close()
-				wsConnLock.Lock()
-				wsConn[uid] = nil
-				wsConnLock.Unlock()
+				wsConn.Delete(uid)
 				log.Println("websocket错误", err)
 			},
-			OnConnect: func(ws *websocket.Conn) {
-				log.Println("websocket连接", ws)
-				wsConnLock.Lock()
-				wsConn[uid] = ws
-				wsConnLock.Unlock()
+			OnConnect: func(ws *sinking_websocket.Conn) {
+				wsConn.Set(uid, ws)
+				log.Println("websocket连接", uid)
 			},
 			OnClose: func(err error) {
-				wsConnLock.Lock()
-				wsConn[uid] = nil
-				wsConnLock.Unlock()
+				wsConn.Delete(uid)
 				log.Println("websocket关闭", err)
 			},
-			OnMessage: func(ws *websocket.Conn, messageType int, data []byte) {
+			OnMessage: func(ws *sinking_websocket.Conn, messageType int, data []byte) {
 				log.Println("websocket消息", string(data), messageType)
 			},
 		}
@@ -178,8 +167,9 @@ func main() {
 	//单播消息
 	ws.GET("/message/send/:id/:message", func(s *sinking_web.Context) {
 		uid := "user-" + s.Param("id")
-		if wsConn[uid] != nil {
-			err := wsConn[uid].WriteMessage(1, []byte(s.Param("message")))
+		conn := wsConn.Get(uid)
+		if conn != nil {
+			err := conn.WriteMessage(1, []byte(s.Param("message")))
 			if err != nil {
 				s.JSON(200, sinking_web.H{"code": "500", "message": "发送消息失败"})
 			} else {
@@ -191,8 +181,8 @@ func main() {
 	})
 	//广播消息
 	ws.GET("/message/send/:message", func(s *sinking_web.Context) {
-		for k, v := range wsConn {
-			if wsConn[k] != nil {
+		for _, v := range wsConn.GetAll() {
+			if v != nil {
 				_ = v.WriteMessage(1, []byte(s.Param("message")))
 			}
 		}
