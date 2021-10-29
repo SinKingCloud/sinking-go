@@ -158,6 +158,10 @@ func main() {
 			},
 			OnMessage: func(ws *sinking_websocket.Conn, messageType int, data []byte) {
 				log.Println("websocket消息", string(data), messageType)
+				conn := wsConn.Get(uid)
+				if conn != nil {
+					_ = conn.WriteMessage(1, data)
+				}
 			},
 		}
 		wsServer.Listen(s.Writer, s.Request)
