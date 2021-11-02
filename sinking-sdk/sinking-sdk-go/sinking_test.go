@@ -8,7 +8,7 @@ import (
 
 func Test_main(t *testing.T) {
 	//实例化一个server
-	server := New("127.0.0.1:1817", "sinking-token", "test_token", "cloud-server", "dev")
+	server := New("42.157.128.40:1817", "sinking-token", "97cb316ec237b3937307d94c38d21785", "cloud-server", "dev")
 	//注册并监听服务
 	server.Register("default", "cloud-gateway", "127.0.0.1:1000"). //服务信息
 									UseService(map[string]string{"default": "cloud-gateway"}). //需要使用的服务
