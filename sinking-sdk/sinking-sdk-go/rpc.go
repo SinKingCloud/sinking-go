@@ -66,7 +66,7 @@ func (r *rpcRequestBuild) call(url string, param *Param) (string, error) {
 		if r.service != nil && r.service.ServiceHash != "" {
 			r.register.changeServerStatus(r.service.ServiceHash, 1)
 		}
-		return "", errors.New(strings.Replace(err.Error(), r.service.Addr, r.name, 1))
+		return "", errors.New(strings.Replace(err.Error(), r.service.Addr, r.name, -1))
 	}
 	return body, nil
 }
