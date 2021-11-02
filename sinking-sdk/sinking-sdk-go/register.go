@@ -14,23 +14,25 @@ var (
 func (r *Register) registerServices(sync bool) {
 	//设置注册节点
 	fun := func() {
-		for {
-			if OnlineStatus {
-				test := &RequestServer{
-					Server:    r.server,
-					TokenName: r.TokenName,
-					Token:     r.Token,
-				}
-				res := test.registerServer(r.Name, r.AppName, r.EnvName, r.GroupName, r.Addr)
-				if res == nil || res.Code != 200 {
-					r.changeServer(true)
-				}
+		if OnlineStatus {
+			test := &RequestServer{
+				Server:    r.server,
+				TokenName: r.TokenName,
+				Token:     r.Token,
 			}
-			time.Sleep(time.Duration(checkTime) * time.Second)
+			res := test.registerServer(r.Name, r.AppName, r.EnvName, r.GroupName, r.Addr)
+			if res == nil || res.Code != 200 {
+				r.changeServer(true)
+			}
 		}
 	}
 	if sync {
-		go fun()
+		go func() {
+			for {
+				fun()
+				time.Sleep(time.Duration(checkTime) * time.Second)
+			}
+		}()
 	} else {
 		fun()
 	}

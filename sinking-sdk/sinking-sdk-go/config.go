@@ -30,37 +30,39 @@ var (
 func (r *Register) getConfigs(sync bool) {
 	//设置注册节点
 	fun := func() {
-		for {
-			test := &RequestServer{
-				Server:    r.server,
-				TokenName: r.TokenName,
-				Token:     r.Token,
-			}
-			result := test.getConfigs(r.AppName, r.EnvName)
-			if result != nil && result.Code == 200 {
-				//解析配置
-				for _, v := range result.Data {
-					configsLock.Lock()
-					if configs[v.GroupName] == nil {
-						configs[v.GroupName] = map[string]*Config{}
-					}
-					if configs[v.GroupName][v.Name] == nil || v.Hash != configs[v.GroupName][v.Name].Hash {
-						configs[v.GroupName][v.Name] = v
-						conf := viper.New()
-						conf.SetConfigType(v.Type)
-						err := conf.ReadConfig(strings.NewReader(v.Content))
-						if err == nil {
-							configs[v.GroupName][v.Name].viper = conf
-						}
-					}
-					configsLock.Unlock()
+		test := &RequestServer{
+			Server:    r.server,
+			TokenName: r.TokenName,
+			Token:     r.Token,
+		}
+		result := test.getConfigs(r.AppName, r.EnvName)
+		if result != nil && result.Code == 200 {
+			//解析配置
+			for _, v := range result.Data {
+				configsLock.Lock()
+				if configs[v.GroupName] == nil {
+					configs[v.GroupName] = map[string]*Config{}
 				}
+				if configs[v.GroupName][v.Name] == nil || v.Hash != configs[v.GroupName][v.Name].Hash {
+					configs[v.GroupName][v.Name] = v
+					conf := viper.New()
+					conf.SetConfigType(v.Type)
+					err := conf.ReadConfig(strings.NewReader(v.Content))
+					if err == nil {
+						configs[v.GroupName][v.Name].viper = conf
+					}
+				}
+				configsLock.Unlock()
 			}
-			time.Sleep(time.Duration(checkTime) * time.Second)
 		}
 	}
 	if sync {
-		go fun()
+		go func() {
+			for {
+				fun()
+				time.Sleep(time.Duration(checkTime) * time.Second)
+			}
+		}()
 	} else {
 		fun()
 	}

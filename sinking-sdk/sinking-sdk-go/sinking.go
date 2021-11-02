@@ -89,10 +89,13 @@ func (r *Register) changeServerByHash() {
 
 // Listen 监听配置变动及发送服务心跳
 func (r *Register) Listen() {
-	r.changeServer(false)    //初始化节点根据hash获取
-	r.getConfigs(true)       //监听配置列表
-	r.registerServices(true) //注册节点并维持心跳
-	r.getServices(true)      //监听服务列表
+	r.changeServer(false)     //初始化节点根据hash获取
+	r.getConfigs(false)       //监听配置列表
+	r.getConfigs(true)        //监听配置列表
+	r.registerServices(false) //注册节点并维持心跳
+	r.registerServices(true)  //注册节点并维持心跳
+	r.getServices(false)      //监听服务列表
+	r.getServices(true)       //监听服务列表
 }
 
 // SetOnline 设置服务上线下线
