@@ -157,7 +157,7 @@ services:
       - canal.instance.dbPassword=rootpassword
       - canal.instance.filter.regex=.*\\..*
     volumes:
-      - ./canal/conf/:/admin/canal-server/conf/
+      #- ./canal/conf/:/admin/canal-server/conf/
       - ./canal/logs/:/admin/canal-server/logs/
 
   ######################### mongodb4.2.8 ############################
