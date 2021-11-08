@@ -37,8 +37,6 @@ func (c *Context) Proxy(pattern string, uri string, filter func(r *http.Request)
 			return
 		}
 		c.StatusCode = 200
-		c.Request.Host = c.Request.URL.Host
-		c.Request.URL.Path = strings.Replace(c.Request.URL.Path, pattern[0:strings.Index(pattern, "*")], "/", 1)
 		filter(c.Request)
 		proxy := httputil.NewSingleHostReverseProxy(target)
 		proxy.ServeHTTP(c.Writer, c.Request)
