@@ -150,11 +150,11 @@ func (engine *Engine) LoadHtmlGlob(pattern string) {
 
 func (group *RouterGroup) PROXY(pattern string, uri string, filter func(r *http.Request) *http.Request) {
 	fun := func(c *Context) {
-		prefix := uri[0:4]
-		if prefix == "http" {
-			c.HttpProxy(uri, filter)
-		} else {
+		prefix := uri[0:2]
+		if prefix == "ws" {
 			c.WebSocketProxy(uri, filter)
+		} else {
+			c.HttpProxy(uri, filter)
 		}
 	}
 	group.ANY(pattern, fun)

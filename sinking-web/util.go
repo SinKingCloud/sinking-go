@@ -123,6 +123,16 @@ func (c *Context) WebSocketProxy(uri string, filter func(r *http.Request) *http.
 	})
 }
 
+// Proxy 通用反向代理
+func (c *Context) Proxy(uri string, filter func(r *http.Request) *http.Request) {
+	prefix := uri[0:2]
+	if prefix == "ws" {
+		c.WebSocketProxy(uri, filter)
+	} else {
+		c.HttpProxy(uri, filter)
+	}
+}
+
 // Try 错误捕获实现
 func Try(fun func(), handler func(interface{})) {
 	defer func() {

@@ -207,7 +207,15 @@ func main() {
 			return r
 		})
 	})
-	//(3.)通用反向代理
+	//(2.)自定义通用反向代理
+	r.GET("/proxy/*", func(s *sinking_web.Context) {
+		//支持ws 和 http
+		s.Proxy("ws://127.0.0.1:1004/test/1", func(r *http.Request) *http.Request {
+			//过滤器 可以执行自定义过滤或修改内容
+			return r
+		})
+	})
+	//(4.)通用反向代理
 	r.PROXY("/proxy/http", "http://127.0.0.1:1004", func(r *http.Request) *http.Request {
 		//过滤器 可以执行自定义过滤或修改内容
 		return r
