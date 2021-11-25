@@ -192,16 +192,27 @@ func main() {
 		}
 		s.JSON(200, sinking_web.H{"code": "500", "message": "发送消息成功"})
 	})
-	//反向代理功能 访问地址 ip:port/index.html
-	//(1.)自定义反向代理
-	r.GET("/baidu/*", func(s *sinking_web.Context) {
-		s.Proxy("/baidu/*", "https://www.baidu.com", func(r *http.Request) *http.Request {
+	//反向代理功能
+	//(1.)自定义http反向代理
+	r.GET("/proxyHttp/*", func(s *sinking_web.Context) {
+		s.HttpProxy("http://127.0.0.1:1004", func(r *http.Request) *http.Request {
 			//过滤器 可以执行自定义过滤或修改内容
 			return r
 		})
 	})
-	//(2.)常用反向代理
-	r.PROXY("/*", "https://www.baidu.com", func(r *http.Request) *http.Request {
+	//(2.)自定义websocket反向代理
+	r.GET("/proxyWs/*", func(s *sinking_web.Context) {
+		s.WebSocketProxy("ws://127.0.0.1:1004/test/1", func(r *http.Request) *http.Request {
+			//过滤器 可以执行自定义过滤或修改内容
+			return r
+		})
+	})
+	//(3.)通用反向代理
+	r.PROXY("/proxy/http", "http://127.0.0.1:1004", func(r *http.Request) *http.Request {
+		//过滤器 可以执行自定义过滤或修改内容
+		return r
+	})
+	r.PROXY("/proxy/ws", "ws://127.0.0.1:1004/test/1", func(r *http.Request) *http.Request {
 		//过滤器 可以执行自定义过滤或修改内容
 		return r
 	})

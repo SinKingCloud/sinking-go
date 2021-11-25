@@ -15,7 +15,7 @@ func Test_main(t *testing.T) {
 									Listen()                                                   //监听
 	//rpc调用服务
 	body, err := server.Rpc("default", "cloud-gateway").
-		Timeout(5).                                                    //超时熔断
+		Timeout(1).                                                    //超时熔断
 		Method(http.MethodPost).                                       //请求类型
 		ReTry(5).                                                      //重试次数
 		Call("/index/login", &Param{"user": "admin", "pwd": "123456"}) //携带参数

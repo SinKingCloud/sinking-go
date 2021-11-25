@@ -1,6 +1,11 @@
 package sinking_web
 
 import (
+	"context"
+	"crypto/tls"
+	"fmt"
+	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -28,8 +33,8 @@ func (c *Context) ClientIP(useProxy bool) string {
 	return ""
 }
 
-// Proxy 反向代理
-func (c *Context) Proxy(pattern string, uri string, filter func(r *http.Request) *http.Request) {
+// HttpProxy http反向代理
+func (c *Context) HttpProxy(uri string, filter func(r *http.Request) *http.Request) {
 	Try(func() {
 		target, err := url.Parse(uri)
 		if err != nil {
@@ -40,6 +45,79 @@ func (c *Context) Proxy(pattern string, uri string, filter func(r *http.Request)
 		filter(c.Request)
 		proxy := httputil.NewSingleHostReverseProxy(target)
 		proxy.ServeHTTP(c.Writer, c.Request)
+	}, func(err interface{}) {
+		c.StatusCode = 500
+	})
+}
+
+// WebSocketProxy WebSocketProxy反向代理
+func (c *Context) WebSocketProxy(uri string, filter func(r *http.Request) *http.Request) {
+	Try(func() {
+		u, err := url.Parse(uri)
+		if err != nil {
+			return
+		}
+		host, port, err := net.SplitHostPort(u.Host)
+		if err != nil {
+			return
+		}
+		if u.Scheme != "ws" && u.Scheme != "wss" {
+			return
+		}
+		// 劫持连接
+		hijacker, ok := c.Writer.(http.Hijacker)
+		if !ok {
+			return
+		}
+		conn, _, err := hijacker.Hijack()
+		if err != nil {
+			return
+		}
+		defer func(conn net.Conn) {
+			err = conn.Close()
+			if err != nil {
+				return
+			}
+		}(conn)
+		req := c.Request.Clone(context.TODO())
+		req.URL.Path, req.URL.RawPath, req.RequestURI = u.Path, u.Path, u.Path
+		req.Host = host
+		filter(req)
+		var remoteConn net.Conn
+		switch u.Scheme {
+		case "ws":
+			remoteConn, err = net.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
+		case "wss":
+			remoteConn, err = tls.Dial("tcp", fmt.Sprintf("%s:%s", host, port), &tls.Config{InsecureSkipVerify: true})
+		}
+		if err != nil {
+			_, _ = c.Writer.Write([]byte(err.Error()))
+			return
+		}
+		defer func(remoteConn net.Conn) {
+			err = remoteConn.Close()
+			if err != nil {
+				return
+			}
+		}(remoteConn)
+		b, _ := httputil.DumpRequest(req, false)
+		_, err = remoteConn.Write(b)
+		if err != nil {
+			return
+		}
+		errChan := make(chan error, 2)
+		copyConn := func(a, b net.Conn) {
+			_, err := io.Copy(a, b)
+			errChan <- err
+		}
+		go copyConn(conn, remoteConn) // response
+		go copyConn(remoteConn, conn) // request
+		select {
+		case err = <-errChan:
+			if err != nil {
+				log.Println(err)
+			}
+		}
 	}, func(err interface{}) {
 		c.StatusCode = 500
 	})
