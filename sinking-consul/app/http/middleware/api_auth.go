@@ -15,6 +15,7 @@ func ApiAuth() sinking_web.HandlerFunc {
 		if requestToken != token {
 			response.TokenError(c, "token验证失败！", nil)
 			c.Abort()
+			return
 		}
 		c.Next()
 	}

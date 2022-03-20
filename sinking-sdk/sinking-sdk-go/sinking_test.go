@@ -11,8 +11,8 @@ func Test_main(t *testing.T) {
 	server := New("42.157.128.40:1817", "sinking-token", "97cb316ec237b3937307d94c38d21785", "cloud-server", "dev")
 	//注册并监听服务
 	server.Register("default", "cloud-gateway", "127.0.0.1:1000"). //服务信息
-									UseService(map[string]string{"default": "cloud-gateway"}). //需要使用的服务
-									Listen()                                                   //监听
+									UseService(map[string][]string{"default": {"cloud-gateway"}}). //需要使用的服务
+									Listen()                                                       //监听
 	//rpc调用服务
 	body, err := server.Rpc("default", "cloud-gateway").
 		Timeout(1).                                                    //超时熔断

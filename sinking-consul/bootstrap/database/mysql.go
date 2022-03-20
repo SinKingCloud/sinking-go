@@ -46,6 +46,14 @@ func (pool *MySqlPool) ConnectionMysql(host string, port string, user string, pw
 		logs.Println(model.DbError.Error())
 		return false
 	}
+	sqlDB, err := model.Db.DB()
+	if err != nil {
+		logs.Println(err)
+		return false
+	}
+	sqlDB.SetMaxIdleConns(1000)
+	sqlDB.SetMaxOpenConns(100000)
+	sqlDB.SetConnMaxLifetime(-1)
 	model.DbPrefix = prefix
 	logs.Println("数据库链接成功")
 	return true
