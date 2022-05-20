@@ -142,23 +142,39 @@ services:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
 
   ######################### canal ############################
-  canal:
-    image: canal/canal-server:v1.1.3
-    container_name: canal
+  canal-server:
+    image: canal/canal-server:v1.1.5
+    container_name: canal-server
     restart: always
     ports:
+      - "11110:11110"
       - "11111:11111"
+      - "11112:11112"
+      - "9100:9100"
     environment:
       - canal.instance.mysql.slaveId=200
-      - canal.auto.scan=false
-      - canal.destinations=test
+      - canal.auto.scan=true
+      - canal.destinations=system_log_request
       - canal.instance.master.address=mysql-5.7:3306
       - canal.instance.dbUsername=root
-      - canal.instance.dbPassword=rootpassword
+      - canal.instance.dbPassword=password
       - canal.instance.filter.regex=.*\\..*
     volumes:
       #- ./canal/conf/:/admin/canal-server/conf/
-      - ./canal/logs/:/admin/canal-server/logs/
+      - ./canal/server/logs/:/admin/canal-server/logs/
+
+  canal-admin:
+    image: canal/canal-admin:v1.1.5
+    container_name: canal-admin
+    restart: always
+    ports:
+      - "8089:8089"
+    environment:
+      - TZ=Asia/Shanghai
+      - spring.datasource.address=mysql-5.7:3306
+      - spring.datasource.database=canal_admin
+      - spring.datasource.username=root
+      - spring.datasource.password=password
 
   ######################### mongodb4.2.8 ############################
   mongodb:
