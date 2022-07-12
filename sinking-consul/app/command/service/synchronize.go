@@ -5,7 +5,6 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/job"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/request"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
-	"sync"
 	"time"
 )
 
@@ -13,7 +12,6 @@ import (
 func synchronize() {
 	go func() {
 		clusterList := service.CopyRegisterClusters()
-		clusterListLock := sync.Mutex{}
 		(&job.Task{Thread: len(clusterList), Producer: func(channel chan string) {
 			for {
 				for k := range clusterList {
@@ -22,13 +20,11 @@ func synchronize() {
 				time.Sleep(time.Duration(setting.GetSystemConfig().Servers.HeartTime) * time.Second)
 			}
 		}, Consumer: func(k string) {
-			clusterListLock.Lock()
 			req := &request.Request{
 				Ip:      clusterList[k].Ip,
 				Port:    clusterList[k].Port,
 				Timeout: 5,
 			}
-			clusterListLock.Unlock()
 			syncService(req)
 		}}).Run()
 	}()

@@ -37,26 +37,22 @@ func ClustersRegister(ip string, port string) {
 		Status:        0,
 	}
 	ClustersLock.Lock()
+	defer ClustersLock.Unlock()
 	Clusters[info.Hash] = info
-	ClustersLock.Unlock()
 }
 
 // ClustersList 集群列表
 func ClustersList() []*Cluster {
 	var list []*Cluster
-	ClustersLock.Lock()
 	for _, v := range Clusters {
 		list = append(list, v)
 	}
-	ClustersLock.Unlock()
 	return list
 }
 
 // CopyClusters 复制节点数据
 func CopyClusters() map[string]*Cluster {
 	var temp = make(map[string]*Cluster)
-	ClustersLock.Lock()
-	defer ClustersLock.Unlock()
 	for k, v := range Clusters {
 		temp[k] = v
 	}
@@ -66,8 +62,6 @@ func CopyClusters() map[string]*Cluster {
 // CopyRegisterClusters 复制节点数据
 func CopyRegisterClusters() map[string]*Cluster {
 	var temp = make(map[string]*Cluster)
-	RegisterClustersLock.Lock()
-	defer RegisterClustersLock.Unlock()
 	for k, v := range RegisterClusters {
 		temp[k] = v
 	}

@@ -1,15 +1,16 @@
 package sinking_sdk_go
 
 import (
+	"sort"
 	"strings"
 	"sync"
 	"time"
 )
 
 var (
-	// services 服务列表 AppName.EnvName.GroupName.Name.ServiceHash
-	services     = make(map[string]map[string]map[string]map[string]map[string]*Service)
-	servicesLock sync.Mutex
+	//serviceKeys 储存的key，顺序存放service
+	serviceKeys     = make(map[string][]*Service)
+	serviceKeysLock sync.Mutex
 	// serviceIndex 轮询获取服务地址下标
 	serviceIndex     = make(map[string]int)
 	serviceIndexLock sync.Mutex
@@ -29,13 +30,11 @@ type Service struct {
 
 // GetService 获取随机节点(负载均衡)
 func (r *Register) GetService(groupName string, name string) (*Service, bool) {
-	servicesLock.Lock()
 	serviceIndexLock.Lock()
-	defer servicesLock.Unlock()
 	defer serviceIndexLock.Unlock()
 	key := Md5Encode(r.AppName + r.EnvName + groupName + name)
-	addr := services[r.AppName][r.EnvName][groupName][name]
-	if addr == nil {
+	addr := serviceKeys[key]
+	if addr == nil || len(addr) <= 0 {
 		return nil, false
 	}
 	serviceIndex[key]++
@@ -56,7 +55,7 @@ func (r *Register) GetService(groupName string, name string) (*Service, bool) {
 func (r *Register) getServices(sync bool) {
 	//设置注册节点
 	fun := func() {
-		servicesTemp := make(map[string]map[string]map[string]map[string]map[string]*Service)
+		serviceKeysTemp := make(map[string]map[string]*Service)
 		test := &RequestServer{
 			Server:    r.server,
 			TokenName: r.TokenName,
@@ -70,26 +69,32 @@ func (r *Register) getServices(sync bool) {
 						if v2.Status == 1 {
 							continue
 						}
-						if servicesTemp[v2.AppName] == nil {
-							servicesTemp[v2.AppName] = map[string]map[string]map[string]map[string]*Service{}
+						key := Md5Encode(v2.AppName + v2.EnvName + v2.GroupName + v2.Name)
+						if serviceKeysTemp[key] == nil {
+							serviceKeysTemp[key] = map[string]*Service{}
 						}
-						if servicesTemp[v2.AppName][v2.EnvName] == nil {
-							servicesTemp[v2.AppName][v2.EnvName] = map[string]map[string]map[string]*Service{}
-						}
-						if servicesTemp[v2.AppName][v2.EnvName][v2.GroupName] == nil {
-							servicesTemp[v2.AppName][v2.EnvName][v2.GroupName] = map[string]map[string]*Service{}
-						}
-						if servicesTemp[v2.AppName][v2.EnvName][v2.GroupName][v2.Name] == nil {
-							servicesTemp[v2.AppName][v2.EnvName][v2.GroupName][v2.Name] = map[string]*Service{}
-						}
-						servicesTemp[v2.AppName][v2.EnvName][v2.GroupName][v2.Name][v2.ServiceHash] = v2
+						serviceKeysTemp[key][v2.ServiceHash] = v2
 					}
 				}
 			}
 		}
-		servicesLock.Lock()
-		services = servicesTemp
-		servicesLock.Unlock()
+		serviceTemp := make(map[string][]*Service)
+		for i, v := range serviceKeysTemp {
+			var keys []string
+			for k := range v {
+				keys = append(keys, k)
+			}
+			//按字典升序排列
+			sort.Strings(keys)
+			var temp []*Service
+			for _, k := range keys {
+				temp = append(temp, v[k])
+			}
+			serviceTemp[i] = temp
+		}
+		serviceKeysLock.Lock()
+		serviceKeys = serviceTemp
+		serviceKeysLock.Unlock()
 	}
 	if sync {
 		go func() {
