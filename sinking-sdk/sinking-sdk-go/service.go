@@ -1,6 +1,7 @@
 package sinking_sdk_go
 
 import (
+	"math/rand"
 	"sort"
 	"strings"
 	"sync"
@@ -12,8 +13,8 @@ var (
 	serviceKeys     = make(map[string][]*Service)
 	serviceKeysLock sync.Mutex
 	// serviceIndex 轮询获取服务地址下标
-	serviceIndex     = make(map[string]int)
-	serviceIndexLock sync.Mutex
+	//serviceIndex     = make(map[string]int)
+	//serviceIndexLock sync.Mutex
 )
 
 // Service 服务列表
@@ -30,25 +31,16 @@ type Service struct {
 
 // GetService 获取随机节点(负载均衡)
 func (r *Register) GetService(groupName string, name string) (*Service, bool) {
-	serviceIndexLock.Lock()
-	defer serviceIndexLock.Unlock()
 	key := Md5Encode(r.AppName + r.EnvName + groupName + name)
 	addr := serviceKeys[key]
-	if addr == nil || len(addr) <= 0 {
+	n := len(addr)
+	if addr == nil || n <= 0 {
 		return nil, false
 	}
-	serviceIndex[key]++
-	if serviceIndex[key] >= len(addr) {
-		serviceIndex[key] = 0
+	if n == 1 {
+		return addr[0], true
 	}
-	i := -1
-	for _, v := range addr {
-		i++
-		if i == serviceIndex[key] {
-			return v, true
-		}
-	}
-	return nil, false
+	return addr[rand.Intn(n-1)], true
 }
 
 // getServices 获取并更新节点
