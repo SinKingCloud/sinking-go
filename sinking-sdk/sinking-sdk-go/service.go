@@ -12,9 +12,6 @@ var (
 	//serviceKeys 储存的key，顺序存放service
 	serviceKeys     = make(map[string][]*Service)
 	serviceKeysLock sync.Mutex
-	// serviceIndex 轮询获取服务地址下标
-	//serviceIndex     = make(map[string]int)
-	//serviceIndexLock sync.Mutex
 )
 
 // Service 服务列表
@@ -32,7 +29,9 @@ type Service struct {
 // GetService 获取随机节点(负载均衡)
 func (r *Register) GetService(groupName string, name string) (*Service, bool) {
 	key := Md5Encode(r.AppName + r.EnvName + groupName + name)
+	serviceKeysLock.Lock()
 	addr := serviceKeys[key]
+	serviceKeysLock.Unlock()
 	n := len(addr)
 	if addr == nil || n <= 0 {
 		return nil, false
