@@ -24,20 +24,20 @@ func NewWebSocketConnections() *WebSocketConnections {
 // WebSocketConnections ws连接用户
 type WebSocketConnections struct {
 	conn map[string]*Conn
-	lock sync.Mutex
+	lock sync.RWMutex
 }
 
 // Get 获取长连接对象
 func (connections *WebSocketConnections) Get(key string) *Conn {
-	connections.lock.Lock()
-	defer connections.lock.Unlock()
+	connections.lock.RLock()
+	defer connections.lock.RUnlock()
 	return connections.conn[key]
 }
 
 // GetAll 获取所有长连接对象
 func (connections *WebSocketConnections) GetAll() map[string]*Conn {
-	connections.lock.Lock()
-	defer connections.lock.Unlock()
+	connections.lock.RLock()
+	defer connections.lock.RUnlock()
 	conn := make(map[string]*Conn)
 	for k, v := range connections.conn {
 		conn[k] = v
