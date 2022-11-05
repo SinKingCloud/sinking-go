@@ -44,6 +44,20 @@ func (c *Context) HttpProxy(uri string, filter func(r *http.Request) *http.Reque
 		c.StatusCode = 200
 		filter(c.Request)
 		proxy := httputil.NewSingleHostReverseProxy(target)
+		dialer := &net.Dialer{
+			Timeout:   readTimeOut,
+			KeepAlive: readTimeOut,
+		}
+		proxy.Transport = &http.Transport{
+			Proxy:             http.ProxyFromEnvironment,
+			DialContext:       dialer.DialContext,
+			ForceAttemptHTTP2: true,
+			MaxIdleConns:      0,
+			MaxConnsPerHost:   0,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		}
 		proxy.ServeHTTP(c.Writer, c.Request)
 	}, func(err interface{}) {
 		c.StatusCode = 500
