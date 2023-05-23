@@ -23,7 +23,7 @@ type Config struct {
 var (
 	// configs 配置列表 GroupName.Name
 	configs     = make(map[string]map[string]*Config)
-	configsLock sync.Mutex
+	configsLock sync.RWMutex
 )
 
 // getConfigs 获取配置
@@ -39,7 +39,7 @@ func (r *Register) getConfigs(sync bool) {
 		if result != nil && result.Code == 200 {
 			//解析配置
 			for _, v := range result.Data {
-				configsLock.Lock()
+				configsLock.RLock()
 				if configs[v.GroupName] == nil {
 					configs[v.GroupName] = map[string]*Config{}
 				}
@@ -52,7 +52,7 @@ func (r *Register) getConfigs(sync bool) {
 						configs[v.GroupName][v.Name].viper = conf
 					}
 				}
-				configsLock.Unlock()
+				configsLock.RUnlock()
 			}
 		}
 	}
@@ -89,8 +89,8 @@ func (c *configBuild) Name(name string) *configBuild {
 
 // Viper 获取Viper
 func (c *configBuild) Viper() *viper.Viper {
-	configsLock.Lock()
-	defer configsLock.Unlock()
+	configsLock.RLock()
+	defer configsLock.RUnlock()
 	if configs[c.groupName][c.name] != nil && configs[c.groupName][c.name].viper != nil {
 		return configs[c.groupName][c.name].viper
 	}

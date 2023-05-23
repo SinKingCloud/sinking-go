@@ -12,6 +12,13 @@ var (
 	//serviceKeys 储存的key，顺序存放service
 	serviceKeys     = make(map[string][]*Service)
 	serviceKeysLock sync.RWMutex
+	serviceIndex    = 0
+)
+
+const (
+	Rand = iota //随机
+	Poll        //轮询
+	Only        //只请求第一个
 )
 
 // Service 服务列表
@@ -27,19 +34,31 @@ type Service struct {
 }
 
 // GetService 获取随机节点(负载均衡)
-func (r *Register) GetService(groupName string, name string) (*Service, bool) {
+func (r *Register) GetService(groupName string, name string, mode int) (*Service, bool) {
 	key := Md5Encode(r.AppName + r.EnvName + groupName + name)
 	serviceKeysLock.RLock()
+	defer serviceKeysLock.RUnlock()
 	addr := serviceKeys[key]
-	serviceKeysLock.RUnlock()
 	n := len(addr)
 	if addr == nil || n <= 0 {
 		return nil, false
 	}
-	if n == 1 {
+	if n == 1 || mode == Only {
 		return addr[0], true
 	}
-	return addr[rand.Intn(n-1)], true
+	if mode == Rand {
+		return addr[rand.Intn(n-1)], true
+	} else if mode == Poll {
+		serviceIndex++
+		if serviceIndex >= n {
+			serviceIndex = 0
+			return addr[0], true
+		} else {
+			return addr[serviceIndex], true
+		}
+	} else {
+		return addr[0], true
+	}
 }
 
 // getServices 获取并更新节点
@@ -83,9 +102,9 @@ func (r *Register) getServices(sync bool) {
 			}
 			serviceTemp[i] = temp
 		}
-		serviceKeysLock.Lock()
+		serviceKeysLock.RLock()
 		serviceKeys = serviceTemp
-		serviceKeysLock.Unlock()
+		serviceKeysLock.RUnlock()
 	}
 	if sync {
 		go func() {

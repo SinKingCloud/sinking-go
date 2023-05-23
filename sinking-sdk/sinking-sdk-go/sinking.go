@@ -100,9 +100,9 @@ func (r *Register) Listen() {
 
 // SetOnline 设置服务上线下线
 func (r *Register) SetOnline(online bool, imEf bool) {
-	OnlineStatusLock.Lock()
+	OnlineStatusLock.RLock()
 	OnlineStatus = online
-	OnlineStatusLock.Unlock()
+	OnlineStatusLock.RUnlock()
 	if !imEf {
 		return
 	}

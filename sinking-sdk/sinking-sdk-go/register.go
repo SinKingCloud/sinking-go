@@ -7,7 +7,7 @@ import (
 
 var (
 	OnlineStatus     = true
-	OnlineStatusLock sync.Mutex
+	OnlineStatusLock sync.RWMutex
 )
 
 // registerServers 注册节点
