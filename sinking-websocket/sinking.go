@@ -24,20 +24,20 @@ func NewWebSocketConnections() *WebSocketConnections {
 // WebSocketConnections ws连接用户
 type WebSocketConnections struct {
 	conn map[string]*Conn
-	lock sync.RWMutex
+	lock sync.Mutex
 }
 
 // Get 获取长连接对象
 func (connections *WebSocketConnections) Get(key string) *Conn {
-	connections.lock.RLock()
-	defer connections.lock.RUnlock()
+	connections.lock.Lock()
+	defer connections.lock.Unlock()
 	return connections.conn[key]
 }
 
 // GetAll 获取所有长连接对象
 func (connections *WebSocketConnections) GetAll() map[string]*Conn {
-	connections.lock.RLock()
-	defer connections.lock.RUnlock()
+	connections.lock.Lock()
+	defer connections.lock.Unlock()
 	conn := make(map[string]*Conn)
 	for k, v := range connections.conn {
 		conn[k] = v
@@ -114,15 +114,15 @@ func (err *Error) Error() string {
 	return err.ErrMsg
 }
 
-func (handle *WebSocket) Listen(writer http.ResponseWriter, request *http.Request) {
-	defer func(writer http.ResponseWriter, request *http.Request) {
+func (handle *WebSocket) Listen(writer http.ResponseWriter, request *http.Request, responseHeader http.Header) {
+	defer func(writer http.ResponseWriter, request *http.Request, responseHeader http.Header) {
 		if request.Header.Get("Connection") != "Upgrade" {
 			if handle.OnError != nil {
 				handle.OnError(&Error{ErrCode: 500, ErrMsg: "Connection Close"})
 			}
 			return
 		}
-		ws, err := upGrader.Upgrade(writer, request, nil)
+		ws, err := upGrader.Upgrade(writer, request, responseHeader)
 		if err != nil {
 			if handle.OnError != nil {
 				handle.OnError(err)
@@ -150,5 +150,5 @@ func (handle *WebSocket) Listen(writer http.ResponseWriter, request *http.Reques
 				}
 			}
 		}
-	}(writer, request)
+	}(writer, request, responseHeader)
 }

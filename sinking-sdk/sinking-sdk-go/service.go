@@ -47,7 +47,7 @@ func (r *Register) GetService(groupName string, name string, mode int) (*Service
 		return addr[0], true
 	}
 	if mode == Rand {
-		return addr[rand.Intn(n-1)], true
+		return addr[rand.Intn(n)], true
 	} else if mode == Poll {
 		serviceIndex++
 		if serviceIndex >= n {

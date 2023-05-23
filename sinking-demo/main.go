@@ -165,7 +165,7 @@ func main() {
 				}
 			},
 		}
-		wsServer.Listen(s.Writer, s.Request)
+		wsServer.Listen(s.Writer, s.Request, nil)
 		//ws地址 ws://ip:port/ws/message/listen/[示例ID]
 		//在线测试ws工具 http://coolaf.com/zh/tool/chattest
 	})
