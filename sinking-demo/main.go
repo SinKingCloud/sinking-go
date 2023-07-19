@@ -145,21 +145,22 @@ func main() {
 		//生成uid
 		uid := "user-" + s.Param("id")
 		wsServer := sinking_websocket.WebSocket{
-			OnError: func(err error) {
-				wsConn.Delete(uid)
+			Id: uid,
+			OnError: func(id string, err error) {
+				wsConn.Delete(id)
 				log.Println("websocket错误", err)
 			},
-			OnConnect: func(ws *sinking_websocket.Conn) {
-				wsConn.Set(uid, ws)
+			OnConnect: func(id string, ws *sinking_websocket.Conn) {
+				wsConn.Set(id, ws)
 				log.Println("websocket连接", uid)
 			},
-			OnClose: func(err error) {
-				wsConn.Delete(uid)
+			OnClose: func(id string, err error) {
+				wsConn.Delete(id)
 				log.Println("websocket关闭", err)
 			},
-			OnMessage: func(ws *sinking_websocket.Conn, messageType int, data []byte) {
+			OnMessage: func(id string, ws *sinking_websocket.Conn, messageType int, data []byte) {
 				log.Println("websocket消息", string(data), messageType)
-				conn := wsConn.Get(uid)
+				conn := wsConn.Get(id)
 				if conn != nil {
 					_ = conn.WriteMessage(1, data)
 				}
