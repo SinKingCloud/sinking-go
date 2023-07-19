@@ -79,28 +79,34 @@ func NewWebSocket() *WebSocket {
 
 // WebSocket 执行
 type WebSocket struct {
-	OnError   func(err error)
-	OnConnect func(ws *Conn)
-	OnClose   func(err error)
-	OnMessage func(ws *Conn, messageType int, data []byte)
+	Id        string
+	OnError   func(id string, err error)
+	OnConnect func(id string, ws *Conn)
+	OnClose   func(id string, err error)
+	OnMessage func(id string, ws *Conn, messageType int, data []byte)
 }
 
-func (handle *WebSocket) SetErrorHandle(fun func(err error)) *WebSocket {
+func (handle *WebSocket) SetId(id string) *WebSocket {
+	handle.Id = id
+	return handle
+}
+
+func (handle *WebSocket) SetErrorHandle(fun func(id string, err error)) *WebSocket {
 	handle.OnError = fun
 	return handle
 }
 
-func (handle *WebSocket) SetConnectHandle(fun func(ws *Conn)) *WebSocket {
+func (handle *WebSocket) SetConnectHandle(fun func(id string, ws *Conn)) *WebSocket {
 	handle.OnConnect = fun
 	return handle
 }
 
-func (handle *WebSocket) SetCloseHandle(fun func(err error)) *WebSocket {
+func (handle *WebSocket) SetCloseHandle(fun func(id string, err error)) *WebSocket {
 	handle.OnClose = fun
 	return handle
 }
 
-func (handle *WebSocket) SetOnMessageHandle(fun func(ws *Conn, messageType int, data []byte)) *WebSocket {
+func (handle *WebSocket) SetOnMessageHandle(fun func(id string, ws *Conn, messageType int, data []byte)) *WebSocket {
 	handle.OnMessage = fun
 	return handle
 }
@@ -118,14 +124,14 @@ func (handle *WebSocket) Listen(writer http.ResponseWriter, request *http.Reques
 	defer func(writer http.ResponseWriter, request *http.Request, responseHeader http.Header) {
 		if request.Header.Get("Connection") != "Upgrade" {
 			if handle.OnError != nil {
-				handle.OnError(&Error{ErrCode: 500, ErrMsg: "Connection Close"})
+				handle.OnError(handle.Id, &Error{ErrCode: 500, ErrMsg: "Connection Close"})
 			}
 			return
 		}
 		ws, err := upGrader.Upgrade(writer, request, responseHeader)
 		if err != nil {
 			if handle.OnError != nil {
-				handle.OnError(err)
+				handle.OnError(handle.Id, err)
 			}
 			return
 		}
@@ -134,19 +140,19 @@ func (handle *WebSocket) Listen(writer http.ResponseWriter, request *http.Reques
 			_ = con.Close()
 		}(conn) //返回前关闭
 		if handle.OnConnect != nil {
-			handle.OnConnect(conn)
+			handle.OnConnect(handle.Id, conn)
 		}
 		for {
 			//读取ws中的数据
 			mt, message, err := conn.ReadMessage()
 			if err != nil {
 				if handle.OnClose != nil {
-					handle.OnClose(err)
+					handle.OnClose(handle.Id, err)
 				}
 				return
 			} else {
 				if handle.OnMessage != nil {
-					handle.OnMessage(conn, mt, message)
+					handle.OnMessage(handle.Id, conn, mt, message)
 				}
 			}
 		}
