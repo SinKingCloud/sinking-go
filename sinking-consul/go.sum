@@ -47,6 +47,8 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20221105060954-78362716b4ba h1:3qXwSyhU7d35sHBBp/JETK7GmdQHdxR446eUn2AfB9c=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20221105060954-78362716b4ba/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230719065057-b46ec325ea4d h1:p/tmd8cSh8LlWOrbam/YgodnWf+HpH632BPHGRRfTCs=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230719065057-b46ec325ea4d/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
