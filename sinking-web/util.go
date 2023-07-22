@@ -3,9 +3,9 @@ package sinking_web
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -34,11 +34,12 @@ func (c *Context) ClientIP(useProxy bool) string {
 }
 
 // HttpProxy http反向代理
-func (c *Context) HttpProxy(uri string, filter func(r *http.Request) *http.Request) {
+func (c *Context) HttpProxy(uri string, filter func(r *http.Request) *http.Request) (err error) {
 	Try(func() {
-		target, err := url.Parse(uri)
-		if err != nil {
+		target, e := url.Parse(uri)
+		if e != nil {
 			c.JSON(500, "url format error.")
+			err = e
 			return
 		}
 		c.StatusCode = 200
@@ -59,37 +60,48 @@ func (c *Context) HttpProxy(uri string, filter func(r *http.Request) *http.Reque
 			},
 		}
 		proxy.ServeHTTP(c.Writer, c.Request)
-	}, func(err interface{}) {
+	}, func(e interface{}) {
 		c.StatusCode = 500
+		if errMsg, ok := e.(string); ok {
+			err = errors.New(errMsg)
+		} else {
+			err = errors.New("http proxy error")
+		}
 	})
+	return err
 }
 
 // WebSocketProxy WebSocketProxy反向代理
-func (c *Context) WebSocketProxy(uri string, filter func(r *http.Request) *http.Request) {
+func (c *Context) WebSocketProxy(uri string, filter func(r *http.Request) *http.Request) (err error) {
 	Try(func() {
-		u, err := url.Parse(uri)
-		if err != nil {
+		u, e := url.Parse(uri)
+		if e != nil {
+			err = errors.New("url.Parse error")
 			return
 		}
-		host, port, err := net.SplitHostPort(u.Host)
-		if err != nil {
+		host, port, e := net.SplitHostPort(u.Host)
+		if e != nil {
+			err = errors.New("host and port must be valid")
 			return
 		}
 		if u.Scheme != "ws" && u.Scheme != "wss" {
+			err = errors.New("url scheme error")
 			return
 		}
 		// 劫持连接
 		hijacker, ok := c.Writer.(http.Hijacker)
 		if !ok {
+			err = errors.New("hijacker error")
 			return
 		}
-		conn, _, err := hijacker.Hijack()
-		if err != nil {
+		conn, _, e := hijacker.Hijack()
+		if e != nil {
+			err = errors.New("hijacker error")
 			return
 		}
 		defer func(conn net.Conn) {
-			err = conn.Close()
-			if err != nil {
+			e2 := conn.Close()
+			if e2 != nil {
 				return
 			}
 		}(conn)
@@ -100,23 +112,29 @@ func (c *Context) WebSocketProxy(uri string, filter func(r *http.Request) *http.
 		var remoteConn net.Conn
 		switch u.Scheme {
 		case "ws":
-			remoteConn, err = net.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
+			remoteConn, e = net.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
 		case "wss":
-			remoteConn, err = tls.Dial("tcp", fmt.Sprintf("%s:%s", host, port), &tls.Config{InsecureSkipVerify: true})
+			remoteConn, e = tls.Dial("tcp", fmt.Sprintf("%s:%s", host, port), &tls.Config{InsecureSkipVerify: true})
 		}
-		if err != nil {
-			_, _ = c.Writer.Write([]byte(err.Error()))
+		if e != nil {
+			_, _ = c.Writer.Write([]byte(e.Error()))
+			err = errors.New("remote connection failed")
 			return
 		}
 		defer func(remoteConn net.Conn) {
-			err = remoteConn.Close()
-			if err != nil {
+			e3 := remoteConn.Close()
+			if e3 != nil {
 				return
 			}
 		}(remoteConn)
-		b, _ := httputil.DumpRequest(req, false)
-		_, err = remoteConn.Write(b)
-		if err != nil {
+		b, e := httputil.DumpRequest(req, false)
+		if e != nil {
+			err = errors.New("http request failed")
+			return
+		}
+		_, e = remoteConn.Write(b)
+		if e != nil {
+			err = errors.New("conn write failed")
 			return
 		}
 		errChan := make(chan error, 2)
@@ -127,23 +145,29 @@ func (c *Context) WebSocketProxy(uri string, filter func(r *http.Request) *http.
 		go copyConn(conn, remoteConn) // response
 		go copyConn(remoteConn, conn) // request
 		select {
-		case err = <-errChan:
-			if err != nil {
-				log.Println(err)
+		case e = <-errChan:
+			if e != nil {
+				err = e
 			}
 		}
-	}, func(err interface{}) {
+	}, func(e interface{}) {
 		c.StatusCode = 500
+		if errMsg, ok := e.(string); ok {
+			err = errors.New(errMsg)
+		} else {
+			err = errors.New("http proxy error")
+		}
 	})
+	return err
 }
 
 // Proxy 通用反向代理
-func (c *Context) Proxy(uri string, filter func(r *http.Request) *http.Request) {
+func (c *Context) Proxy(uri string, filter func(r *http.Request) *http.Request) error {
 	prefix := uri[0:2]
 	if prefix == "ws" {
-		c.WebSocketProxy(uri, filter)
+		return c.WebSocketProxy(uri, filter)
 	} else {
-		c.HttpProxy(uri, filter)
+		return c.HttpProxy(uri, filter)
 	}
 }
 
