@@ -91,7 +91,7 @@ func (c *Context) WebSocketProxy(uri string, filter func(r *http.Request) *http.
 		// 劫持连接
 		hijacker, ok := c.Writer.(http.Hijacker)
 		if !ok {
-			err = errors.New("hijacker error")
+			err = errors.New("hijacker format error")
 			return
 		}
 		conn, _, e := hijacker.Hijack()
