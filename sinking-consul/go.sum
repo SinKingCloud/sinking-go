@@ -51,6 +51,8 @@ github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230719065057-b46ec325ea4
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230719065057-b46ec325ea4d/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230719084144-9bc45714a874 h1:DVv+Idh0UVPhSqowzpSrE2mmptDZ6Tueg3PNYNfi/CQ=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230719084144-9bc45714a874/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230724031354-206a9d06857c h1:2hG5EQA4tPNxitj+6NULXCAHM9/3el4OuAc6plhN7jw=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230724031354-206a9d06857c/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
