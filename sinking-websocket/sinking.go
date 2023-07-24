@@ -122,12 +122,6 @@ func (err *Error) Error() string {
 
 func (handle *WebSocket) Listen(writer http.ResponseWriter, request *http.Request, responseHeader http.Header) {
 	defer func(writer http.ResponseWriter, request *http.Request, responseHeader http.Header) {
-		if request.Header.Get("Connection") != "Upgrade" {
-			if handle.OnError != nil {
-				handle.OnError(handle.Id, &Error{ErrCode: 500, ErrMsg: "Connection Close"})
-			}
-			return
-		}
 		ws, err := upGrader.Upgrade(writer, request, responseHeader)
 		if err != nil {
 			if handle.OnError != nil {
