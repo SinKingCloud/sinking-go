@@ -68,8 +68,8 @@ func ServiceList(s *sinking_web.Context) {
 	response.Success(s, "获取服务列表成功", service.GetServiceList(form.AppName, form.EnvName, form.GroupName, form.Name))
 }
 
-// ProjectList 获取所有服务名称列表
-func ProjectList(s *sinking_web.Context) {
+// GetProjectAllServiceList 获取项目所有服务列表
+func GetProjectAllServiceList(s *sinking_web.Context) {
 	type register struct {
 		AppName string `form:"app_name" json:"app_name"` //所属应用
 		EnvName string `form:"env_name" json:"env_name"` //环境标识
@@ -80,5 +80,5 @@ func ProjectList(s *sinking_web.Context) {
 		response.Error(s, "参数不足", nil)
 		return
 	}
-	response.Success(s, "获取服务列表成功", service.GetProjectList(form.AppName, form.EnvName))
+	response.Success(s, "获取服务列表成功", service.GetProjectAllServiceList(form.AppName, form.EnvName))
 }
