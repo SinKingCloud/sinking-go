@@ -155,6 +155,24 @@ func GetServiceList(appName string, envName string, groupName string, name strin
 	return temp
 }
 
+// GetProjectList 获取项目服务名称列表
+func GetProjectList(appName string, envName string) map[string][]string {
+	ServicesLock.Lock()
+	defer ServicesLock.Unlock()
+	list := Services[appName][envName]
+	temp := make(map[string][]string)
+	for k, v := range list {
+		for k1 := range v {
+			if _, ok := temp[k]; ok {
+				temp[k] = append(temp[k], k1)
+			} else {
+				temp[k] = []string{k1}
+			}
+		}
+	}
+	return temp
+}
+
 // GetLocalServiceList 获取本地服务列表
 func GetLocalServiceList(appName string, envName string) []*Service {
 	LocalServicesLock.Lock()
