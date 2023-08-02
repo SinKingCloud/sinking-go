@@ -82,6 +82,13 @@ type getServerListResult struct {
 	Message string     `json:"message"`
 }
 
+// getAllServerListResult 所有服务列表
+type getAllServerListResult struct {
+	Code    int                              `json:"code"`
+	Data    map[string]map[string][]*Service `json:"data"`
+	Message string                           `json:"message"`
+}
+
 // getServerList 拉取服务列表
 func (r *RequestServer) getServerList(appName string, envName string, groupName string, name string) *getServerListResult {
 	url := fmt.Sprintf("http://%s/api/service/list", r.Server)
@@ -97,6 +104,26 @@ func (r *RequestServer) getServerList(appName string, envName string, groupName 
 	}
 	body := r.sendRequest(req)
 	var res *getServerListResult
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return nil
+	}
+	return res
+}
+
+// getAllServerList 拉取所有服务列表
+func (r *RequestServer) getAllServerList(appName string, envName string) *getAllServerListResult {
+	url := fmt.Sprintf("http://%s/api/service/all_list", r.Server)
+	post := toJson(Param{
+		"app_name": appName,
+		"env_name": envName,
+	})
+	req, err := http.NewRequest("POST", url, strings.NewReader(post))
+	if err != nil {
+		return nil
+	}
+	body := r.sendRequest(req)
+	var res *getAllServerListResult
 	err = json.Unmarshal(body, &res)
 	if err != nil {
 		return nil

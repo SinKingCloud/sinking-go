@@ -71,19 +71,39 @@ func (r *Register) getServices(sync bool) {
 			TokenName: r.TokenName,
 			Token:     r.Token,
 		}
-		for k, v := range r.useService {
-			for _, v1 := range v {
-				list := test.getServerList(r.AppName, r.EnvName, k, v1)
-				if list != nil && list.Code == 200 {
-					for _, v2 := range list.Data {
-						if v2.Status == 1 {
-							continue
+		if len(r.useService) > 0 {
+			for k, v := range r.useService {
+				for _, v1 := range v {
+					list := test.getServerList(r.AppName, r.EnvName, k, v1)
+					if list != nil && list.Code == 200 {
+						for _, v2 := range list.Data {
+							if v2.Status == 1 {
+								continue
+							}
+							key := Md5Encode(v2.AppName + v2.EnvName + v2.GroupName + v2.Name)
+							if serviceKeysTemp[key] == nil {
+								serviceKeysTemp[key] = map[string]*Service{}
+							}
+							serviceKeysTemp[key][v2.ServiceHash] = v2
 						}
-						key := Md5Encode(v2.AppName + v2.EnvName + v2.GroupName + v2.Name)
-						if serviceKeysTemp[key] == nil {
-							serviceKeysTemp[key] = map[string]*Service{}
+					}
+				}
+			}
+		} else {
+			list := test.getAllServerList(r.AppName, r.EnvName)
+			if list != nil && list.Code == 200 {
+				for _, v2 := range list.Data {
+					for _, v3 := range v2 {
+						for _, v4 := range v3 {
+							if v4.Status == 1 {
+								continue
+							}
+							key := Md5Encode(v4.AppName + v4.EnvName + v4.GroupName + v4.Name)
+							if serviceKeysTemp[key] == nil {
+								serviceKeysTemp[key] = map[string]*Service{}
+							}
+							serviceKeysTemp[key][v4.ServiceHash] = v4
 						}
-						serviceKeysTemp[key][v2.ServiceHash] = v2
 					}
 				}
 			}
