@@ -162,7 +162,13 @@ func GetProjectAllServiceList(appName string, envName string) map[string]map[str
 	list := Services[appName][envName]
 	temp := make(map[string]map[string][]*Service)
 	for k, v := range list {
+		if temp[k] == nil {
+			temp[k] = map[string][]*Service{}
+		}
 		for k1, v1 := range v {
+			if temp[k][k1] == nil {
+				temp[k][k1] = []*Service{}
+			}
 			for _, v2 := range v1 {
 				temp[k][k1] = append(temp[k][k1], v2)
 			}
