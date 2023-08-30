@@ -219,13 +219,11 @@ func main() {
 		})
 	})
 	//(4.)通用反向代理
-	r.PROXY("/proxy/http", "http://127.0.0.1:1004", func(r *http.Request) *http.Request {
+	r.PROXY("/proxy/http", "http://127.0.0.1:1004", func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
 		//过滤器 可以执行自定义过滤或修改内容
-		return r
 	})
-	r.PROXY("/proxy/ws", "ws://127.0.0.1:1004/test/1", func(r *http.Request) *http.Request {
+	r.PROXY("/proxy/ws", "ws://127.0.0.1:1004/test/1", func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
 		//过滤器 可以执行自定义过滤或修改内容
-		return r
 	})
 	//启动http server
 	err := r.Run("0.0.0.0:8888")
