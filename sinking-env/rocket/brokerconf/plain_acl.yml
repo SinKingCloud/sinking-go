@@ -1,0 +1,6 @@
+globalWhiteRemoteAddresses:
+accounts:
+  - accessKey: root #账号
+    secretKey: 123456789 #密码
+    whiteRemoteAddress:
+    admin: true
