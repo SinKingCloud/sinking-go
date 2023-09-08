@@ -198,33 +198,33 @@ func main() {
 	//反向代理功能
 	//(1.)自定义http反向代理
 	r.GET("/proxyHttp/*", func(s *sinking_web.Context) {
-		s.HttpProxy("http://127.0.0.1:1004", func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
+		s.HttpProxy("http://127.0.0.1:1004", nil, func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
 			//过滤器 可以执行自定义过滤或修改内容
-		})
+		}, nil)
 	})
 	//(2.)自定义websocket反向代理
 	r.GET("/proxyWs/*", func(s *sinking_web.Context) {
-		s.WebSocketProxy("ws://127.0.0.1:1004/test/1", func(r *http.Request, w http.ResponseWriter) {
+		s.WebSocketProxy("ws://127.0.0.1:1004/test/1", nil, func(r *http.Request, w http.ResponseWriter) {
 			//过滤器 可以执行自定义过滤或修改内容
-		})
+		}, nil)
 	})
 	//(2.)自定义通用反向代理
 	g := r.Group("/proxyAll")
 	g.GET("/*", func(s *sinking_web.Context) {
 		//支持ws 和 http
-		s.Proxy("ws://127.0.0.1:1004/test/1", func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
+		s.Proxy("ws://127.0.0.1:1004/test/1", nil, func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
 			//过滤器 可以执行自定义过滤或修改内容
 			r.URL.Path = strings.Replace(s.Request.URL.Path, "/proxyAll", "", 1)
 			r.URL.RawPath, r.RequestURI = r.URL.Path, r.URL.Path
-		})
+		}, nil)
 	})
 	//(4.)通用反向代理
-	r.PROXY("/proxy/http", "http://127.0.0.1:1004", func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
+	r.PROXY("/proxy/http", "http://127.0.0.1:1004", nil, func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
 		//过滤器 可以执行自定义过滤或修改内容
-	})
-	r.PROXY("/proxy/ws", "ws://127.0.0.1:1004/test/1", func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
+	}, nil)
+	r.PROXY("/proxy/ws", "ws://127.0.0.1:1004/test/1", nil, func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy) {
 		//过滤器 可以执行自定义过滤或修改内容
-	})
+	}, nil)
 	//启动http server
 	err := r.Run("0.0.0.0:8888")
 	if err != nil {

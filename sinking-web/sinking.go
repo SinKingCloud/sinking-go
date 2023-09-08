@@ -2,6 +2,7 @@ package sinking_web
 
 import (
 	"html/template"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"path"
@@ -149,16 +150,16 @@ func (engine *Engine) LoadHtmlGlob(pattern string) {
 	engine.htmlTemplates = template.Must(template.New("").Funcs(engine.funcMap).ParseGlob(pattern))
 }
 
-func (group *RouterGroup) PROXY(pattern string, uri string, filter func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy)) {
+func (group *RouterGroup) PROXY(pattern string, uri string, logger *log.Logger, filter func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy), errorHandle func(http.ResponseWriter, *http.Request, error)) {
 	fun := func(c *Context) {
 		prefix := uri[0:2]
 		if prefix == "ws" {
 			fun := func(r *http.Request, w http.ResponseWriter) {
 				filter(r, w, nil)
 			}
-			c.WebSocketProxy(uri, fun)
+			_ = c.WebSocketProxy(uri, logger, fun, errorHandle)
 		} else {
-			c.HttpProxy(uri, filter)
+			_ = c.HttpProxy(uri, logger, filter, errorHandle)
 		}
 	}
 	group.ANY(pattern, fun)
