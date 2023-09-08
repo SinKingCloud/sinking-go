@@ -38,7 +38,6 @@ func (c *Context) HttpProxy(uri string, filter func(r *http.Request, w http.Resp
 	Try(func() {
 		target, e := url.Parse(uri)
 		if e != nil {
-			c.JSON(500, "url format error.")
 			err = e
 			return
 		}
