@@ -10,9 +10,11 @@ import (
 
 var (
 	//serviceKeys 储存的key，顺序存放service
-	serviceKeys     = make(map[string][]*Service)
-	serviceKeysLock sync.RWMutex
-	serviceIndex    = 0
+	serviceKeys               = make(map[string][]*Service)
+	serviceKeysLock           sync.Mutex
+	serviceIndex              = 0
+	serviceKeysConsistent     = make(map[string]*Consistent)
+	serviceKeysConsistentLock = sync.Mutex{}
 )
 
 const (
@@ -36,8 +38,8 @@ type Service struct {
 // GetService 获取随机节点(负载均衡)
 func (r *Register) GetService(groupName string, name string, mode int) (*Service, bool) {
 	key := Md5Encode(r.AppName + r.EnvName + groupName + name)
-	serviceKeysLock.RLock()
-	defer serviceKeysLock.RUnlock()
+	serviceKeysLock.Lock()
+	defer serviceKeysLock.Unlock()
 	addr := serviceKeys[key]
 	n := len(addr)
 	if addr == nil || n <= 0 {
@@ -59,6 +61,22 @@ func (r *Register) GetService(groupName string, name string, mode int) (*Service
 	} else {
 		return addr[0], true
 	}
+}
+
+// GetServiceAddrByHash 通过hash获取service
+func (r *Register) GetServiceAddrByHash(groupName string, name string, hash string) (string, bool) {
+	key := Md5Encode(r.AppName + r.EnvName + groupName + name)
+	serviceKeysConsistentLock.Lock()
+	defer serviceKeysConsistentLock.Unlock()
+	cons := serviceKeysConsistent[key]
+	if cons == nil {
+		return "", false
+	}
+	addr, err := cons.Get(hash)
+	if err != nil || addr == "" {
+		return "", false
+	}
+	return addr, true
 }
 
 // getServices 获取并更新节点
@@ -109,6 +127,7 @@ func (r *Register) getServices(sync bool) {
 			}
 		}
 		serviceTemp := make(map[string][]*Service)
+		serviceConsistentTemp := make(map[string]*Consistent)
 		for i, v := range serviceKeysTemp {
 			var keys []string
 			for k := range v {
@@ -117,14 +136,20 @@ func (r *Register) getServices(sync bool) {
 			//按字典升序排列
 			sort.Strings(keys)
 			var temp []*Service
+			temp2 := NewConsistent()
 			for _, k := range keys {
 				temp = append(temp, v[k])
+				temp2.Add(v[k].Addr)
 			}
 			serviceTemp[i] = temp
+			serviceConsistentTemp[i] = temp2
 		}
-		serviceKeysLock.RLock()
+		serviceKeysConsistentLock.Lock()
+		serviceKeysConsistent = serviceConsistentTemp
+		serviceKeysConsistentLock.Unlock()
+		serviceKeysLock.Lock()
 		serviceKeys = serviceTemp
-		serviceKeysLock.RUnlock()
+		serviceKeysLock.Unlock()
 	}
 	if sync {
 		go func() {
