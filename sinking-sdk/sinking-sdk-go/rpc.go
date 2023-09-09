@@ -53,8 +53,8 @@ func (r *rpcRequestBuild) ReTry(num int) *rpcRequestBuild {
 }
 
 // Call 远程调用
-func (r *rpcRequestBuild) call(url string, param *Param) (string, error) {
-	r.service, _ = r.register.GetService(r.groupName, r.name, Only)
+func (r *rpcRequestBuild) call(url string, param *Param, mode int) (string, error) {
+	r.service, _ = r.register.GetService(r.groupName, r.name, mode)
 	if r.service == nil {
 		return "", errors.New("not found online service")
 	}
@@ -72,7 +72,7 @@ func (r *rpcRequestBuild) call(url string, param *Param) (string, error) {
 }
 
 // Call 远程调用
-func (r *rpcRequestBuild) Call(url string, param *Param) (string, error) {
+func (r *rpcRequestBuild) Call(url string, param *Param, mode int) (string, error) {
 	num := 1
 	if r.retry > 1 {
 		num = r.retry
@@ -80,7 +80,7 @@ func (r *rpcRequestBuild) Call(url string, param *Param) (string, error) {
 	data := ""
 	err := errors.New("the request is fail")
 	for i := 0; i < num; i++ {
-		data, err = r.call(url, param)
+		data, err = r.call(url, param, mode)
 		if err == nil {
 			break
 		}
