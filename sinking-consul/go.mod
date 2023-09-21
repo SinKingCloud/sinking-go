@@ -3,7 +3,7 @@ module github.com/SinKingCloud/sinking-go/sinking-consul
 go 1.11
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230909100520-31e8baa81b21
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20230921065651-6a9a23569b5f
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/imroc/req v0.3.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
