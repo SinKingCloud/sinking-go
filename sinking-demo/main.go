@@ -125,15 +125,16 @@ func main() {
 	}
 
 	//参数绑定 访问地址 ip:port/bind?user=admin
-	r.GET("/bind", func(s *sinking_web.Context) {
+	r.ANY("/bind/:code", func(s *sinking_web.Context) {
 		type Login struct {
 			User string `form:"user" default:"admin" json:"user"` //form:接受的参数名 default:默认值 json:json输出格式
 			Pwd  string `form:"pwd" default:"123456" json:"pwd"`  //form:接受的参数名 default:默认值 json:json输出格式
+			Code string `form:"code" default:"000000" json:"code"`
 		}
 		login := &Login{}
-		err := s.BindQuery(&login) //BindQuery:绑定get参数 BindForm:绑定post参数 BindJson:绑定json BindParam:绑定路由参数
+		err := s.BindAll(login) //BindQuery:绑定get参数 BindForm:绑定post参数 BindJson:绑定json BindParam:绑定路由参数
 		if err != nil {
-			s.JSON(200, sinking_web.H{"code": "500", "message": "绑定参数失败"})
+			s.JSON(200, sinking_web.H{"code": "500", "message": "绑定参数失败", "data": err})
 		} else {
 			s.JSON(200, sinking_web.H{"code": "200", "message": "绑定参数成功", "data": login})
 		}
