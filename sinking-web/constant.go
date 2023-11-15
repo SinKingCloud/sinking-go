@@ -13,10 +13,10 @@ const (
 )
 
 const (
-	ContentTypeJson = "application/json" //返回json的头
-	ContentTypeText = "text/plain"       //返回字符的头
-	ContentTypeHtml = "text/html"        //返回html的头
-	HeaderLocation  = "Location"         //重定向跳转
+	ContentTypeJson = "application/json;charset=utf-8;" //返回json的头
+	ContentTypeText = "text/plain;charset=utf-8;"       //返回字符的头
+	ContentTypeHtml = "text/html;charset=utf-8;"        //返回html的头
+	HeaderLocation  = "Location"                        //重定向跳转
 )
 
 const (
