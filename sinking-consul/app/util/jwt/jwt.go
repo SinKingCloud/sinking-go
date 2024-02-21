@@ -3,7 +3,7 @@ package jwt
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/model"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	"time"
 )
 
