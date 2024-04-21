@@ -52,8 +52,6 @@ func (c *Context) HttpProxy(uri string, logger *log.Logger, filter func(r *http.
 			Proxy:             http.ProxyFromEnvironment,
 			DialContext:       dialer.DialContext,
 			ForceAttemptHTTP2: true,
-			MaxIdleConns:      0,
-			MaxConnsPerHost:   0,
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
 			},
