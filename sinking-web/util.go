@@ -49,9 +49,10 @@ func (c *Context) HttpProxy(uri string, logger *log.Logger, filter func(r *http.
 			KeepAlive: readTimeOut,
 		}
 		proxy.Transport = &http.Transport{
-			Proxy:             http.ProxyFromEnvironment,
-			DialContext:       dialer.DialContext,
-			ForceAttemptHTTP2: true,
+			Proxy:                 http.ProxyFromEnvironment,
+			DialContext:           dialer.DialContext,
+			ResponseHeaderTimeout: readTimeOut,
+			ForceAttemptHTTP2:     true,
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
 			},
