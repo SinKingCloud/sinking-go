@@ -12,6 +12,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"strings"
+	"time"
 )
 
 // ClientIP 获取用户ip(是否使用代理)
@@ -52,6 +53,7 @@ func (c *Context) HttpProxy(uri string, logger *log.Logger, filter func(r *http.
 			Proxy:                 http.ProxyFromEnvironment,
 			DialContext:           dialer.DialContext,
 			ResponseHeaderTimeout: readTimeOut,
+			IdleConnTimeout:       time.Minute,
 			ForceAttemptHTTP2:     true,
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,

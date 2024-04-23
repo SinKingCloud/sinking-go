@@ -4,11 +4,11 @@ import "time"
 
 type H map[string]interface{}
 
-//route方法重写
+// route方法重写
 var (
 	debug        = false
-	readTimeOut  = time.Second * 600
-	writeTimeout = time.Second * 600
+	readTimeOut  = time.Second * 60
+	writeTimeout = time.Second * 60
 )
 
 // SetDebugMode 设置运行模式为debug
