@@ -11,8 +11,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"runtime"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -36,38 +36,44 @@ func (c *Context) ClientIP(useProxy bool) string {
 	return ""
 }
 
+// 代理poll
+var proxyMap = &sync.Map{}
+
 // HttpProxy http反向代理
 func (c *Context) HttpProxy(uri string, logger *log.Logger, filter func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy), errorHandle func(http.ResponseWriter, *http.Request, error)) (err error) {
 	Try(func() {
-		target, e := url.Parse(uri)
-		if e != nil {
-			err = e
-			return
-		}
-		c.StatusCode = 200
-		proxy := httputil.NewSingleHostReverseProxy(target)
-		dialer := &net.Dialer{
-			Timeout:   readTimeOut,
-			KeepAlive: readTimeOut,
-		}
-		proxy.Transport = &http.Transport{
-			Proxy:                 http.ProxyFromEnvironment,
-			DialContext:           dialer.DialContext,
-			ResponseHeaderTimeout: readTimeOut,
-			IdleConnTimeout:       time.Minute,
-			MaxIdleConns:          runtime.NumCPU() * 10,
-			ForceAttemptHTTP2:     true,
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
+		var proxy *httputil.ReverseProxy
+		if value, ok := proxyMap.Load(uri); ok {
+			proxy = value.(*httputil.ReverseProxy)
+		} else {
+			target, e := url.Parse(uri)
+			if e != nil {
+				err = e
+				return
+			}
+			tmp := httputil.NewSingleHostReverseProxy(target)
+			dialer := &net.Dialer{
+				Timeout:   time.Minute,
+				KeepAlive: time.Minute,
+			}
+			tmp.Transport = &http.Transport{
+				Proxy:             http.ProxyFromEnvironment,
+				DialContext:       dialer.DialContext,
+				ForceAttemptHTTP2: true,
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			}
+			if logger != nil {
+				tmp.ErrorLog = logger
+			}
+			if errorHandle != nil {
+				tmp.ErrorHandler = errorHandle
+			}
+			proxyMap.Store(uri, tmp)
+			proxy = tmp
 		}
 		filter(c.Request, c.Writer, proxy)
-		if logger != nil {
-			proxy.ErrorLog = logger
-		}
-		if errorHandle != nil {
-			proxy.ErrorHandler = errorHandle
-		}
 		proxy.ServeHTTP(c.Writer, c.Request)
 	}, func(e interface{}) {
 		c.StatusCode = 500
