@@ -3,6 +3,7 @@ package sinking_web
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -56,8 +57,34 @@ func (c *Context) bind(params map[string]string, obj interface{}) error {
 			name = keys.Field(i).Name
 		}
 		if params[name] == "" {
-			defaultValue := values.Field(i).String()
-			if defaultValue != "" {
+			var isNull bool
+			var defaultValue string
+			value := values.Field(i)
+			switch value.Kind() {
+			case reflect.String:
+				isNull = value.String() == ""
+				defaultValue = value.String()
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				isNull = value.Int() == 0
+				defaultValue = fmt.Sprintf("%d", value.Int())
+			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				isNull = value.Uint() == 0
+				defaultValue = fmt.Sprintf("%d", value.Uint())
+			case reflect.Float32, reflect.Float64:
+				isNull = value.Float() == 0
+				defaultValue = fmt.Sprintf("%f", value.Float())
+			case reflect.Bool:
+				isNull = value.Bool() == false
+				if value.Bool() {
+					defaultValue = "true"
+				} else {
+					defaultValue = "false"
+				}
+			default:
+				isNull = false
+				defaultValue = value.String()
+			}
+			if !isNull {
 				params[name] = defaultValue
 			} else {
 				defaultValue = keys.Field(i).Tag.Get(BindDefaultValueTagName)
