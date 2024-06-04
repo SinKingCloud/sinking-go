@@ -15,6 +15,7 @@ type LimitRate struct {
 func currentTime() int64 {
 	return time.Now().Unix()
 }
+
 func (tb *LimitRate) Wait(n int) {
 	if n > tb.limit {
 		return

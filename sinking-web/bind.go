@@ -244,16 +244,6 @@ func setTimeField(val string, structField reflect.StructField, value reflect.Val
 	return nil
 }
 
-func setArray(vals []string, value reflect.Value, field reflect.StructField) error {
-	for i, s := range vals {
-		err := setWithProperType(s, value.Index(i), field)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func setTimeDuration(val string, value reflect.Value) error {
 	d, err := time.ParseDuration(val)
 	if err != nil {

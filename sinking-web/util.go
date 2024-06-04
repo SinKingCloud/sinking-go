@@ -154,8 +154,8 @@ func (c *Context) WebSocketProxy(uri string, logger *log.Logger, filter func(r *
 		}
 		errChan := make(chan error, 2)
 		copyConn := func(a, b net.Conn) {
-			_, err := io.Copy(a, b)
-			errChan <- err
+			_, err2 := io.Copy(a, b)
+			errChan <- err2
 		}
 		go copyConn(conn, remoteConn) // response
 		go copyConn(remoteConn, conn) // request

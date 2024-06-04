@@ -139,6 +139,21 @@ func main() {
 			s.JSON(200, sinking_web.H{"code": "200", "message": "绑定参数成功", "data": login})
 		}
 	})
+
+	r.ANY("/page", func(c *sinking_web.Context) {
+		type ValidatePage struct {
+			Page     uint `form:"page" json:"page" default:"1"`
+			PageSize int  `form:"page_size" json:"page_size" default:"20"`
+			Test     bool `form:"test" json:"test" default:"true"`
+		}
+		pageInfo := &ValidatePage{}
+		if c.BindQuery(pageInfo) != nil {
+			fmt.Println("get参数绑定失败")
+		} else {
+			c.JSON(200, pageInfo)
+		}
+	})
+
 	//websocket功能
 	wsConn := sinking_websocket.NewWebSocketConnections() //ws连接池
 	ws := r.Group("/ws")
