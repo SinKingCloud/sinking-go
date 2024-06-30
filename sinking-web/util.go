@@ -73,7 +73,9 @@ func (c *Context) HttpProxy(uri string, logger *log.Logger, filter func(r *http.
 			proxyMap.Store(uri, tmp)
 			proxy = tmp
 		}
-		filter(c.Request, c.Writer, proxy)
+		if filter != nil {
+			filter(c.Request, c.Writer, proxy)
+		}
 		proxy.ServeHTTP(c.Writer, c.Request)
 	}, func(e interface{}) {
 		c.StatusCode = 500
@@ -123,7 +125,9 @@ func (c *Context) WebSocketProxy(uri string, logger *log.Logger, filter func(r *
 		req := c.Request.Clone(context.TODO())
 		req.URL.Path, req.URL.RawPath, req.RequestURI = u.Path, u.Path, u.Path
 		req.Host = host
-		filter(req, c.Writer)
+		if filter != nil {
+			filter(req, c.Writer)
+		}
 		var remoteConn net.Conn
 		switch u.Scheme {
 		case "ws":

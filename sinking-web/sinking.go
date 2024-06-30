@@ -155,7 +155,9 @@ func (group *RouterGroup) PROXY(pattern string, uri string, logger *log.Logger, 
 		prefix := uri[0:2]
 		if prefix == "ws" {
 			fun := func(r *http.Request, w http.ResponseWriter) {
-				filter(r, w, nil)
+				if filter != nil {
+					filter(r, w, nil)
+				}
 			}
 			_ = c.WebSocketProxy(uri, logger, fun, errorHandle)
 		} else {
