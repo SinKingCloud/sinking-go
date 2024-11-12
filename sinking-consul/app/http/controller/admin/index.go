@@ -16,7 +16,7 @@ func UserLogin(s *sinking_web.Context) {
 		Pwd  string `form:"pwd" json:"pwd"`
 	}
 	form := &login{}
-	err := s.BindJson(&form)
+	err := s.BindAll(form)
 	if err != nil || form.User == "" || form.Pwd == "" {
 		response.Error(s, "参数不足", nil)
 		return

@@ -6,30 +6,30 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/request"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
 	"strconv"
-	"sync"
 	"time"
 )
 
 func registerCluster() {
 	go func() {
-		clusterList := service.CopyRegisterClusters()
-		clusterListLock := sync.Mutex{}
-		(&job.Task{Thread: len(clusterList), Producer: func(channel chan string) {
+		(&job.Task{Thread: service.RegisterClustersNum(), Producer: func(channel chan string) {
 			for {
-				for k := range clusterList {
-					channel <- k
-				}
+				service.RegisterClusters.Range(func(key, value any) bool {
+					channel <- key.(string)
+					return true
+				})
 				time.Sleep(time.Duration(setting.GetSystemConfig().Servers.HeartTime) * time.Second)
 			}
 		}, Consumer: func(k string) {
-			clusterListLock.Lock()
-			res := &request.Request{
-				Ip:      clusterList[k].Ip,
-				Port:    clusterList[k].Port,
-				Timeout: 5,
+			value, ok := service.RegisterClusters.Load(k)
+			if ok {
+				cluster := value.(*service.Cluster)
+				res := &request.Request{
+					Ip:      cluster.Ip,
+					Port:    cluster.Port,
+					Timeout: 5,
+				}
+				res.Register(setting.GetSystemConfig().App.Ip, strconv.Itoa(setting.GetSystemConfig().App.Port))
 			}
-			clusterListLock.Unlock()
-			res.Register(setting.GetSystemConfig().App.Ip, strconv.Itoa(setting.GetSystemConfig().App.Port))
 		}}).Run()
 	}()
 }

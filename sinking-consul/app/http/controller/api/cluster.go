@@ -14,7 +14,7 @@ func ClusterRegister(s *sinking_web.Context) {
 		Port string `form:"port" json:"port"`
 	}
 	cluster := &register{}
-	err := s.BindAll(&cluster)
+	err := s.BindAll(cluster)
 	if err != nil || cluster.Ip == "" || cluster.Port == "" {
 		response.Error(s, "参数不足", nil)
 		return

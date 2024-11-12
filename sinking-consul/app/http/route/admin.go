@@ -18,15 +18,15 @@ func InitAdminRouter(route *sinking_web.Engine) {
 
 func loadAdminIndexRoute(route *sinking_web.Engine) {
 	apiGroup := route.Group("/index")
-	apiGroup.POST("/login", admin.UserLogin)
+	apiGroup.ANY("/login", admin.UserLogin)
 }
 
 func loadAdminClusterRoute(route *sinking_web.RouterGroup) {
 	apiGroup := route.Group("/cluster")
-	apiGroup.POST("/list", admin.ClusterList)
+	apiGroup.ANY("/list", admin.ClusterList)
 }
 
 func loadAdminServiceRoute(route *sinking_web.RouterGroup) {
 	apiGroup := route.Group("/service")
-	apiGroup.POST("/list", admin.ServiceList)
+	apiGroup.ANY("/list", admin.ServiceList)
 }

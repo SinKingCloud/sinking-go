@@ -10,14 +10,14 @@ func checkCluster() {
 	go func() {
 		for {
 			//检测集群状态
-			clusterList := service.CopyClusters()
-			for k := range clusterList {
-				if clusterList[k].LastHeartTime+int64(setting.GetSystemConfig().Servers.CheckHeartTime) < time.Now().Unix() {
-					service.ClustersLock.Lock()
-					service.Clusters[k].Status = 1
-					service.ClustersLock.Unlock()
+			service.Clusters.Range(func(key, value any) bool {
+				k := value.(*service.Cluster)
+				if k.LastHeartTime+int64(setting.GetSystemConfig().Servers.CheckHeartTime) < time.Now().Unix() {
+					k.Status = 1
 				}
-			}
+				service.Clusters.Store(key, k)
+				return true
+			})
 			//检测服务状态
 			serviceList := service.CopyService()
 			for k, v := range serviceList {

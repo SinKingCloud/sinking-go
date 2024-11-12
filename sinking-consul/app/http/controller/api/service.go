@@ -17,7 +17,7 @@ func ServiceRegister(s *sinking_web.Context) {
 		Addr      string `form:"addr" json:"addr"`             //服务地址(规则ip:port)
 	}
 	form := &register{}
-	err := s.BindAll(&form)
+	err := s.BindAll(form)
 	if err != nil || form.Name == "" || form.AppName == "" || form.EnvName == "" || form.GroupName == "" || form.Addr == "" {
 		response.Error(s, "参数不足", nil)
 		return
@@ -38,7 +38,7 @@ func ServiceStatus(s *sinking_web.Context) {
 		Status      int    `form:"addr" json:"addr"`                 //服务状态
 	}
 	form := &register{}
-	err := s.BindAll(&form)
+	err := s.BindAll(form)
 	if err != nil || form.ServiceHash == "" {
 		response.Error(s, "参数不足", nil)
 		return
@@ -60,7 +60,7 @@ func ServiceList(s *sinking_web.Context) {
 		GroupName string `form:"group_name" json:"group_name"` //分组名称
 	}
 	form := &register{}
-	err := s.BindAll(&form)
+	err := s.BindAll(form)
 	if err != nil || form.Name == "" || form.AppName == "" || form.EnvName == "" || form.GroupName == "" {
 		response.Error(s, "参数不足", nil)
 		return
@@ -75,7 +75,7 @@ func GetProjectAllServiceList(s *sinking_web.Context) {
 		EnvName string `form:"env_name" json:"env_name"` //环境标识
 	}
 	form := &register{}
-	err := s.BindAll(&form)
+	err := s.BindAll(form)
 	if err != nil || form.AppName == "" || form.EnvName == "" {
 		response.Error(s, "参数不足", nil)
 		return

@@ -11,21 +11,25 @@ import (
 // synchronize 同步数据
 func synchronize() {
 	go func() {
-		clusterList := service.CopyRegisterClusters()
-		(&job.Task{Thread: len(clusterList), Producer: func(channel chan string) {
+		(&job.Task{Thread: service.RegisterClustersNum(), Producer: func(channel chan string) {
 			for {
-				for k := range clusterList {
-					channel <- k
-				}
+				service.RegisterClusters.Range(func(key, value any) bool {
+					channel <- key.(string)
+					return true
+				})
 				time.Sleep(time.Duration(setting.GetSystemConfig().Servers.HeartTime) * time.Second)
 			}
 		}, Consumer: func(k string) {
-			req := &request.Request{
-				Ip:      clusterList[k].Ip,
-				Port:    clusterList[k].Port,
-				Timeout: 5,
+			value, ok := service.RegisterClusters.Load(k)
+			if ok {
+				cluster := value.(*service.Cluster)
+				req := &request.Request{
+					Ip:      cluster.Ip,
+					Port:    cluster.Port,
+					Timeout: 5,
+				}
+				syncService(req)
 			}
-			syncService(req)
 		}}).Run()
 	}()
 }

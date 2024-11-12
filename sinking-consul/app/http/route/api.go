@@ -18,21 +18,21 @@ func InitApiRouter(route *sinking_web.Engine) {
 
 func loadApiClusterRoute(route *sinking_web.RouterGroup) {
 	apiGroup := route.Group("/cluster")
-	apiGroup.POST("/list", api.ClusterList)
-	apiGroup.POST("/register", api.ClusterRegister)
-	apiGroup.POST("/services", api.ClusterServiceList)
-	apiGroup.POST("/configs", api.ClusterConfigList)
+	apiGroup.ANY("/list", api.ClusterList)
+	apiGroup.ANY("/register", api.ClusterRegister)
+	apiGroup.ANY("/services", api.ClusterServiceList)
+	apiGroup.ANY("/configs", api.ClusterConfigList)
 }
 
 func loadApiServiceRoute(route *sinking_web.RouterGroup) {
 	apiGroup := route.Group("/service")
-	apiGroup.POST("/register", api.ServiceRegister)
-	apiGroup.POST("/status", api.ServiceStatus)
-	apiGroup.POST("/list", api.ServiceList)
-	apiGroup.POST("/all_list", api.GetProjectAllServiceList)
+	apiGroup.ANY("/register", api.ServiceRegister)
+	apiGroup.ANY("/status", api.ServiceStatus)
+	apiGroup.ANY("/list", api.ServiceList)
+	apiGroup.ANY("/all_list", api.GetProjectAllServiceList)
 }
 
 func loadApiConfigRoute(route *sinking_web.RouterGroup) {
 	apiGroup := route.Group("/config")
-	apiGroup.POST("/list", api.ConfigList)
+	apiGroup.ANY("/list", api.ConfigList)
 }
