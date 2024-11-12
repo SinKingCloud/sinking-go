@@ -10,14 +10,20 @@ func checkCluster() {
 	go func() {
 		for {
 			//检测集群状态
+			var keysToModify []interface{}
 			service.Clusters.Range(func(key, value any) bool {
 				k := value.(*service.Cluster)
 				if k.LastHeartTime+int64(setting.GetSystemConfig().Servers.CheckHeartTime) < time.Now().Unix() {
-					k.Status = 1
+					keysToModify = append(keysToModify, key)
 				}
-				service.Clusters.Store(key, k)
 				return true
 			})
+			for _, key := range keysToModify {
+				value, _ := service.Clusters.Load(key)
+				k := value.(*service.Cluster)
+				k.Status = 1
+				service.Clusters.Store(key, k)
+			}
 			//检测服务状态
 			serviceList := service.CopyService()
 			for k, v := range serviceList {
