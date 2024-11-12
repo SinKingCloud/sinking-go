@@ -2,18 +2,12 @@ package main
 
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app"
-	"github.com/SinKingCloud/sinking-go/sinking-consul/bootstrap/config"
-	"github.com/SinKingCloud/sinking-go/sinking-consul/bootstrap/database"
-	"github.com/SinKingCloud/sinking-go/sinking-consul/bootstrap/log"
+	"github.com/SinKingCloud/sinking-go/sinking-consul/bootstrap"
 )
 
 func main() {
-	//初始化系统配置
-	config.Init()
-	//初始化日志
-	log.Init()
-	//初始化数据库
-	database.Init()
+	//初始化
+	bootstrap.Init()
 	//启动应用
 	app.Run()
 }

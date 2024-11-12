@@ -1,0 +1,33 @@
+name: sinking-consul
+description: 这是一款分布式注册配置中心软件
+minimumCoreVersion: v1.0.0
+title: sinking-consul
+version: v1.0.0
+author: 流逝中沉沦
+app:
+  debug: true
+  ip: 127.0.0.1
+  port: 1817
+  jwtToken: SinKingCloud
+database:
+  sql: mysql
+  sqlite:
+    database: ./config/database.db
+    prefix: sinking_
+  mysql:
+    host: 111.111.111.222
+    port: '3306'
+    user: root
+    pwd: qwwqwqwq
+    database: sinking_consul
+    prefix: sinking_
+  logstash:
+    host: ''
+    port: 5044
+    timeout: 10
+servers:
+  cluster: '127.0.0.1:1817'
+  tokenName: sinking-token
+  token: test_token
+  heartTime: 2
+  checkHeartTime: 30

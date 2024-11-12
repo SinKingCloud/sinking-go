@@ -13,7 +13,7 @@ func ConfigList(s *sinking_web.Context) {
 		EnvName string `form:"env_name" json:"env_name"` //环境标识
 	}
 	form := &register{}
-	err := s.BindJson(&form)
+	err := s.BindAll(&form)
 	if err != nil || form.AppName == "" || form.EnvName == "" {
 		response.Error(s, "参数不足", nil)
 		return

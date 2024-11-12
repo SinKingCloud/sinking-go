@@ -56,7 +56,7 @@ func LimitRateMiddle() sinking_web.HandlerFunc {
 
 func main() {
 	//设置是否以debug模式运行
-	sinking_web.SetDebugMode(true)
+	sinking_web.SetDebugMode(false)
 
 	//设置读写超时时间
 	sinking_web.SetTimeOut(10*time.Second, 10*time.Second)
