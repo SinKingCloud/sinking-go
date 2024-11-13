@@ -19,10 +19,12 @@ func checkCluster() {
 				return true
 			})
 			for _, key := range keysToModify {
-				value, _ := service.Clusters.Load(key)
-				k := value.(*service.Cluster)
-				k.Status = 1
-				service.Clusters.Store(key, k)
+				value, ok := service.Clusters.Load(key)
+				if ok {
+					k := value.(*service.Cluster)
+					k.Status = 1
+					service.Clusters.Store(key, k)
+				}
 			}
 			//检测服务状态
 			serviceList := service.CopyService()
