@@ -20,7 +20,7 @@ const (
 )
 
 const (
-	BindFormTagName         = "form"    //表单绑定参数tag名称
+	BindFormTagName         = "json"    //表单绑定参数tag名称
 	BindDefaultValueTagName = "default" //表单绑定默认值tag名称
 )
 

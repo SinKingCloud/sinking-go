@@ -7,7 +7,7 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/model"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/service"
 	"github.com/SinKingCloud/sinking-go/sinking-consul/app/util/setting"
-	sinking_web "github.com/SinKingCloud/sinking-go/sinking-web"
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"github.com/imroc/req"
 	"time"
 )
