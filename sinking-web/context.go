@@ -249,7 +249,6 @@ func (c *Context) HTML(code int, name string, data interface{}) {
 		c.Fail(http.StatusInternalServerError, err.Error())
 		return
 	}
-
 }
 
 // Set 中间件设置传递内容

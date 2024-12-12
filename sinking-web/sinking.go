@@ -62,8 +62,9 @@ func (group *RouterGroup) Group(prefix string) *RouterGroup {
 	return newGroup
 }
 
-func (group *RouterGroup) Use(middlewares ...HandlerFunc) {
+func (group *RouterGroup) Use(middlewares ...HandlerFunc) *RouterGroup {
 	group.middlewares = append(group.middlewares, middlewares...)
+	return group
 }
 
 func (group *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
@@ -71,7 +72,7 @@ func (group *RouterGroup) addRoute(method string, comp string, handler HandlerFu
 	group.engine.router.addRoute(method, pattern, handler)
 }
 
-func (group *RouterGroup) ANY(pattern string, handler HandlerFunc) {
+func (group *RouterGroup) ANY(pattern string, handler HandlerFunc) *RouterGroup {
 	methods := []string{
 		http.MethodGet,
 		http.MethodPost,
@@ -85,42 +86,52 @@ func (group *RouterGroup) ANY(pattern string, handler HandlerFunc) {
 	for _, v := range methods {
 		group.addRoute(v, pattern, handler)
 	}
+	return group
 }
 
-func (group *RouterGroup) GET(pattern string, handler HandlerFunc) {
+func (group *RouterGroup) GET(pattern string, handler HandlerFunc) *RouterGroup {
 	group.addRoute(http.MethodGet, pattern, handler)
+	return group
 }
 
-func (group *RouterGroup) POST(pattern string, handler HandlerFunc) {
+func (group *RouterGroup) POST(pattern string, handler HandlerFunc) *RouterGroup {
 	group.addRoute(http.MethodPost, pattern, handler)
+	return group
 }
 
-func (group *RouterGroup) OPTIONS(pattern string, handler HandlerFunc) {
+func (group *RouterGroup) OPTIONS(pattern string, handler HandlerFunc) *RouterGroup {
 	group.addRoute(http.MethodOptions, pattern, handler)
+	return group
 }
 
-func (group *RouterGroup) PUT(pattern string, handler HandlerFunc) {
+func (group *RouterGroup) PUT(pattern string, handler HandlerFunc) *RouterGroup {
 	group.addRoute(http.MethodPut, pattern, handler)
+	return group
 }
 
-func (group *RouterGroup) DELETE(pattern string, handler HandlerFunc) {
+func (group *RouterGroup) DELETE(pattern string, handler HandlerFunc) *RouterGroup {
 	group.addRoute(http.MethodDelete, pattern, handler)
+	return group
 }
 
-func (group *RouterGroup) HEAD(pattern string, handler HandlerFunc) {
+func (group *RouterGroup) HEAD(pattern string, handler HandlerFunc) *RouterGroup {
 	group.addRoute(http.MethodHead, pattern, handler)
+	return group
 }
 
-func (group *RouterGroup) TRACE(pattern string, handler HandlerFunc) {
+func (group *RouterGroup) TRACE(pattern string, handler HandlerFunc) *RouterGroup {
 	group.addRoute(http.MethodTrace, pattern, handler)
+	return group
 }
 
-func (group *RouterGroup) PATCH(pattern string, handler HandlerFunc) {
+func (group *RouterGroup) PATCH(pattern string, handler HandlerFunc) *RouterGroup {
 	group.addRoute(http.MethodPatch, pattern, handler)
+	return group
 }
 
-func (group *RouterGroup) SetErrorHandle(handle *ErrorHandel) {
+func (group *RouterGroup) SetErrorHandle(handle *ErrorHandel) *RouterGroup {
 	group.engine.errorHandel = handle
+	return group
 }
 
 func (group *RouterGroup) createStaticHandler(relativePath string, fs http.FileSystem) HandlerFunc {
@@ -136,21 +147,24 @@ func (group *RouterGroup) createStaticHandler(relativePath string, fs http.FileS
 	}
 }
 
-func (group *RouterGroup) Static(relativePath string, root string) {
+func (group *RouterGroup) Static(relativePath string, root string) *RouterGroup {
 	handler := group.createStaticHandler(relativePath, http.Dir(root))
 	urlPattern := path.Join(relativePath, "/*filepath")
 	group.GET(urlPattern, handler)
+	return group
 }
 
-func (engine *Engine) SetFuncMap(funcMap template.FuncMap) {
+func (engine *Engine) SetFuncMap(funcMap template.FuncMap) *Engine {
 	engine.funcMap = funcMap
+	return engine
 }
 
-func (engine *Engine) LoadHtmlGlob(pattern string) {
+func (engine *Engine) LoadHtmlGlob(pattern string) *Engine {
 	engine.htmlTemplates = template.Must(template.New("").Funcs(engine.funcMap).ParseGlob(pattern))
+	return engine
 }
 
-func (group *RouterGroup) PROXY(pattern string, uri string, logger *log.Logger, filter func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy), errorHandle func(http.ResponseWriter, *http.Request, error)) {
+func (group *RouterGroup) PROXY(pattern string, uri string, logger *log.Logger, filter func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy), errorHandle func(http.ResponseWriter, *http.Request, error)) *RouterGroup {
 	fun := func(c *Context) {
 		prefix := uri[0:2]
 		if prefix == "ws" {
@@ -165,6 +179,7 @@ func (group *RouterGroup) PROXY(pattern string, uri string, logger *log.Logger, 
 		}
 	}
 	group.ANY(pattern, fun)
+	return group
 }
 
 func server(addr string, engine *Engine) *http.Server {
