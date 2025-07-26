@@ -127,9 +127,9 @@ func main() {
 	//参数绑定 访问地址 ip:port/bind?user=admin
 	r.ANY("/bind/:code", func(s *sinking_web.Context) {
 		type Login struct {
-			User string `form:"user" default:"admin" json:"user"` //form:接受的参数名 default:默认值 json:json输出格式
-			Pwd  string `form:"pwd" default:"123456" json:"pwd"`  //form:接受的参数名 default:默认值 json:json输出格式
-			Code string `form:"code" default:"000000" json:"code"`
+			User string `default:"admin" json:"user"` //default:默认值 json:json输出格式
+			Pwd  string `default:"123456" json:"pwd"` //default:默认值 json:json输出格式
+			Code string `default:"000000" json:"code"`
 		}
 		login := &Login{}
 		err := s.BindAll(login) //BindQuery:绑定get参数 BindForm:绑定post参数 BindJson:绑定json BindParam:绑定路由参数
@@ -142,9 +142,9 @@ func main() {
 
 	r.ANY("/page", func(c *sinking_web.Context) {
 		type ValidatePage struct {
-			Page     uint `form:"page" json:"page" default:"1"`
-			PageSize int  `form:"page_size" json:"page_size" default:"20"`
-			Test     bool `form:"test" json:"test" default:"true"`
+			Page     uint `json:"page" default:"1"`
+			PageSize int  `json:"page_size" default:"20"`
+			Test     bool `json:"test" default:"true"`
 		}
 		pageInfo := &ValidatePage{}
 		if c.BindQuery(pageInfo) != nil {
