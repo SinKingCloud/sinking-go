@@ -9,9 +9,7 @@ var (
 	//go:embed dist/*
 	Static embed.FS
 	//go:embed sql/install.sql
-	Sql string
-	//go:embed ip/*
-	Ip         embed.FS
+	Sql        string
 	FileServer = http.FileServer(http.FS(Static))
 )
 

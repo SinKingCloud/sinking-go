@@ -3,3 +3,10 @@ server:
   mode: dev #模式
   host: 0.0.0.0 #监听地址
   port: 5678 #监听端口
+
+# 鉴权配置
+auth:
+  account: admin #登录账户
+  password: 123456 #登录密码
+  expire: 86400 #登录过期时间（秒）
+  token: E10ADC3949BA59ABBE56E057F20F883E #API令牌

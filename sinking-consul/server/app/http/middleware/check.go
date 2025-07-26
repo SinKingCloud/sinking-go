@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"server/app/constant"
-	"server/app/service"
+	"server/app/util"
 	"server/app/util/jwt"
 	"server/app/util/server"
 )
@@ -22,7 +22,7 @@ func CheckLogin(c *server.Context) {
 		c.Abort()
 		return
 	}
-	loginToken := service.Config.Get(constant.LoginGroup, constant.LoginToken+"."+types)
+	loginToken := util.Conf.GetString(constant.AuthLoginToken)
 	if loginToken == "" {
 		c.TokenError("您的账户已注销登陆,请重新登陆", nil)
 		c.Abort()
@@ -34,5 +34,21 @@ func CheckLogin(c *server.Context) {
 		return
 	}
 	c.SetUserInfo(key.User)
+	c.Next()
+}
+
+// CheckToken 判断token
+func CheckToken(c *server.Context) {
+	token := c.Request.Header.Get(constant.JwtTokenName)
+	if token == "" {
+		c.NotLogin("鉴权token缺失,请检查请求", nil)
+		c.Abort()
+		return
+	}
+	if token != util.Conf.GetString(constant.AuthApiToken) {
+		c.TokenError("鉴权token无效,请确认token是否正确", nil)
+		c.Abort()
+		return
+	}
 	c.Next()
 }
