@@ -2,6 +2,7 @@ package route
 
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-web"
+	"server/app/http/controller/api"
 	"server/app/http/controller/auth"
 	"server/app/http/controller/system"
 	"server/app/http/middleware"
@@ -37,16 +38,14 @@ func loadApiRoute(s *sinking_web.Engine) {
 
 	//集群相关路由
 	cluster := g.Group("/cluster")
-	cluster.ANY("/list", nil)     //集群列表
-	cluster.ANY("/register", nil) //注册集群
-	cluster.ANY("/services", nil) //集群服务
-	cluster.ANY("/config", nil)   //集群配置
+	cluster.ANY("/register", server.HandleFunc(api.Cluster.Register)) //注册集群
+	cluster.ANY("/sync", server.HandleFunc(api.Cluster.Sync))         //同步数据
 
-	//注册和配置中心相关路由
-	service := g.Group("/service")
-	service.ANY("/register", nil) //注册服务
-	service.ANY("/list", nil)     //服务列表
-	service.ANY("/config", nil)   //服务配置
+	////注册和配置中心相关路由
+	//service := g.Group("/service")
+	//service.ANY("/register", nil) //注册服务
+	//service.ANY("/list", nil)     //服务列表
+	//service.ANY("/config", nil)   //服务配置
 }
 
 func loadAuthRoute(s *sinking_web.Engine) {

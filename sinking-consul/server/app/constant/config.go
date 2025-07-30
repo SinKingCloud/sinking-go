@@ -18,4 +18,7 @@ const (
 	AuthApiToken   = "auth.api_token"   //API访问token
 	AuthLoginToken = "auth.login_token" //登录token
 	AuthExpire     = "auth.expire"      //登录过期时间
+
+	ClusterLocal = "cluster.local" //本机地址
+	ClusterNodes = "cluster.nodes" //集群服务器列表
 )

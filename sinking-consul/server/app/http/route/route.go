@@ -2,8 +2,8 @@ package route
 
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-web"
-	"server/app/constant"
 	"server/app/util"
+	"strconv"
 )
 
 // loadErrorHandle 设置错误回调
@@ -32,15 +32,8 @@ func Init() {
 	//加载app
 	loadApp(r)
 	//启动http server
-	host := util.Conf.GetString(constant.ServerHost)
-	port := util.Conf.GetString(constant.ServerPort)
-	if host == "" {
-		host = "0.0.0.0"
-	}
-	if port == "" {
-		port = "5678"
-	}
-	err := r.Run(host + ":" + port)
+	host, port := util.ServerAddr()
+	err := r.Run(host + ":" + strconv.Itoa(port))
 	if err != nil {
 		panic(err)
 		return

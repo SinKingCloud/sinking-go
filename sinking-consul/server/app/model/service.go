@@ -8,14 +8,15 @@ import (
 
 // Service 服务列表
 type Service struct {
-	Id         int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
-	Group      string       `gorm:"column:group" json:"group"`
-	Name       string       `gorm:"column:name" json:"name"`
-	Address    string       `gorm:"column:address" json:"address"`
-	Status     int          `gorm:"column:status" json:"status"`
-	LastHeart  int64        `gorm:"column:last_heart" json:"last_heart"`
-	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
-	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
+	Id           int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
+	Group        string       `gorm:"column:group" json:"group"`
+	Name         string       `gorm:"column:name" json:"name"`
+	Address      string       `gorm:"column:address" json:"address"`
+	OnlineStatus int          `gorm:"column:online_status" json:"online_status"`
+	Status       int          `gorm:"column:status" json:"status"`
+	LastHeart    int64        `gorm:"column:last_heart" json:"last_heart"`
+	CreateTime   str.DateTime `gorm:"column:create_time" json:"create_time"`
+	UpdateTime   str.DateTime `gorm:"column:update_time" json:"update_time"`
 }
 
 // TableName 获取表名

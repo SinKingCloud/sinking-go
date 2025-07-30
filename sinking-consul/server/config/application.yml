@@ -10,3 +10,10 @@ auth:
   password: 123456 #登录密码
   expire: 86400 #登录过期时间（秒）
   token: E10ADC3949BA59ABBE56E057F20F883E #API令牌
+
+# 集群配置
+cluster:
+  local: #本地集群地址
+  nodes:
+    - 111.111.111:8500 #Consul服务器地址1
+    - 222.222.222:8500 #Consul服务器地址2

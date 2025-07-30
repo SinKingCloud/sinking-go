@@ -2,8 +2,6 @@ github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250330150011-1690c622557
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250330150011-1690c6225578/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868 h1:uFrPOl1VBt/Abfl2z+A/DFc+AwmFLxEHR1+Yq6cXvww=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868/go.mod h1:srphKZ1i+yGXxl/LpBS7ZIECTjCTPzZzAMtJWoG3sLo=
-github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394 h1:OYA+5W64v3OgClL+IrOD63t4i/RW7RqrAVl9LTZ9UqQ=
-github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394/go.mod h1:Q8n74mJTIgjX4RBBcHnJ05h//6/k6foqmgE45jTQtxg=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
@@ -85,10 +83,6 @@ github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOf
 github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/subosito/gotenv v1.6.0 h1:9NlTDc1FTs4qu0DDq7AEtTPNw6SVm7uBMsUCUjABIf8=
 github.com/subosito/gotenv v1.6.0/go.mod h1:Dk4QP5c2W3ibzajGcXpNraDfq2IrhjMIvMSWPKKo0FU=
-github.com/vmihailenco/msgpack/v5 v5.4.1 h1:cQriyiUvjTwOHg8QZaPihLWeRAAVoCpE00IUPn0Bjt8=
-github.com/vmihailenco/msgpack/v5 v5.4.1/go.mod h1:GaZTsDaehaPpQVyxrf5mtQlH+pc21PIudVV/E3rRQok=
-github.com/vmihailenco/tagparser/v2 v2.0.0 h1:y09buUbR+b5aycVFQs/g70pqKVZNBmxwAhO7/IwNM9g=
-github.com/vmihailenco/tagparser/v2 v2.0.0/go.mod h1:Wri+At7QHww0WTrCBeu4J6bNtoV6mEfg5OIWRZA9qds=
 github.com/wenlng/go-captcha-assets v1.0.7 h1:tfF84A4un/i4p+TbRVHDqDPeQeatvddOfB2xbKvLVq8=
 github.com/wenlng/go-captcha-assets v1.0.7/go.mod h1:zinRACsdYcL/S6pHgI9Iv7FKTU41d00+43pNX+b9+MM=
 github.com/wenlng/go-captcha/v2 v2.0.4 h1:5cSUF36ZyA03qeDMjKmeXGpbYJMXEexZIYK3Vga3ME0=
