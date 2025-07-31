@@ -8,7 +8,6 @@ import (
 
 // Cluster 集群列表
 type Cluster struct {
-	Id           int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	Address      string       `gorm:"column:address" json:"address"`
 	OnlineStatus int          `gorm:"column:online_status" json:"online_status"`
 	Status       int          `gorm:"column:status" json:"status"`

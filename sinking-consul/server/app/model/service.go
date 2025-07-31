@@ -8,7 +8,6 @@ import (
 
 // Service 服务列表
 type Service struct {
-	Id           int          `gorm:"column:id;PRIMARY_KEY" json:"id"`
 	Group        string       `gorm:"column:group" json:"group"`
 	Name         string       `gorm:"column:name" json:"name"`
 	Address      string       `gorm:"column:address" json:"address"`

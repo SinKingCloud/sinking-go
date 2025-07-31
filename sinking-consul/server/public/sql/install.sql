@@ -1,18 +1,14 @@
 create table cloud_clusters
 (
-    id            integer           not null
-        constraint pk_id
-            primary key autoincrement,
-    address       varchar(200)      not null,
+    address       varchar(200)      not null
+        constraint pk_address
+            primary key,
     online_status integer default 0 not null,
     status        integer default 0 not null,
     last_heart    integer default 0,
     create_time   TEXT,
     update_time   TEXT
 );
-
-create index idx_cluster_address
-    on cloud_clusters (address);
 
 create index idx_cluster_last_heart
     on cloud_clusters (last_heart);
@@ -40,9 +36,6 @@ create index cloud_configs_key_index
 
 create table cloud_services
 (
-    id            integer           not null
-        constraint pk_id
-            primary key autoincrement,
     "group"       varchar(50)       not null,
     name          varchar(50)       not null,
     address       varchar(200)      not null,
