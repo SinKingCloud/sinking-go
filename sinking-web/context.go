@@ -254,18 +254,18 @@ func (c *Context) HTML(code int, name string, data interface{}) {
 // Set 中间件设置传递内容
 func (c *Context) Set(key string, value interface{}) {
 	c.lock.Lock()
+	defer c.lock.Unlock()
 	if c.Keys == nil {
 		c.Keys = make(map[string]interface{})
 	}
 	c.Keys[key] = value
-	c.lock.Unlock()
 }
 
 // Get 中间件获取传递内容
 func (c *Context) Get(key string) (value interface{}, exists bool) {
 	c.lock.RLock()
+	defer c.lock.RUnlock()
 	value, exists = c.Keys[key]
-	c.lock.RUnlock()
 	return value, exists
 }
 

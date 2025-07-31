@@ -62,12 +62,12 @@ var (
 
 func GetLimitRateIns(key string, limit int) *LimitRate {
 	limitRatesLock.Lock()
+	defer limitRatesLock.Unlock()
 	obj := limitRates[key]
 	if obj == nil {
 		obj = NewLimitRate(limit, limit)
 		limitRates[key] = obj
 	}
-	limitRatesLock.Unlock()
 	return obj
 }
 
