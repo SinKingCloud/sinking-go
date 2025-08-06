@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	saveInterval = time.Second // 保存间隔时间
+	saveInterval = time.Minute // 保存间隔时间
 	batchSize    = 1000        // 批量保存大小
 )
 
