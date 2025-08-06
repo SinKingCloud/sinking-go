@@ -27,7 +27,9 @@ create table cloud_configs
     hash        varchar(50),
     content     TEXT,
     create_time TEXT,
-    update_time TEXT
+    update_time TEXT,
+    constraint pk_group_name
+        primary key ("group", name)
 );
 
 create index idx_configs_group
@@ -51,7 +53,9 @@ create table cloud_nodes
     status        integer default 0 not null,
     last_heart    integer default 0 not null,
     create_time   TEXT,
-    update_time   TEXT
+    update_time   TEXT,
+    constraint pk_group_name_address
+        primary key ("group", name, address)
 );
 
 create index idx_nodes_group_name

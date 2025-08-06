@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	saveInterval = time.Minute // 保存间隔时间
+	saveInterval = time.Second // 保存间隔时间
 	batchSize    = 1000        // 批量保存大小
 )
 
@@ -51,13 +51,10 @@ func saveClusters() {
 		batch := clusters[i:end]
 		err := util.Database.Db.Transaction(func(tx *gorm.DB) error {
 			for _, clusterData := range batch {
-				err := tx.Clauses(clause.OnConflict{
+				tx.Clauses(clause.OnConflict{
 					Columns:   []clause.Column{{Name: "address"}},
-					DoUpdates: clause.AssignmentColumns([]string{"online_status", "status", "last_heart", "update_time"}),
-				}).Create(clusterData.Cluster).Error
-				if err != nil {
-					return err
-				}
+					DoUpdates: clause.AssignmentColumns([]string{"online_status", "status", "last_heart"}),
+				}).Create(clusterData.Cluster)
 			}
 			return nil
 		})
@@ -86,15 +83,12 @@ func saveNodes() {
 			continue
 		}
 		batch := nodes[i:end]
-		err := util.Database.Db.Transaction(func(tx *gorm.DB) error {
+		err := util.Database.Db.Debug().Transaction(func(tx *gorm.DB) error {
 			for _, nodeData := range batch {
-				err := tx.Clauses(clause.OnConflict{
-					Columns:   []clause.Column{{Name: "group"}, {Name: "address"}},
-					DoUpdates: clause.AssignmentColumns([]string{"name", "online_status", "status", "last_heart", "update_time"}),
-				}).Create(nodeData.Node).Error
-				if err != nil {
-					return err
-				}
+				tx.Clauses(clause.OnConflict{
+					Columns:   []clause.Column{{Name: "group"}, {Name: "name"}, {Name: "address"}},
+					DoUpdates: clause.AssignmentColumns([]string{"name", "online_status", "status", "last_heart"}),
+				}).Create(nodeData.Node)
 			}
 			return nil
 		})
@@ -137,13 +131,10 @@ func saveConfig() {
 		batch := configsToUpdate[i:end]
 		err := util.Database.Db.Transaction(func(tx *gorm.DB) error {
 			for _, configData := range batch {
-				err := tx.Clauses(clause.OnConflict{
+				tx.Clauses(clause.OnConflict{
 					Columns:   []clause.Column{{Name: "group"}, {Name: "name"}},
-					DoUpdates: clause.AssignmentColumns([]string{"type", "hash", "content", "update_time"}),
-				}).Create(configData.Config).Error
-				if err != nil {
-					return err
-				}
+					DoUpdates: clause.AssignmentColumns([]string{"type", "hash", "content"}),
+				}).Create(configData.Config)
 			}
 			return nil
 		})
