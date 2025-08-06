@@ -81,6 +81,9 @@ func (s *Service) Sets(list []*Node) {
 		if _, ok := nodePool[v.Group]; !ok {
 			nodePool[v.Group] = make(map[string]*Node)
 		}
+		if value, ok := nodePool[v.Group][v.Address]; ok {
+			v.IsLocal = value.IsLocal
+		}
 		nodePool[v.Group][v.Address] = v
 	}
 }
