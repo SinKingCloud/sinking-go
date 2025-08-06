@@ -6,7 +6,7 @@ import (
 )
 
 // SelectAll 查询所有
-func (s *Service) SelectAll() (cluster []*Cluster, err error) {
-	err = util.Database.Db.Model(&model.Cluster{}).Find(&cluster).Error
-	return cluster, err
+func (s *Service) SelectAll() (list []*Cluster, err error) {
+	err = util.Database.Db.Model(&model.Cluster{}).Find(&list).Error
+	return list, err
 }

@@ -7,7 +7,6 @@ import (
 	"server/app/util/jwt"
 	"server/app/util/str"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -17,15 +16,11 @@ type Service struct {
 
 // obj 单例对象
 var (
-	obj  *Service
-	once sync.Once
+	obj = &Service{}
 )
 
 // GetIns 获取单例
 func GetIns() *Service {
-	once.Do(func() {
-		obj = &Service{}
-	})
 	return obj
 }
 

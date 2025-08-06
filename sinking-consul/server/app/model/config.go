@@ -9,8 +9,10 @@ import (
 // Config 配置表
 type Config struct {
 	Group      string       `gorm:"column:group" json:"group"`
-	Key        string       `gorm:"column:key" json:"key"`
-	Value      string       `gorm:"column:value" json:"value"`
+	Name       string       `gorm:"column:name" json:"name"`
+	Type       string       `gorm:"column:type" json:"type"`
+	Hash       string       `gorm:"column:hash" json:"hash"`
+	Content    string       `gorm:"column:content" json:"content"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
 }

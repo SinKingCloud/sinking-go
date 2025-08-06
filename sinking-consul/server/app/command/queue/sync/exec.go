@@ -7,10 +7,10 @@ import (
 func exec(task *Task) {
 	switch task.Type {
 	case RegisterService:
-		_ = service.Cluster.RegisterService(task.RemoteAddress)
+		_ = service.Cluster.RegisterRemoteService(task.RemoteAddress)
 		break
 	case SynchronizeData:
-		_ = service.Cluster.SynchronizeData(task.RemoteAddress)
+		_ = service.Cluster.SynchronizeRemoteData(task.RemoteAddress)
 		break
 	}
 }

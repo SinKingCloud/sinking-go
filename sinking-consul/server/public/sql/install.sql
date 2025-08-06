@@ -21,20 +21,28 @@ create index idx_cluster_status
 
 create table cloud_configs
 (
-    "group"     varchar(50) not null,
-    key         varchar(50) not null,
-    value       TEXT,
+    "group"     varchar(50)  not null,
+    name        varchar(100) not null,
+    type        varchar(50)  not null,
+    hash        varchar(50),
+    content     TEXT,
     create_time TEXT,
     update_time TEXT
 );
 
-create index cloud_configs_group_index
+create index idx_configs_group
     on cloud_configs ("group");
 
-create index cloud_configs_key_index
-    on cloud_configs (key);
+create index idx_configs_name
+    on cloud_configs (name);
 
-create table cloud_services
+create index idx_configs_type
+    on cloud_configs (type);
+
+create index idx_configs_hash
+    on cloud_configs (hash);
+
+create table cloud_nodes
 (
     "group"       varchar(50)       not null,
     name          varchar(50)       not null,
@@ -46,15 +54,15 @@ create table cloud_services
     update_time   TEXT
 );
 
-create index idx_service_group_name
-    on cloud_services ("group", name);
+create index idx_nodes_group_name
+    on cloud_nodes ("group", name);
 
-create index idx_service_online_status
-    on cloud_services (online_status);
+create index idx_nodes_online_status
+    on cloud_nodes (online_status);
 
-create index idx_service_status
-    on cloud_services (status);
+create index idx_nodes_status
+    on cloud_nodes (status);
 
-create index idx_services_last_heart
-    on cloud_services (last_heart);
+create index idx_nodes_last_heart
+    on cloud_nodes (last_heart);
 

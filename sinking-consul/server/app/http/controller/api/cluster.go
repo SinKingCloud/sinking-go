@@ -22,7 +22,20 @@ func (ControllerCluster) Register(c *server.Context) {
 	c.Success("注册成功")
 }
 
-// Sync 同步数据
-func (ControllerCluster) Sync(c *server.Context) {
-	c.Success("注册成功")
+// Node 服务列表
+func (ControllerCluster) Node(c *server.Context) {
+	c.SuccessWithData("获取成功", service.Node.GetLocalNodes())
+}
+
+// Config 配置列表
+func (ControllerCluster) Config(c *server.Context) {
+	type Form struct {
+		ShowContent bool `json:"show_content" default:"" validate:"omitempty" label:"是否返回内容"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorAll(form); !ok {
+		c.Error(msg)
+		return
+	}
+	c.SuccessWithData("获取成功", service.Config.GetAllConfigs(form.ShowContent))
 }

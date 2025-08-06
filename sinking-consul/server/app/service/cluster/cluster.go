@@ -15,13 +15,11 @@ type Service struct {
 // obj 单例对象
 var (
 	//实例对象
-	obj *Service
+	obj = &Service{}
 	//原子锁
-	once sync.Once
-	//原子锁
-	clusterOnce sync.Once
+	clusterOnce = &sync.Once{}
 	// 集群池
-	clusterPool sync.Map
+	clusterPool = &sync.Map{}
 	// globalClient 全局请求client
 	globalClient = &http.Client{
 		Timeout: 10 * time.Second,
@@ -39,9 +37,6 @@ var (
 
 // GetIns 获取单例
 func GetIns() *Service {
-	once.Do(func() {
-		obj = &Service{}
-	})
 	return obj
 }
 

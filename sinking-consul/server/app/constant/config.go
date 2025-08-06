@@ -13,11 +13,11 @@ const (
 	ServerHost = "server.host" //服务器地址
 	ServerPort = "server.port" //服务器端口
 
-	AuthAccount    = "auth.account"     //登录账号
-	AuthPassword   = "auth.password"    //登录密码
-	AuthApiToken   = "auth.api_token"   //API访问token
-	AuthLoginToken = "auth.login_token" //登录token
-	AuthExpire     = "auth.expire"      //登录过期时间
+	AuthAccount    = "auth.account"  //登录账号
+	AuthPassword   = "auth.password" //登录密码
+	AuthApiToken   = "auth.token"    //API访问token
+	AuthLoginToken = "auth.session"  //登录token
+	AuthExpire     = "auth.expire"   //登录过期时间
 
 	ClusterLocal = "cluster.local" //本机地址
 	ClusterNodes = "cluster.nodes" //集群服务器列表

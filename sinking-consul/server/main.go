@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"os"
 	"runtime"
@@ -55,7 +54,6 @@ func main() {
 		log.Printf("创建守护进程管理器失败: %v\n", err)
 		os.Exit(1)
 	}
-	flag.Parse()
 	command := os.Args[1]
 	switch command {
 	case "start":

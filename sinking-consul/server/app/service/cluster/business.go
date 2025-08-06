@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"server/app/constant"
 	"server/app/model"
+	"server/app/service/config"
+	"server/app/service/node"
 	"server/app/util"
 	"server/app/util/ip"
 	"strconv"
@@ -73,7 +75,7 @@ func (s *Service) Init() {
 				})
 			}
 		}
-		_ = s.updateAll(map[string]interface{}{"online_status": Offline})
+		_ = s.UpdateAll(map[string]interface{}{"online_status": Offline})
 		all, e := s.SelectAll()
 		if e == nil && all != nil {
 			for _, v := range all {
@@ -83,6 +85,8 @@ func (s *Service) Init() {
 						OnlineStatus: v.OnlineStatus,
 						Status:       v.Status,
 						LastHeart:    v.LastHeart,
+						CreateTime:   v.CreateTime,
+						UpdateTime:   v.UpdateTime,
 					},
 				})
 			}
@@ -102,11 +106,15 @@ func (s *Service) request(address string, action string, body interface{}) (int,
 		action = strings.TrimPrefix(action, "/")
 	}
 	address += action
-	b, err := json.Marshal(body)
-	if err != nil {
-		return 500, "json转换失败", nil, err
+	var reader io.Reader
+	if body != nil {
+		b, err := json.Marshal(body)
+		if err != nil {
+			return 500, "json转换失败", nil, err
+		}
+		reader = bytes.NewReader(b)
 	}
-	req, err := http.NewRequest(http.MethodPost, address, bytes.NewReader(b))
+	req, err := http.NewRequest(http.MethodPost, address, reader)
 	req.Header.Set("content-type", "application/json")
 	req.Header.Set(constant.JwtTokenName, util.Conf.GetString(constant.AuthApiToken))
 	resp, err := globalClient.Do(req)
@@ -144,8 +152,8 @@ func (s *Service) getLocalAddr() string {
 	return str.(string)
 }
 
-// RegisterService 向集群节点发送注册请求
-func (s *Service) RegisterService(remoteAddress string) error {
+// RegisterRemoteService 向集群节点发送注册请求
+func (s *Service) RegisterRemoteService(remoteAddress string) error {
 	body := map[string]string{
 		"address": s.getLocalAddr(),
 	}
@@ -159,12 +167,44 @@ func (s *Service) RegisterService(remoteAddress string) error {
 	return nil
 }
 
-// SynchronizeData 同步集群信息并储存更新数据库
-func (s *Service) SynchronizeData(remoteAddress string) error {
-	//1. 获取集群列表并发送注册集群请求(/Cluster/heart接口用于心跳和注册)
-	//2. 定时发送心跳并同步集群内的服务和配置(/Cluster/sync接口用于获取集群所有数据,请求所有集群节点获取数据，并保存存活的节点信息，配置信息和节点重复的话保存最新的心跳和修改时间,所有数据保存在内存中，定时落盘)
-	//3. 定时保存数据到数据库进行持久化(如集群信息、服务信息、配置等)
-	//获取所有集群节点的数据保存到本机数据库和同步到内存缓存，
-
+// SynchronizeRemoteData 同步集群信息
+func (s *Service) SynchronizeRemoteData(remoteAddress string) error {
+	code, _, data, err := s.request(remoteAddress, "api/cluster/node", nil)
+	if err == nil && code == 200 {
+		var list []*node.Node
+		if err = json.Unmarshal(data, &list); err == nil && list != nil {
+			node.GetIns().Sets(list)
+		}
+	}
+	body := map[string]interface{}{
+		"show_content": false,
+	}
+	code, _, data, err = s.request(remoteAddress, "api/cluster/config", body)
+	if err == nil && code == 200 {
+		var list []*config.Config
+		if err = json.Unmarshal(data, &list); err == nil && list != nil {
+			isChange := config.GetIns().CheckIsChange(list)
+			if isChange {
+				body = map[string]interface{}{
+					"show_content": true,
+				}
+				code, _, data, err = s.request(remoteAddress, "api/cluster/config", body)
+				if err == nil && code == 200 {
+					if err = json.Unmarshal(data, &list); err == nil && list != nil {
+						config.GetIns().Sets(list)
+					}
+				}
+			}
+		}
+	}
 	return nil
+}
+
+// GetAllClusters 获取所有集群信息
+func (s *Service) GetAllClusters() (list []*Cluster) {
+	s.Each(func(key string, value *Cluster) bool {
+		list = append(list, value)
+		return true
+	})
+	return list
 }

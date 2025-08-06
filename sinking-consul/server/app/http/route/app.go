@@ -6,6 +6,7 @@ import (
 	"server/app/http/controller/auth"
 	"server/app/http/controller/system"
 	"server/app/http/middleware"
+	"server/app/service"
 	"server/app/util"
 	"server/app/util/server"
 	"server/public"
@@ -36,22 +37,32 @@ func loadApiRoute(s *sinking_web.Engine) {
 	g := s.Group("/api")
 	g.Use(server.HandleFunc(middleware.CheckToken))
 
-	//集群相关路由
+	//集群中心相关路由
 	cluster := g.Group("/cluster")
 	cluster.ANY("/register", server.HandleFunc(api.Cluster.Register)) //注册集群
-	cluster.ANY("/sync", server.HandleFunc(api.Cluster.Sync))         //同步数据
+	cluster.ANY("/node", server.HandleFunc(api.Cluster.Node))         //服务列表
+	cluster.ANY("/config", server.HandleFunc(api.Cluster.Config))     //配置列表
 
-	////注册和配置中心相关路由
-	//service := g.Group("/service")
-	//service.ANY("/register", nil) //注册服务
-	//service.ANY("/list", nil)     //服务列表
-	//service.ANY("/config", nil)   //服务配置
+	//注册中心相关路由
+	node := g.Group("/node")
+	node.ANY("/register", server.HandleFunc(api.Node.Register)) //注册服务
+
+	//配置中心相关路由
+	config := g.Group("/config")
+	config.ANY("/list", nil) //可用配置
 }
 
 func loadAuthRoute(s *sinking_web.Engine) {
 	s.ANY("/login", server.HandleFunc(auth.Login))     //账号登录
 	s.ANY("/logout", server.HandleFunc(auth.Logout))   //注销登录
 	s.ANY("/captcha", server.HandleFunc(auth.Captcha)) //验证码
+	s.ANY("/test", server.HandleFunc(func(c *server.Context) {
+		c.SuccessWithData("success", map[string]interface{}{
+			"cluster": service.Cluster.GetAllClusters(),
+			"node":    service.Node.GetAllNodes(),
+			"config":  service.Config.GetAllConfigs(true),
+		})
+	})) //验证码
 }
 
 func loadSystemRoute(s *sinking_web.Engine) {

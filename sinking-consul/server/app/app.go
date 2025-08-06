@@ -7,7 +7,7 @@ import (
 )
 
 func Run() {
-	command.Init()
 	service.Init()
+	command.Init()
 	route.Init()
 }
