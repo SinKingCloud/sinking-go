@@ -6,7 +6,6 @@ import (
 	"server/app/http/controller/auth"
 	"server/app/http/controller/system"
 	"server/app/http/middleware"
-	"server/app/service"
 	"server/app/util"
 	"server/app/util/server"
 	"server/public"
@@ -56,13 +55,6 @@ func loadAuthRoute(s *sinking_web.Engine) {
 	s.ANY("/login", server.HandleFunc(auth.Login))     //账号登录
 	s.ANY("/logout", server.HandleFunc(auth.Logout))   //注销登录
 	s.ANY("/captcha", server.HandleFunc(auth.Captcha)) //验证码
-	s.ANY("/test", server.HandleFunc(func(c *server.Context) {
-		c.SuccessWithData("success", map[string]interface{}{
-			"cluster": service.Cluster.GetAllClusters(),
-			"node":    service.Node.GetAllNodes(),
-			"config":  service.Config.GetAllConfigs(true),
-		})
-	})) //验证码
 }
 
 func loadSystemRoute(s *sinking_web.Engine) {

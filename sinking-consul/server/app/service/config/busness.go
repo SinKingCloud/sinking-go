@@ -99,6 +99,9 @@ func (s *Service) CheckIsChange(list []*Config) bool {
 					change = true
 					break
 				}
+			} else {
+				change = true
+				break
 			}
 		}
 	}

@@ -199,12 +199,3 @@ func (s *Service) SynchronizeRemoteData(remoteAddress string) error {
 	}
 	return nil
 }
-
-// GetAllClusters 获取所有集群信息
-func (s *Service) GetAllClusters() (list []*Cluster) {
-	s.Each(func(key string, value *Cluster) bool {
-		list = append(list, value)
-		return true
-	})
-	return list
-}

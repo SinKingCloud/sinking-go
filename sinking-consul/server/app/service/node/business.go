@@ -145,20 +145,3 @@ func (s *Service) GetLocalNodes() []*model.Node {
 	}
 	return list
 }
-
-// GetAllNodes 获取所有服务信息
-func (s *Service) GetAllNodes() []*Node {
-	nodeLock.RLock()
-	defer nodeLock.RUnlock()
-	count := 0
-	for _, g := range nodePool {
-		count += len(g)
-	}
-	list := make([]*Node, 0, count)
-	for _, g := range nodePool {
-		for _, value := range g {
-			list = append(list, value)
-		}
-	}
-	return list
-}
