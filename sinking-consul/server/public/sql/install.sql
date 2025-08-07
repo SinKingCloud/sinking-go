@@ -10,8 +10,8 @@ create table cloud_clusters
     update_time   TEXT
 );
 
-create index idx_cluster_last_heart
-    on cloud_clusters (last_heart);
+create index idx_cluster_address
+    on cloud_clusters (address);
 
 create index idx_cluster_online_status
     on cloud_clusters (online_status);
@@ -35,14 +35,14 @@ create table cloud_configs
 create index idx_configs_group
     on cloud_configs ("group");
 
+create index idx_configs_hash
+    on cloud_configs (hash);
+
 create index idx_configs_name
     on cloud_configs (name);
 
 create index idx_configs_type
     on cloud_configs (type);
-
-create index idx_configs_hash
-    on cloud_configs (hash);
 
 create table cloud_nodes
 (
@@ -58,15 +58,17 @@ create table cloud_nodes
         primary key ("group", name, address)
 );
 
-create index idx_nodes_group_name
-    on cloud_nodes ("group", name);
+create index idx_node_group
+    on cloud_nodes ("group");
 
-create index idx_nodes_online_status
+create index idx_node_name
+    on cloud_nodes (name);
+
+create index idx_node_address
+    on cloud_nodes (address);
+
+create index idx_node_online_status
     on cloud_nodes (online_status);
 
-create index idx_nodes_status
+create index idx_node_status
     on cloud_nodes (status);
-
-create index idx_nodes_last_heart
-    on cloud_nodes (last_heart);
-
