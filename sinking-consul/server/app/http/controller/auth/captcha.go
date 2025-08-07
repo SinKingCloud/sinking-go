@@ -5,6 +5,7 @@ import (
 	"server/app/util/server"
 )
 
+// Captcha 获取验证吗
 func Captcha(c *server.Context) {
 	type Form struct {
 		Token string `json:"token" default:"" validate:"required,len=16" label:"验证码标识"`

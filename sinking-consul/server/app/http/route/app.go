@@ -4,7 +4,6 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"server/app/http/controller/api"
 	"server/app/http/controller/auth"
-	"server/app/http/controller/system"
 	"server/app/http/middleware"
 	"server/app/util"
 	"server/app/util/server"
@@ -17,7 +16,7 @@ func loadApp(s *sinking_web.Engine) {
 	}
 	loadApiRoute(s)
 	loadAuthRoute(s)
-	loadSystemRoute(s)
+	loadAdminRoute(s)
 	loadStaticRoute(s)
 }
 
@@ -53,13 +52,14 @@ func loadApiRoute(s *sinking_web.Engine) {
 }
 
 func loadAuthRoute(s *sinking_web.Engine) {
-	s.ANY("/login", server.HandleFunc(auth.Login))     //账号登录
-	s.ANY("/logout", server.HandleFunc(auth.Logout))   //注销登录
-	s.ANY("/captcha", server.HandleFunc(auth.Captcha)) //验证码
+	g := s.Group("/auth")
+	g.ANY("/login", server.HandleFunc(auth.Login))     //账号登录
+	g.ANY("/logout", server.HandleFunc(auth.Logout))   //注销登录
+	g.ANY("/captcha", server.HandleFunc(auth.Captcha)) //验证码
+	g.ANY("/enum", server.HandleFunc(auth.Enum))       //枚举类型
 }
 
-func loadSystemRoute(s *sinking_web.Engine) {
-	g := s.Group("/system")
+func loadAdminRoute(s *sinking_web.Engine) {
+	g := s.Group("/admin")
 	g.Use(server.HandleFunc(middleware.CheckLogin))
-	g.ANY("/enum", server.HandleFunc(system.Enum)) //枚举类型
 }

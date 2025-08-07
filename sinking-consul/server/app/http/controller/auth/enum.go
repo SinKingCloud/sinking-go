@@ -1,10 +1,11 @@
-package system
+package auth
 
 import (
 	"server/app/service"
 	"server/app/util/server"
 )
 
+// Enum	获取枚举
 func Enum(c *server.Context) {
 	type Form struct {
 		Name string `json:"name" default:"" validate:"required,name" label:"枚举名称"`
