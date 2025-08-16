@@ -9,14 +9,14 @@ require (
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.27.0
-	github.com/golang-jwt/jwt/v5 v5.2.3
+	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/sevlyar/go-daemon v0.1.6
 	github.com/spf13/viper v1.20.1
 	github.com/wenlng/go-captcha-assets v1.0.7
 	github.com/wenlng/go-captcha/v2 v2.0.4
-	golang.org/x/crypto v0.40.0
-	golang.org/x/text v0.27.0
+	golang.org/x/crypto v0.41.0
+	golang.org/x/text v0.28.0
 	gorm.io/gorm v1.30.1
 )
 
@@ -48,7 +48,7 @@ require (
 	golang.org/x/exp v0.0.0-20250718183923-645b1fa84792 // indirect
 	golang.org/x/image v0.29.0 // indirect
 	golang.org/x/net v0.42.0 // indirect
-	golang.org/x/sys v0.34.0 // indirect
+	golang.org/x/sys v0.35.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/libc v1.66.4 // indirect

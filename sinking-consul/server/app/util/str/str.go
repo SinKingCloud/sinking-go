@@ -286,3 +286,20 @@ func (t *StringTool) FromJSON(jsonStr string, v interface{}) error {
 	}
 	return nil
 }
+
+// ToNumber 将字符串转换为唯一数字（紧凑标识）
+func (t *StringTool) ToNumber(s string, max uint64) uint64 {
+	var hash uint64 = 14695981039346656037
+	for i, c := range s {
+		if i >= 32 {
+			break
+		}
+		hash ^= uint64(c)
+		hash *= 1099511628211
+	}
+	if max > 0 {
+		hash ^= hash >> 20
+		return hash % (max + 1)
+	}
+	return hash
+}

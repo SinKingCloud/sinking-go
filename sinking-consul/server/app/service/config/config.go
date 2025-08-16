@@ -15,8 +15,9 @@ var (
 	//原子锁
 	configOnce = &sync.Once{}
 	// 节点池 组[配置名]
-	configPool = make(map[string]map[string]*Config)
-	configLock = sync.RWMutex{}
+	configPool            = make(map[string]map[string]*Config)
+	configLock            = sync.RWMutex{}
+	configLastOperateTime = make(map[string]int64)
 )
 
 // GetIns 获取单例

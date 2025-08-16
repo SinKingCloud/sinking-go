@@ -44,11 +44,11 @@ func loadApiRoute(s *sinking_web.Engine) {
 	//注册中心相关路由
 	node := g.Group("/node")
 	node.ANY("/register", server.HandleFunc(api.Node.Register)) //注册服务
-	node.ANY("/actives", server.HandleFunc(api.Node.Active))    //可用服务
+	node.ANY("/sync", server.HandleFunc(api.Node.Sync))         //同步服务
 
 	//配置中心相关路由
 	config := g.Group("/config")
-	config.ANY("/list", server.HandleFunc(api.Config.List)) //配置列表
+	config.ANY("/sync", server.HandleFunc(api.Config.Sync)) //同步配置
 }
 
 func loadAuthRoute(s *sinking_web.Engine) {

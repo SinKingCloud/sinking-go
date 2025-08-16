@@ -15,8 +15,9 @@ var (
 	//原子锁
 	nodeOnce = &sync.Once{}
 	// 节点池 组[节点地址]
-	nodePool = make(map[string]map[string]*Node)
-	nodeLock = &sync.RWMutex{}
+	nodePool            = make(map[string]map[string]*Node)
+	nodeLock            = &sync.RWMutex{}
+	nodeLastOperateTime = make(map[string]int64)
 )
 
 // GetIns 获取单例

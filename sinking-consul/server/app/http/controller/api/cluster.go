@@ -37,5 +37,5 @@ func (ControllerCluster) Config(c *server.Context) {
 		c.Error(msg)
 		return
 	}
-	c.SuccessWithData("获取成功", service.Config.GetAllConfigs(form.ShowContent))
+	c.SuccessWithData("获取成功", service.Config.GetAllConfigs("*", form.ShowContent))
 }

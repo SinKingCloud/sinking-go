@@ -88,6 +88,20 @@ func (s *Service) Sets(list []*Node) {
 	}
 }
 
+// SetOperateTime 设置上次操作时间
+func (s *Service) SetOperateTime(group string) {
+	nodeLock.Lock()
+	defer nodeLock.Unlock()
+	nodeLastOperateTime[group] = time.Now().Unix()
+}
+
+// GetOperateTime 获取上次操作时间
+func (s *Service) GetOperateTime(group string) int64 {
+	nodeLock.Lock()
+	defer nodeLock.Unlock()
+	return nodeLastOperateTime[group]
+}
+
 // Delete 删除集群节点信息
 func (s *Service) Delete(group string, key string) {
 	nodeLock.Lock()
@@ -139,6 +153,25 @@ func (s *Service) GetLocalNodes() []*model.Node {
 	for _, g := range nodePool {
 		for _, value := range g {
 			if value.IsLocal {
+				list = append(list, value.Node)
+			}
+		}
+	}
+	return list
+}
+
+// GetAllOnlineNodes 获取正常服务数据信息
+func (s *Service) GetAllOnlineNodes(group string) []*model.Node {
+	nodeLock.RLock()
+	defer nodeLock.RUnlock()
+	count := 0
+	for _, g := range nodePool {
+		count += len(g)
+	}
+	list := make([]*model.Node, 0, count)
+	for _, g := range nodePool {
+		for _, value := range g {
+			if value.OnlineStatus == int(Online) && value.Status == int(Normal) && value.Group == group {
 				list = append(list, value.Node)
 			}
 		}

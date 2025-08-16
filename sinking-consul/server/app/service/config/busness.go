@@ -87,6 +87,20 @@ func (s *Service) Sets(list []*Config) {
 	}
 }
 
+// SetOperateTime 设置操作时间
+func (s *Service) SetOperateTime(group string) {
+	configLock.Lock()
+	defer configLock.Unlock()
+	configLastOperateTime[group] = time.Now().Unix()
+}
+
+// GetOperateTime 获取上次操作时间
+func (s *Service) GetOperateTime(group string) int64 {
+	configLock.Lock()
+	defer configLock.Unlock()
+	return configLastOperateTime[group]
+}
+
 // CheckIsChange 检查配置是否有变更
 func (s *Service) CheckIsChange(list []*Config) bool {
 	configLock.Lock()
@@ -126,7 +140,7 @@ func (s *Service) Delete(group string, key string) {
 }
 
 // GetAllConfigs 获取本地配置信息
-func (s *Service) GetAllConfigs(showContent bool) []*Config {
+func (s *Service) GetAllConfigs(group string, showContent bool) []*Config {
 	configLock.RLock()
 	defer configLock.RUnlock()
 	count := 0
@@ -136,6 +150,11 @@ func (s *Service) GetAllConfigs(showContent bool) []*Config {
 	list := make([]*Config, 0, count)
 	for _, g := range configPool {
 		for _, value := range g {
+			if group != "" && group != "*" {
+				if value.Group != group {
+					continue
+				}
+			}
 			if showContent {
 				list = append(list, value)
 			} else {
