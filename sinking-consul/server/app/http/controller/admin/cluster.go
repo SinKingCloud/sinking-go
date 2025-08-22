@@ -8,7 +8,3 @@ type ControllerCluster struct {
 func (ControllerCluster) List(c *server.Context) {
 
 }
-
-func (ControllerCluster) Update(c *server.Context) {
-
-}

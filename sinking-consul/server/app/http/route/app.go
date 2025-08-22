@@ -80,30 +80,22 @@ func loadAdminRoute(s *sinking_web.Engine) {
 
 	cluster := g.Group("/cluster")
 	{
-		cluster.ANY("/list", server.HandleFunc(admin.Cluster.List))     //集群列表
-		cluster.ANY("/update", server.HandleFunc(admin.Cluster.Update)) //编辑集群
+		cluster.ANY("/list", server.HandleFunc(admin.Cluster.List)) //集群列表
 	}
 
 	node := g.Group("/node")
 	{
 		node.ANY("/list", server.HandleFunc(admin.Node.List))     //节点列表
 		node.ANY("/update", server.HandleFunc(admin.Node.Update)) //编辑节点
-		node.ANY("/delete", server.HandleFunc(admin.Node.Delete)) //删除节点
 	}
 
 	config := g.Group("/config")
 	{
-		config.ANY("/list", server.HandleFunc(admin.Config.List))     //配置列表
-		config.ANY("/info", server.HandleFunc(admin.Config.Info))     //配置信息
-		config.ANY("/update", server.HandleFunc(admin.Config.Update)) //编辑配置
-		config.ANY("/create", server.HandleFunc(admin.Config.Create)) //创建配置
-		config.ANY("/delete", server.HandleFunc(admin.Config.Delete)) //删除配置
-	}
-
-	recycle := g.Group("/recycle")
-	{
-		recycle.ANY("/node", server.HandleFunc(admin.Recycle.Node))       //节点回收站
-		recycle.ANY("/config", server.HandleFunc(admin.Recycle.Config))   //配置回收站
-		recycle.ANY("/restore", server.HandleFunc(admin.Recycle.Restore)) //恢复文件
+		config.ANY("/list", server.HandleFunc(admin.Config.List))      //配置列表
+		config.ANY("/info", server.HandleFunc(admin.Config.Info))      //配置信息
+		config.ANY("/update", server.HandleFunc(admin.Config.Update))  //编辑配置
+		config.ANY("/create", server.HandleFunc(admin.Config.Create))  //创建配置
+		config.ANY("/delete", server.HandleFunc(admin.Config.Delete))  //删除配置
+		config.ANY("/delete", server.HandleFunc(admin.Config.Restore)) //恢复配置
 	}
 }

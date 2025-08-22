@@ -87,7 +87,7 @@ func saveNodes() {
 			for _, nodeData := range batch {
 				tx.Clauses(clause.OnConflict{
 					Columns:   []clause.Column{{Name: "group"}, {Name: "name"}, {Name: "address"}},
-					DoUpdates: clause.AssignmentColumns([]string{"name", "online_status", "status", "last_heart", "is_delete"}),
+					DoUpdates: clause.AssignmentColumns([]string{"name", "online_status", "status", "last_heart"}),
 				}).Create(nodeData.Node)
 			}
 			return nil

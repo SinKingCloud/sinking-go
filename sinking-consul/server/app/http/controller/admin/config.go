@@ -24,3 +24,7 @@ func (ControllerConfig) Delete(c *server.Context) {
 func (ControllerConfig) Create(c *server.Context) {
 
 }
+
+func (ControllerConfig) Restore(c *server.Context) {
+
+}

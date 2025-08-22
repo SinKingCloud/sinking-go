@@ -52,7 +52,6 @@ create table cloud_nodes
     online_status integer default 0 not null,
     status        integer default 0 not null,
     last_heart    integer default 0 not null,
-    is_delete     integer default 0,
     create_time   TEXT,
     update_time   TEXT,
     constraint pk_group_name_address
@@ -73,6 +72,3 @@ create index idx_node_online_status
 
 create index idx_node_status
     on cloud_nodes (status);
-
-create index idx_node_is_delete
-    on cloud_nodes (is_delete);
