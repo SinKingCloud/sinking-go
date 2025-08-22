@@ -30,6 +30,13 @@ func (s *Service) Set(key string, value *Cluster) {
 	clusterPool.Store(key, value)
 }
 
+// Sets 批量设置集群信息
+func (s *Service) Sets(list []*Cluster) {
+	for _, v := range list {
+		clusterPool.Store(v.Address, v)
+	}
+}
+
 // Delete 删除集群节点
 func (s *Service) Delete(key string) {
 	clusterPool.Delete(key)
@@ -40,6 +47,16 @@ func (s *Service) Each(fun func(key string, value *Cluster) bool) {
 	clusterPool.Range(func(key, value any) bool {
 		return fun(key.(string), value.(*Cluster))
 	})
+}
+
+// GetAllClusters 获取所有集群数据
+func (s *Service) GetAllClusters() []*Cluster {
+	list := make([]*Cluster, 100)
+	clusterPool.Range(func(key, value any) bool {
+		list = append(list, value.(*Cluster))
+		return true
+	})
+	return list
 }
 
 // Register 注册集群信息
@@ -174,6 +191,13 @@ func (s *Service) SynchronizeRemoteData(remoteAddress string) error {
 		var list []*node.Node
 		if err = json.Unmarshal(data, &list); err == nil && list != nil {
 			node.GetIns().Sets(list)
+		}
+	}
+	code, _, data, err = s.request(remoteAddress, "api/cluster/list", nil)
+	if err == nil && code == 200 {
+		var list []*Cluster
+		if err = json.Unmarshal(data, &list); err == nil && list != nil {
+			s.Sets(list)
 		}
 	}
 	body := map[string]interface{}{
