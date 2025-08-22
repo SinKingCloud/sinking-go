@@ -40,7 +40,6 @@ func loadApiRoute(s *sinking_web.Engine) {
 	cluster := g.Group("/cluster")
 	{
 		cluster.ANY("/register", server.HandleFunc(api.Cluster.Register)) //注册集群
-		cluster.ANY("/list", server.HandleFunc(api.Cluster.List))         //集群列表
 		cluster.ANY("/node", server.HandleFunc(api.Cluster.Node))         //服务列表
 		cluster.ANY("/config", server.HandleFunc(api.Cluster.Config))     //配置列表
 	}
@@ -83,8 +82,6 @@ func loadAdminRoute(s *sinking_web.Engine) {
 	{
 		cluster.ANY("/list", server.HandleFunc(admin.Cluster.List))     //集群列表
 		cluster.ANY("/update", server.HandleFunc(admin.Cluster.Update)) //编辑集群
-		cluster.ANY("/create", server.HandleFunc(admin.Cluster.Create)) //创建集群
-		cluster.ANY("/delete", server.HandleFunc(admin.Cluster.Delete)) //删除集群
 	}
 
 	node := g.Group("/node")
@@ -105,7 +102,6 @@ func loadAdminRoute(s *sinking_web.Engine) {
 
 	recycle := g.Group("/recycle")
 	{
-		recycle.ANY("/cluster", server.HandleFunc(admin.Recycle.Cluster)) //集群回收站
 		recycle.ANY("/node", server.HandleFunc(admin.Recycle.Node))       //节点回收站
 		recycle.ANY("/config", server.HandleFunc(admin.Recycle.Config))   //配置回收站
 		recycle.ANY("/restore", server.HandleFunc(admin.Recycle.Restore)) //恢复文件

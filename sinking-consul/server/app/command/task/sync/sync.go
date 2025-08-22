@@ -21,7 +21,7 @@ func Init() {
 		for {
 			service.Cluster.Each(func(key string, value *cluster.Cluster) bool {
 				if value.LastHeart+60 < time.Now().Unix() {
-					value.OnlineStatus = int(cluster.Offline)
+					value.Status = int(cluster.Offline)
 				}
 				sync.Instance.SendTask(&sync.Task{
 					Type:          sync.RegisterService,
@@ -54,7 +54,7 @@ func Init() {
 			}
 			if i == 3 {
 				service.Cluster.Each(func(key string, value *cluster.Cluster) bool {
-					if value.Status == int(cluster.Normal) && value.OnlineStatus == int(cluster.Online) {
+					if value.Status == int(cluster.Online) {
 						sync.Instance.SendTask(&sync.Task{
 							Type:          sync.SynchronizeData,
 							RemoteAddress: key,

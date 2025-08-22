@@ -4,10 +4,6 @@ import "server/app/util/server"
 
 type ControllerRecycle struct{}
 
-func (ControllerRecycle) Cluster(c *server.Context) {
-
-}
-
 func (ControllerRecycle) Node(c *server.Context) {
 
 }

@@ -3,10 +3,8 @@ create table cloud_clusters
     address       varchar(200)      not null
         constraint pk_address
             primary key,
-    online_status integer default 0 not null,
     status        integer default 0 not null,
     last_heart    integer default 0,
-    is_delete     integer default 0,
     create_time   TEXT,
     update_time   TEXT
 );
@@ -14,14 +12,8 @@ create table cloud_clusters
 create index idx_cluster_address
     on cloud_clusters (address);
 
-create index idx_cluster_online_status
-    on cloud_clusters (online_status);
-
 create index idx_cluster_status
     on cloud_clusters (status);
-
-create index idx_cluster_is_delete
-    on cloud_clusters (is_delete);
 
 create table cloud_configs
 (

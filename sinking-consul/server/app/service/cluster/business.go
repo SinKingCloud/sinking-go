@@ -49,30 +49,19 @@ func (s *Service) Each(fun func(key string, value *Cluster) bool) {
 	})
 }
 
-// GetAllClusters 获取所有集群数据
-func (s *Service) GetAllClusters() []*Cluster {
-	list := make([]*Cluster, 100)
-	clusterPool.Range(func(key, value any) bool {
-		list = append(list, value.(*Cluster))
-		return true
-	})
-	return list
-}
-
 // Register 注册集群信息
 func (s *Service) Register(address string) {
 	data := s.Get(address)
 	if data == nil {
 		s.Set(address, &Cluster{
 			Cluster: &model.Cluster{
-				Address:      address,
-				OnlineStatus: int(Online),
-				Status:       int(Normal),
-				LastHeart:    time.Now().Unix(),
+				Address:   address,
+				Status:    int(Online),
+				LastHeart: time.Now().Unix(),
 			},
 		})
 	} else {
-		data.OnlineStatus = int(Online)
+		data.Status = int(Online)
 		data.LastHeart = time.Now().Unix()
 	}
 }
@@ -85,25 +74,23 @@ func (s *Service) Init() {
 			d, e := s.FindByAddress(v)
 			if e != nil || d == nil {
 				_ = s.create(&model.Cluster{
-					Address:      v,
-					OnlineStatus: int(Offline),
-					Status:       int(Normal),
-					LastHeart:    0,
+					Address:   v,
+					Status:    int(Offline),
+					LastHeart: 0,
 				})
 			}
 		}
-		_ = s.UpdateAll(map[string]interface{}{"online_status": Offline})
+		_ = s.UpdateAll(map[string]interface{}{"status": Offline})
 		all, e := s.SelectAll()
 		if e == nil && all != nil {
 			for _, v := range all {
 				s.Set(v.Address, &Cluster{
 					Cluster: &model.Cluster{
-						Address:      v.Address,
-						OnlineStatus: v.OnlineStatus,
-						Status:       v.Status,
-						LastHeart:    v.LastHeart,
-						CreateTime:   v.CreateTime,
-						UpdateTime:   v.UpdateTime,
+						Address:    v.Address,
+						Status:     v.Status,
+						LastHeart:  v.LastHeart,
+						CreateTime: v.CreateTime,
+						UpdateTime: v.UpdateTime,
 					},
 				})
 			}
@@ -191,13 +178,6 @@ func (s *Service) SynchronizeRemoteData(remoteAddress string) error {
 		var list []*node.Node
 		if err = json.Unmarshal(data, &list); err == nil && list != nil {
 			node.GetIns().Sets(list)
-		}
-	}
-	code, _, data, err = s.request(remoteAddress, "api/cluster/list", nil)
-	if err == nil && code == 200 {
-		var list []*Cluster
-		if err = json.Unmarshal(data, &list); err == nil && list != nil {
-			s.Sets(list)
 		}
 	}
 	body := map[string]interface{}{

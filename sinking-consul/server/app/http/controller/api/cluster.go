@@ -22,11 +22,6 @@ func (ControllerCluster) Register(c *server.Context) {
 	c.Success("注册成功")
 }
 
-// List 集群列表
-func (ControllerCluster) List(c *server.Context) {
-	c.SuccessWithData("获取成功", service.Cluster.GetAllClusters())
-}
-
 // Node 服务列表
 func (ControllerCluster) Node(c *server.Context) {
 	c.SuccessWithData("获取成功", service.Node.GetLocalNodes())

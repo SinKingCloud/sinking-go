@@ -53,7 +53,7 @@ func saveClusters() {
 			for _, clusterData := range batch {
 				tx.Clauses(clause.OnConflict{
 					Columns:   []clause.Column{{Name: "address"}},
-					DoUpdates: clause.AssignmentColumns([]string{"online_status", "status", "last_heart", "is_delete"}),
+					DoUpdates: clause.AssignmentColumns([]string{"status", "last_heart"}),
 				}).Create(clusterData.Cluster)
 			}
 			return nil
