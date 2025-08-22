@@ -153,9 +153,6 @@ func (s *Service) GetLocalNodes() []*model.Node {
 	list := make([]*model.Node, 0, count)
 	for _, g := range nodePool {
 		for _, value := range g {
-			if value.IsDelete == int(True) {
-				continue
-			}
 			if value.IsLocal {
 				list = append(list, value.Node)
 			}

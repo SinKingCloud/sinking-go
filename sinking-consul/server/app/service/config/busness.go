@@ -151,9 +151,6 @@ func (s *Service) GetAllConfigs(group string, showContent bool) []*Config {
 	list := make([]*Config, 0, count)
 	for _, g := range configPool {
 		for _, value := range g {
-			if value.IsDelete == int(True) {
-				continue
-			}
 			if group != "" && group != "*" {
 				if value.Group != group {
 					continue

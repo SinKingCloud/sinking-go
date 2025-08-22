@@ -53,7 +53,7 @@ func saveClusters() {
 			for _, clusterData := range batch {
 				tx.Clauses(clause.OnConflict{
 					Columns:   []clause.Column{{Name: "address"}},
-					DoUpdates: clause.AssignmentColumns([]string{"online_status", "status", "last_heart"}),
+					DoUpdates: clause.AssignmentColumns([]string{"online_status", "status", "last_heart", "is_delete"}),
 				}).Create(clusterData.Cluster)
 			}
 			return nil
@@ -87,7 +87,7 @@ func saveNodes() {
 			for _, nodeData := range batch {
 				tx.Clauses(clause.OnConflict{
 					Columns:   []clause.Column{{Name: "group"}, {Name: "name"}, {Name: "address"}},
-					DoUpdates: clause.AssignmentColumns([]string{"name", "online_status", "status", "last_heart"}),
+					DoUpdates: clause.AssignmentColumns([]string{"name", "online_status", "status", "last_heart", "is_delete"}),
 				}).Create(nodeData.Node)
 			}
 			return nil
@@ -133,7 +133,7 @@ func saveConfig() {
 			for _, configData := range batch {
 				tx.Clauses(clause.OnConflict{
 					Columns:   []clause.Column{{Name: "group"}, {Name: "name"}},
-					DoUpdates: clause.AssignmentColumns([]string{"type", "hash", "content"}),
+					DoUpdates: clause.AssignmentColumns([]string{"type", "hash", "content", "is_delete"}),
 				}).Create(configData.Config)
 			}
 			return nil

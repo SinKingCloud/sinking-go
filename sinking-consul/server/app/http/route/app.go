@@ -102,4 +102,12 @@ func loadAdminRoute(s *sinking_web.Engine) {
 		config.ANY("/create", server.HandleFunc(admin.Config.Create)) //创建配置
 		config.ANY("/delete", server.HandleFunc(admin.Config.Delete)) //删除配置
 	}
+
+	recycle := g.Group("/recycle")
+	{
+		recycle.ANY("/cluster", server.HandleFunc(admin.Recycle.Cluster)) //集群回收站
+		recycle.ANY("/node", server.HandleFunc(admin.Recycle.Node))       //节点回收站
+		recycle.ANY("/config", server.HandleFunc(admin.Recycle.Config))   //配置回收站
+		recycle.ANY("/restore", server.HandleFunc(admin.Recycle.Restore)) //恢复文件
+	}
 }
