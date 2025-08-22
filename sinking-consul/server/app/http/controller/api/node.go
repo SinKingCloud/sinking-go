@@ -29,7 +29,7 @@ func (ControllerNode) Register(c *server.Context) {
 func (ControllerNode) Sync(c *server.Context) {
 	type Form struct {
 		Group        string `json:"group" default:"" validate:"required" label:"服务组"`
-		LastSyncTime int64  `json:"last_sync_time" default:"" validate:"required" label:"上次同步时间"`
+		LastSyncTime int64  `json:"last_sync_time" default:"" validate:"" label:"上次同步时间"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
