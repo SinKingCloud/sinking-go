@@ -22,8 +22,8 @@ func (ControllerConfig) Sync(c *server.Context) {
 	}
 	var list []*config.Config
 	lastSyncTime := service.Config.GetOperateTime(form.Group)
-	if form.LastSyncTime == 0 || lastSyncTime != form.LastSyncTime {
-		list = service.Config.GetAllConfigs(form.Group, true)
+	if form.LastSyncTime <= 0 || lastSyncTime > form.LastSyncTime {
+		list = service.Config.GetAllConfigs(form.Group, true, true)
 	}
 	c.SuccessWithData("获取成功", list)
 }

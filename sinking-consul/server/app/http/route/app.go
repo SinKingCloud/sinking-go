@@ -91,11 +91,11 @@ func loadAdminRoute(s *sinking_web.Engine) {
 
 	config := g.Group("/config")
 	{
-		config.ANY("/list", server.HandleFunc(admin.Config.List))      //配置列表
-		config.ANY("/info", server.HandleFunc(admin.Config.Info))      //配置信息
-		config.ANY("/update", server.HandleFunc(admin.Config.Update))  //编辑配置
-		config.ANY("/create", server.HandleFunc(admin.Config.Create))  //创建配置
-		config.ANY("/delete", server.HandleFunc(admin.Config.Delete))  //删除配置
-		config.ANY("/delete", server.HandleFunc(admin.Config.Restore)) //恢复配置
+		config.ANY("/list", server.HandleFunc(admin.Config.List))       //配置列表
+		config.ANY("/info", server.HandleFunc(admin.Config.Info))       //配置信息
+		config.ANY("/update", server.HandleFunc(admin.Config.Update))   //编辑配置
+		config.ANY("/create", server.HandleFunc(admin.Config.Create))   //创建配置
+		config.ANY("/delete", server.HandleFunc(admin.Config.Delete))   //删除配置
+		config.ANY("/restore", server.HandleFunc(admin.Config.Restore)) //恢复配置
 	}
 }

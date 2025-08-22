@@ -17,7 +17,7 @@ func (s *Service) Init() {
 						Type:       v.Type,
 						Hash:       v.Hash,
 						Content:    v.Content,
-						IsDelete:   v.IsDelete,
+						Status:     v.Status,
 						CreateTime: v.CreateTime,
 						UpdateTime: v.UpdateTime,
 					},
@@ -141,7 +141,7 @@ func (s *Service) Delete(group string, key string) {
 }
 
 // GetAllConfigs 获取本地配置信息
-func (s *Service) GetAllConfigs(group string, showContent bool) []*Config {
+func (s *Service) GetAllConfigs(group string, showContent bool, filterStatus bool) []*Config {
 	configLock.RLock()
 	defer configLock.RUnlock()
 	count := 0
@@ -151,6 +151,9 @@ func (s *Service) GetAllConfigs(group string, showContent bool) []*Config {
 	list := make([]*Config, 0, count)
 	for _, g := range configPool {
 		for _, value := range g {
+			if filterStatus && value.Status == int(Stop) {
+				continue
+			}
 			if group != "" && group != "*" {
 				if value.Group != group {
 					continue

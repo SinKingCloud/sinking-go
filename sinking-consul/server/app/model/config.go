@@ -13,7 +13,7 @@ type Config struct {
 	Type       string       `gorm:"column:type" json:"type"`
 	Hash       string       `gorm:"column:hash" json:"hash"`
 	Content    string       `gorm:"column:content" json:"content"`
-	IsDelete   int          `gorm:"column:is_delete" json:"is_delete"`
+	Status     int          `gorm:"column:status" json:"status"`
 	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
 }

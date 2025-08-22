@@ -25,16 +25,14 @@ func Init() {
 // Enum 枚举信息
 var Enum = map[string]interface{}{
 	"cluster": map[string]interface{}{
-		"status":    Cluster.Status(),   //在线状态
-		"is_delete": Cluster.IsDelete(), //是否删除
+		"status": Cluster.Status(), //在线状态
 	},
 	"node": map[string]interface{}{
 		"online_status": Node.OnlineStatus(), //在线状态
 		"status":        Node.Status(),       //集群状态
-		"is_delete":     Node.IsDelete(),     //是否删除
 	},
 	"config": map[string]interface{}{
-		"type":      Config.Types(),    //配置类型
-		"is_delete": Config.IsDelete(), //是否删除
+		"type":   Config.Types(),  //配置类型
+		"status": Config.Status(), //是否启用
 	},
 }

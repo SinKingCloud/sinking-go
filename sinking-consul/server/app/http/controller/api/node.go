@@ -38,7 +38,7 @@ func (ControllerNode) Sync(c *server.Context) {
 	}
 	var list []*model.Node
 	lastSyncTime := service.Node.GetOperateTime(form.Group)
-	if form.LastSyncTime == 0 || lastSyncTime != form.LastSyncTime {
+	if form.LastSyncTime <= 0 || lastSyncTime > form.LastSyncTime {
 		list = service.Node.GetAllOnlineNodes(form.Group)
 	}
 	c.SuccessWithData("获取成功", list)

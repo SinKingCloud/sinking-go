@@ -1,5 +1,20 @@
 package config
 
+type Status int
+
+const (
+	Normal Status = iota //正常
+	Stop                 //暂停
+)
+
+// Status 状态数据
+func (s *Service) Status() map[Status]string {
+	return map[Status]string{
+		Normal: "正常",
+		Stop:   "暂停",
+	}
+}
+
 type Type string
 
 const (
@@ -14,20 +29,5 @@ func (s *Service) Types() map[Type]string {
 		JSON: "JSON",
 		YML:  "YML",
 		INI:  "INI",
-	}
-}
-
-type IsDelete int
-
-const (
-	False IsDelete = iota
-	True
-)
-
-// IsDelete 是否删除
-func (s *Service) IsDelete() map[IsDelete]string {
-	return map[IsDelete]string{
-		False: "未删除",
-		True:  "已删除",
 	}
 }

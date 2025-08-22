@@ -133,7 +133,7 @@ func saveConfig() {
 			for _, configData := range batch {
 				tx.Clauses(clause.OnConflict{
 					Columns:   []clause.Column{{Name: "group"}, {Name: "name"}},
-					DoUpdates: clause.AssignmentColumns([]string{"type", "hash", "content", "is_delete"}),
+					DoUpdates: clause.AssignmentColumns([]string{"type", "hash", "content", "status"}),
 				}).Create(configData.Config)
 			}
 			return nil
