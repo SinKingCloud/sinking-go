@@ -6,6 +6,7 @@ create table cloud_clusters
     online_status integer default 0 not null,
     status        integer default 0 not null,
     last_heart    integer default 0,
+    is_delete     integer default 0,
     create_time   TEXT,
     update_time   TEXT
 );
@@ -19,6 +20,9 @@ create index idx_cluster_online_status
 create index idx_cluster_status
     on cloud_clusters (status);
 
+create index idx_cluster_is_delete
+    on cloud_clusters (is_delete);
+
 create table cloud_configs
 (
     "group"     varchar(50)  not null,
@@ -26,6 +30,7 @@ create table cloud_configs
     type        varchar(50)  not null,
     hash        varchar(50),
     content     TEXT,
+    is_delete   integer default 0,
     create_time TEXT,
     update_time TEXT,
     constraint pk_group_name
@@ -44,6 +49,9 @@ create index idx_configs_name
 create index idx_configs_type
     on cloud_configs (type);
 
+create index idx_configs_is_delete
+    on cloud_configs (is_delete);
+
 create table cloud_nodes
 (
     "group"       varchar(50)       not null,
@@ -52,6 +60,7 @@ create table cloud_nodes
     online_status integer default 0 not null,
     status        integer default 0 not null,
     last_heart    integer default 0 not null,
+    is_delete     integer default 0,
     create_time   TEXT,
     update_time   TEXT,
     constraint pk_group_name_address
@@ -72,3 +81,6 @@ create index idx_node_online_status
 
 create index idx_node_status
     on cloud_nodes (status);
+
+create index idx_node_is_delete
+    on cloud_nodes (is_delete);

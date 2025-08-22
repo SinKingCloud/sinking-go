@@ -12,6 +12,7 @@ type Cluster struct {
 	OnlineStatus int          `gorm:"column:online_status" json:"online_status"`
 	Status       int          `gorm:"column:status" json:"status"`
 	LastHeart    int64        `gorm:"column:last_heart" json:"last_heart"`
+	IsDelete     int          `gorm:"column:is_delete" json:"is_delete"`
 	CreateTime   str.DateTime `gorm:"column:create_time" json:"create_time"`
 	UpdateTime   str.DateTime `gorm:"column:update_time" json:"update_time"`
 }

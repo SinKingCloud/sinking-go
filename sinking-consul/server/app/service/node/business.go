@@ -20,6 +20,7 @@ func (s *Service) Init() {
 						OnlineStatus: int(Offline),
 						Status:       v.Status,
 						LastHeart:    v.LastHeart,
+						IsDelete:     v.IsDelete,
 						CreateTime:   v.CreateTime,
 						UpdateTime:   v.UpdateTime,
 					},
@@ -152,6 +153,9 @@ func (s *Service) GetLocalNodes() []*model.Node {
 	list := make([]*model.Node, 0, count)
 	for _, g := range nodePool {
 		for _, value := range g {
+			if value.IsDelete == int(True) {
+				continue
+			}
 			if value.IsLocal {
 				list = append(list, value.Node)
 			}
@@ -171,7 +175,7 @@ func (s *Service) GetAllOnlineNodes(group string) []*model.Node {
 	list := make([]*model.Node, 0, count)
 	for _, g := range nodePool {
 		for _, value := range g {
-			if value.OnlineStatus == int(Online) && value.Status == int(Normal) && value.Group == group {
+			if value.IsDelete == int(False) && value.OnlineStatus == int(Online) && value.Status == int(Normal) && value.Group == group {
 				list = append(list, value.Node)
 			}
 		}

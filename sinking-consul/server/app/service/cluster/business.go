@@ -53,7 +53,10 @@ func (s *Service) Each(fun func(key string, value *Cluster) bool) {
 func (s *Service) GetAllClusters() []*Cluster {
 	list := make([]*Cluster, 100)
 	clusterPool.Range(func(key, value any) bool {
-		list = append(list, value.(*Cluster))
+		v := value.(*Cluster)
+		if v.IsDelete == int(False) {
+			list = append(list, value.(*Cluster))
+		}
 		return true
 	})
 	return list

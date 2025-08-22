@@ -17,6 +17,7 @@ func (s *Service) Init() {
 						Type:       v.Type,
 						Hash:       v.Hash,
 						Content:    v.Content,
+						IsDelete:   v.IsDelete,
 						CreateTime: v.CreateTime,
 						UpdateTime: v.UpdateTime,
 					},
@@ -150,6 +151,9 @@ func (s *Service) GetAllConfigs(group string, showContent bool) []*Config {
 	list := make([]*Config, 0, count)
 	for _, g := range configPool {
 		for _, value := range g {
+			if value.IsDelete == int(True) {
+				continue
+			}
 			if group != "" && group != "*" {
 				if value.Group != group {
 					continue
