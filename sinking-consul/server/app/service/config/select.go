@@ -19,7 +19,7 @@ func (s *Service) SelectInGroupAndName(keys []*model.Config) (list []*Config, er
 			conditions = append(conditions, []interface{}{key.Group, key.Name})
 		}
 	}
-	err = util.Database.Db.Model(&model.Node{}).Where("(`group`, `name`) IN (?)", conditions).Find(&list).Error
+	err = util.Database.Db.Debug().Model(&model.Config{}).Where("(`group`, `name`) IN (?)", conditions).Find(&list).Error
 	return list, err
 }
 
