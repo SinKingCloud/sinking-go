@@ -12,27 +12,25 @@ func NewCache(defaultExpiration, cleanupInterval time.Duration) *Cache {
 			defaultExpiration,
 			cleanupInterval,
 		),
-		locks:           make(map[string]*sync.Mutex),
-		lockExpirations: make(map[string]time.Time),
-		mu:              sync.Mutex{},
+		locks:    make(map[string]*lockInfo),
+		mu:       sync.Mutex{},
+		stopChan: make(chan struct{}),
 	}
-	c.once.Do(func() {
-		go func() {
-			for {
-				c.CleanExpiredLock()
-				time.Sleep(cleanupInterval)
-			}
-		}()
-	})
+	go c.cleanupRoutine(cleanupInterval)
 	return c
 }
 
+type lockInfo struct {
+	mutex      sync.Mutex
+	expiration time.Time
+	locked     bool // 标记锁是否被持有
+}
+
 type Cache struct {
-	memory          *goCache.Cache
-	locks           map[string]*sync.Mutex
-	lockExpirations map[string]time.Time
-	mu              sync.Mutex
-	once            sync.Once
+	memory   *goCache.Cache
+	locks    map[string]*lockInfo
+	mu       sync.Mutex
+	stopChan chan struct{}
 }
 
 func (c *Cache) Get(key string) interface{} {
@@ -47,62 +45,108 @@ func (c *Cache) Set(key string, value interface{}) {
 	c.memory.SetDefault(key, value)
 }
 
-func (c *Cache) SetWithExpire(key string, value interface{}, second time.Duration) {
-	c.memory.Set(key, value, second)
+func (c *Cache) SetWithExpire(key string, value interface{}, expiration time.Duration) {
+	c.memory.Set(key, value, expiration)
 }
 
 func (c *Cache) Delete(key string) {
 	c.memory.Delete(key)
 }
 
-func (c *Cache) Remember(key string, fun func() interface{}, second time.Duration) interface{} {
-	value, exists := c.memory.Get(key)
-	if !exists {
-		value = fun()
-		c.SetWithExpire(key, value, second)
+func (c *Cache) Remember(key string, fn func() interface{}, expiration time.Duration) interface{} {
+	if value, exists := c.memory.Get(key); exists {
+		return value
 	}
+	value := fn()
+	c.SetWithExpire(key, value, expiration)
 	return value
 }
 
-// Lock 尝试获取锁，如果锁已被占用或者已过期则返回false，否则返回true并获取锁
 func (c *Cache) Lock(key string, expiration time.Duration) bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	expirationTime, ok := c.lockExpirations[key]
-	if ok && expirationTime.After(time.Now()) {
+	now := time.Now()
+	info, exists := c.locks[key]
+	if exists && info.expiration.After(now) && info.locked {
 		return false
 	}
-	if _, ok = c.locks[key]; !ok {
-		c.locks[key] = &sync.Mutex{}
+	if !exists {
+		info = &lockInfo{}
+		c.locks[key] = info
 	}
-	c.lockExpirations[key] = time.Now().Add(expiration)
-	c.locks[key].Lock()
+	info.expiration = now.Add(expiration)
+	locked := info.mutex.TryLock()
+	if !locked {
+		delete(c.locks, key)
+		return false
+	}
+	info.locked = true
 	return true
 }
 
-// UnLock 释放锁
 func (c *Cache) UnLock(key string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if mutex, ok := c.locks[key]; ok {
-		mutex.Unlock()
+	info, exists := c.locks[key]
+	if !exists {
+		return
+	}
+	info.mutex.Unlock()
+	info.locked = false
+	if info.expiration.Before(time.Now()) {
 		delete(c.locks, key)
-		delete(c.lockExpirations, key)
 	}
 }
 
-// CleanExpiredLock 清理过期的锁
+// IsLock 检查指定键的锁是否处于上锁状态
+func (c *Cache) IsLock(key string) bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	info, exists := c.locks[key]
+	if !exists {
+		return false
+	}
+	return info.locked && info.expiration.After(time.Now())
+}
+
+func (c *Cache) cleanupRoutine(interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			c.CleanExpiredLock()
+		case <-c.stopChan:
+			return
+		}
+	}
+}
+
 func (c *Cache) CleanExpiredLock() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	now := time.Now()
-	for key, expiration := range c.lockExpirations {
-		if expiration.Before(now) {
-			if mutex, ok := c.locks[key]; ok {
-				mutex.Unlock()
+	for key, info := range c.locks {
+		if info.expiration.Before(now) {
+			if info.locked {
+				info.mutex.Unlock()
+				info.locked = false
 			}
 			delete(c.locks, key)
-			delete(c.lockExpirations, key)
 		}
+	}
+}
+
+// Close 停止清理goroutine并释放资源
+func (c *Cache) Close() {
+	close(c.stopChan)
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for key, info := range c.locks {
+		if info.locked {
+			info.mutex.Unlock()
+			info.locked = false
+		}
+		delete(c.locks, key)
 	}
 }
