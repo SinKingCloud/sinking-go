@@ -16,7 +16,7 @@ type ControllerConfig struct {
 func (ControllerConfig) List(c *server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		OrderByField    string `json:"order_by_field" default:"id" validate:"oneof=group name update_time create_time" label:"排序字段"`
+		OrderByField    string `json:"order_by_field" default:"create_time" validate:"oneof=group name update_time create_time" label:"排序字段"`
 		OrderByType     string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
 		Group           string `json:"group" default:"" validate:"omitempty" label:"配置分组"`
 		Name            string `json:"name" default:"" validate:"omitempty" label:"配置名称"`
@@ -133,7 +133,7 @@ func (ControllerConfig) Create(c *server.Context) {
 		Name    string `json:"name" default:"" validate:"required" label:"配置名称"`
 		Type    string `json:"type" default:"" validate:"required" label:"配置类型"`
 		Content string `json:"content" default:"" validate:"required" label:"配置内容"`
-		Status  int    `json:"status" default:"" validate:"required,numeric" label:"状态"`
+		Status  int    `json:"status" default:"" validate:"numeric" label:"状态"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {

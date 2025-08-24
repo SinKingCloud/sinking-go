@@ -12,7 +12,7 @@ type ControllerCluster struct {
 func (ControllerCluster) List(c *server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		OrderByField    string `json:"order_by_field" default:"id" validate:"oneof=update_time create_time" label:"排序字段"`
+		OrderByField    string `json:"order_by_field" default:"create_time" validate:"oneof=update_time create_time" label:"排序字段"`
 		OrderByType     string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
 		Status          string `json:"status" default:"" validate:"omitempty,numeric" label:"在线状态"`
 		UpdateTimeStart string `json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`

@@ -14,7 +14,7 @@ type ControllerNode struct {
 func (ControllerNode) List(c *server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		OrderByField    string `json:"order_by_field" default:"id" validate:"oneof=group name update_time create_time" label:"排序字段"`
+		OrderByField    string `json:"order_by_field" default:"create_time" validate:"oneof=group name update_time create_time" label:"排序字段"`
 		OrderByType     string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
 		Group           string `json:"group" default:"" validate:"omitempty" label:"服务分组"`
 		Name            string `json:"name" default:"" validate:"omitempty" label:"服务名称"`
