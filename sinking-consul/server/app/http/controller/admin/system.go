@@ -26,3 +26,7 @@ func (ControllerSystem) Password(c *server.Context) {
 		c.Success("修改密码成功")
 	}
 }
+
+func (ControllerSystem) Overview(c *server.Context) {
+	c.Success("获取成功")
+}

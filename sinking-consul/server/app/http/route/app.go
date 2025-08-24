@@ -77,6 +77,7 @@ func loadAdminRoute(s *sinking_web.Engine) {
 	system := g.Group("/system")
 	{
 		system.ANY("/password", server.HandleFunc(admin.System.Password)) //修改密码
+		system.ANY("/overview", server.HandleFunc(admin.System.Overview)) //统计数据
 	}
 
 	cluster := g.Group("/cluster")
