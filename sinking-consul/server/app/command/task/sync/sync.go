@@ -2,10 +2,12 @@ package sync
 
 import (
 	"server/app/command/queue/sync"
+	"server/app/constant"
 	"server/app/service"
 	"server/app/service/cluster"
 	"server/app/service/config"
 	"server/app/service/node"
+	"server/app/util"
 	"server/app/util/str"
 	"time"
 )
@@ -19,6 +21,13 @@ func Init() {
 		configTemp := make(map[string]uint64)
 		i := 0
 		for {
+			for {
+				if util.Cache.IsLock(constant.LockSyncData) {
+					time.Sleep(time.Second)
+				} else {
+					break
+				}
+			}
 			service.Cluster.Each(func(key string, value *cluster.Cluster) bool {
 				if value.LastHeart+60 < time.Now().Unix() {
 					value.Status = int(cluster.Offline)

@@ -18,6 +18,8 @@ var (
 	obj = &Service{}
 	//原子锁
 	clusterOnce = &sync.Once{}
+	//正在同步数据的协程数量(原子计数器)
+	syncDataCoroutineCount = int64(0)
 	// 集群池
 	clusterPool = &sync.Map{}
 	// globalClient 全局请求client

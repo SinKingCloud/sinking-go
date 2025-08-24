@@ -14,6 +14,8 @@ import (
 	"server/app/util/ip"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -171,35 +173,252 @@ func (s *Service) RegisterRemoteService(remoteAddress string) error {
 	return nil
 }
 
+// RemoteLock 远程分布式锁
+// status 0加锁 1解锁
+func (s *Service) RemoteLock(remoteAddress string, status int) error {
+	body := map[string]int{
+		"status": status,
+	}
+	code, message, _, err := s.request(remoteAddress, "api/cluster/lock", body)
+	if err != nil {
+		return err
+	}
+	if code != 200 {
+		return errors.New(message)
+	}
+	return nil
+}
+
+// RemoteDeleteData 远程删除数据
+func (s *Service) RemoteDeleteData(remoteAddress string, configs []*model.Config) error {
+	body := map[string]interface{}{}
+	if configs != nil {
+		body["configs"] = configs
+	}
+	code, message, _, err := s.request(remoteAddress, "api/cluster/delete", body)
+	if err != nil {
+		return err
+	}
+	if code != 200 {
+		return errors.New(message)
+	}
+	return nil
+}
+
 // SynchronizeRemoteData 同步集群信息
 func (s *Service) SynchronizeRemoteData(remoteAddress string) error {
-	code, _, data, err := s.request(remoteAddress, "api/cluster/node", nil)
-	if err == nil && code == 200 {
-		var list []*node.Node
-		if err = json.Unmarshal(data, &list); err == nil && list != nil {
-			node.GetIns().Sets(list)
+	for {
+		if util.Cache.IsLock(constant.LockSyncData) {
+			time.Sleep(time.Second)
+		} else {
+			break
 		}
 	}
+	atomic.AddInt64(&syncDataCoroutineCount, 1)
+	defer atomic.AddInt64(&syncDataCoroutineCount, -1)
+	var nodeList []*node.Node
+	needSetNode := false
+	code, _, data, err := s.request(remoteAddress, "api/cluster/node", nil)
+	if err == nil && code == 200 {
+		if err = json.Unmarshal(data, &nodeList); err == nil && nodeList != nil {
+			needSetNode = true
+		}
+	}
+	var configList []*config.Config
+	needSetConfig := false
 	body := map[string]interface{}{
 		"show_content": false,
 	}
 	code, _, data, err = s.request(remoteAddress, "api/cluster/config", body)
 	if err == nil && code == 200 {
-		var list []*config.Config
-		if err = json.Unmarshal(data, &list); err == nil && list != nil {
-			isChange := config.GetIns().CheckIsChange(list)
+		if err = json.Unmarshal(data, &configList); err == nil && configList != nil {
+			isChange := config.GetIns().CheckIsChange(configList)
 			if isChange {
 				body = map[string]interface{}{
 					"show_content": true,
 				}
 				code, _, data, err = s.request(remoteAddress, "api/cluster/config", body)
 				if err == nil && code == 200 {
-					if err = json.Unmarshal(data, &list); err == nil && list != nil {
-						config.GetIns().Sets(list)
+					if err = json.Unmarshal(data, &configList); err == nil && configList != nil {
+						needSetConfig = true
 					}
 				}
 			}
 		}
 	}
+	if needSetNode && nodeList != nil {
+		node.GetIns().Sets(nodeList)
+	}
+	if needSetConfig && configList != nil {
+		config.GetIns().Sets(configList)
+	}
 	return nil
+}
+
+// SyncDataLock 加锁同步数据
+func (s *Service) SyncDataLock() error {
+	key := constant.LockSyncData
+	if !util.Cache.Lock(key, constant.LockTimeSyncData) {
+		return errors.New("系统繁忙,请稍后重试(-1)")
+	}
+	success := false
+	for i := 0; i < 15; i++ {
+		if atomic.LoadInt64(&syncDataCoroutineCount) >= 1 {
+			time.Sleep(time.Second)
+		} else {
+			success = true
+			break
+		}
+	}
+	if success {
+		return nil
+	}
+	return errors.New("系统繁忙,请稍后重试(-2)")
+}
+
+// SyncDataUnLock 解锁同步数据
+func (s *Service) SyncDataUnLock() error {
+	key := constant.LockSyncData
+	util.Cache.UnLock(key)
+	return nil
+}
+
+// ChangeAllClusterLockStatus 远程分布式锁(0加锁 1解锁)
+func (s *Service) ChangeAllClusterLockStatus(status int) error {
+	type lockResult struct {
+		cluster *Cluster
+		err     error
+	}
+	list := make([]*Cluster, 0)
+	s.Each(func(key string, value *Cluster) bool {
+		if value.Status == int(Online) {
+			list = append(list, value)
+		}
+		return true
+	})
+	// 使用工作池模式，限制最大并发数
+	maxWorkers := 10
+	clusterChan := make(chan *Cluster, len(list))
+	resultChan := make(chan *lockResult, len(list))
+	// 启动工作goroutine
+	var wg sync.WaitGroup
+	for i := 0; i < maxWorkers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for cluster := range clusterChan {
+				err := s.RemoteLock(cluster.Address, status)
+				resultChan <- &lockResult{
+					cluster: cluster,
+					err:     err,
+				}
+			}
+		}()
+	}
+	// 发送任务到channel
+	for _, cluster := range list {
+		clusterChan <- cluster
+	}
+	close(clusterChan)
+	// 等待所有工作完成
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+	// 收集结果
+	successList := make([]*Cluster, 0)
+	var lastError error
+	for result := range resultChan {
+		if result.err == nil {
+			successList = append(successList, result.cluster)
+		} else {
+			lastError = errors.New("集群节点" + result.cluster.Address + "操作失败:" + result.err.Error())
+			// 如果是加锁操作，遇到错误立即停止其他操作
+			if status == 0 {
+				break
+			}
+		}
+	}
+	if status == 0 && lastError != nil {
+		// 加锁失败,解锁已加锁成功的节点
+		var rollbackWg sync.WaitGroup
+		rollbackChan := make(chan *Cluster, len(successList))
+		// 启动回滚工作goroutine
+		for i := 0; i < maxWorkers; i++ {
+			rollbackWg.Add(1)
+			go func() {
+				defer rollbackWg.Done()
+				for cluster := range rollbackChan {
+					_ = s.RemoteLock(cluster.Address, 1) // 1表示解锁
+				}
+			}()
+		}
+		// 发送回滚任务
+		for _, cluster := range successList {
+			rollbackChan <- cluster
+		}
+		close(rollbackChan)
+		// 等待所有回滚操作完成
+		rollbackWg.Wait()
+		return lastError
+	}
+	return lastError
+}
+
+func (s *Service) DeleteAllClusterData(configs []*model.Config) {
+	list := make([]*Cluster, 0)
+	s.Each(func(key string, value *Cluster) bool {
+		if value.Status == int(Online) {
+			list = append(list, value)
+		}
+		return true
+	})
+	tasks := make([]func() error, 0)
+	for _, cluster := range list {
+		tasks = append(tasks, func() error {
+			return s.RemoteDeleteData(cluster.Address, configs)
+		})
+	}
+	s.executeWithWorkers(10, tasks)
+}
+
+// ExecuteWithWorkers 使用固定数量的工作goroutine并发执行任务
+// workers: 工作goroutine数量
+// tasks: 要执行的任务函数列表
+// 返回: 每个任务的错误结果，顺序与输入任务顺序一致
+func (s *Service) executeWithWorkers(workers int, tasks []func() error) []error {
+	if workers <= 0 {
+		workers = 1
+	}
+	if len(tasks) == 0 {
+		return nil
+	}
+	// 创建任务通道和结果通道
+	taskChan := make(chan int, len(tasks))
+	resultChan := make(chan error, len(tasks))
+	var wg sync.WaitGroup
+	// 启动工作goroutine
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for taskIndex := range taskChan {
+				resultChan <- tasks[taskIndex]()
+			}
+		}()
+	}
+	// 发送任务索引到通道
+	for i := range tasks {
+		taskChan <- i
+	}
+	close(taskChan)
+	// 等待所有工作完成
+	wg.Wait()
+	close(resultChan)
+	// 收集结果
+	results := make([]error, len(tasks))
+	for i := 0; i < len(tasks); i++ {
+		results[i] = <-resultChan
+	}
+	return results
 }

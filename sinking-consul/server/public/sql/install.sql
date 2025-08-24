@@ -22,7 +22,7 @@ create table cloud_configs
     type        varchar(50)  not null,
     hash        varchar(50),
     content     TEXT,
-    is_delete   integer default 0,
+    status   integer default 0,
     create_time TEXT,
     update_time TEXT,
     constraint pk_group_name
@@ -41,8 +41,8 @@ create index idx_configs_name
 create index idx_configs_type
     on cloud_configs (type);
 
-create index idx_configs_is_delete
-    on cloud_configs (is_delete);
+create index idx_configs_status
+    on cloud_configs (status);
 
 create table cloud_nodes
 (

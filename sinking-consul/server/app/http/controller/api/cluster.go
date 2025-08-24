@@ -1,6 +1,7 @@
 package api
 
 import (
+	"server/app/model"
 	"server/app/service"
 	"server/app/util/server"
 )
@@ -38,4 +39,47 @@ func (ControllerCluster) Config(c *server.Context) {
 		return
 	}
 	c.SuccessWithData("获取成功", service.Config.GetAllConfigs("*", form.ShowContent, false))
+}
+
+// Lock 分布式锁
+func (ControllerCluster) Lock(c *server.Context) {
+	type Form struct {
+		Status int `json:"status" default:"" validate:"oneof=0 1" label:"锁状态"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorAll(form); !ok {
+		c.Error(msg)
+		return
+	}
+	if form.Status == 0 {
+		err := service.Cluster.SyncDataLock()
+		if err != nil {
+			c.Error(err.Error())
+			return
+		}
+		c.Success("上锁成功")
+	} else {
+		err := service.Cluster.SyncDataUnLock()
+		if err != nil {
+			c.Error(err.Error())
+			return
+		}
+		c.Success("解锁成功")
+	}
+}
+
+// Delete 删除数据
+func (ControllerCluster) Delete(c *server.Context) {
+	type Form struct {
+		Configs []*model.Config `json:"configs" default:"" validate:"omitempty" label:"配置列表"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorAll(form); !ok {
+		c.Error(msg)
+		return
+	}
+	if form.Configs != nil && len(form.Configs) > 0 {
+		_ = service.Config.DeleteByGroupAndName(form.Configs)
+	}
+	c.Success("执行成功")
 }

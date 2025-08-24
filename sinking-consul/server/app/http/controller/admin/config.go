@@ -162,3 +162,29 @@ func (ControllerConfig) Create(c *server.Context) {
 	}
 	c.Success("创建成功")
 }
+
+func (ControllerConfig) Delete(c *server.Context) {
+	type Form struct {
+		Keys []*model.Config `json:"keys" default:"" validate:"required,min=1,max=1000" label:"配置列表"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorAll(form); !ok {
+		c.Error(msg)
+		return
+	}
+	err := service.Cluster.ChangeAllClusterLockStatus(0)
+	if err != nil {
+		c.Error("获取分布式锁失败")
+		return
+	}
+	defer func() {
+		_ = service.Cluster.ChangeAllClusterLockStatus(1)
+	}()
+	err = service.Config.DeleteByGroupAndName(form.Keys)
+	if err != nil {
+		c.Error("删除失败")
+		return
+	}
+	service.Cluster.DeleteAllClusterData(form.Keys)
+	c.Success("删除成功")
+}

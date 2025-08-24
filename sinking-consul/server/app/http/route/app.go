@@ -42,6 +42,8 @@ func loadApiRoute(s *sinking_web.Engine) {
 		cluster.ANY("/register", server.HandleFunc(api.Cluster.Register)) //注册集群
 		cluster.ANY("/node", server.HandleFunc(api.Cluster.Node))         //服务列表
 		cluster.ANY("/config", server.HandleFunc(api.Cluster.Config))     //配置列表
+		cluster.ANY("/lock", server.HandleFunc(api.Cluster.Lock))         //分布式锁
+		cluster.ANY("/delete", server.HandleFunc(api.Cluster.Delete))     //删除数据
 	}
 
 	//注册中心相关路由
@@ -94,5 +96,6 @@ func loadAdminRoute(s *sinking_web.Engine) {
 		config.ANY("/info", server.HandleFunc(admin.Config.Info))     //配置信息
 		config.ANY("/update", server.HandleFunc(admin.Config.Update)) //编辑配置
 		config.ANY("/create", server.HandleFunc(admin.Config.Create)) //创建配置
+		config.ANY("/delete", server.HandleFunc(admin.Config.Delete)) //创建配置
 	}
 }
