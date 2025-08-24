@@ -1,30 +1,164 @@
 package admin
 
-import "server/app/util/server"
+import (
+	"server/app/model"
+	"server/app/service"
+	"server/app/service/config"
+	"server/app/util/page"
+	"server/app/util/server"
+	"server/app/util/str"
+	"strconv"
+)
 
 type ControllerConfig struct {
 }
 
 func (ControllerConfig) List(c *server.Context) {
-
+	pageInfo := page.ValidatePageDefault(c)
+	type Form struct {
+		OrderByField    string `json:"order_by_field" default:"id" validate:"oneof=group name update_time create_time" label:"排序字段"`
+		OrderByType     string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
+		Group           string `json:"group" default:"" validate:"omitempty" label:"配置分组"`
+		Name            string `json:"name" default:"" validate:"omitempty" label:"配置名称"`
+		Type            string `json:"type" default:"" validate:"omitempty" label:"配置类型"`
+		Hash            string `json:"hash" default:"" validate:"omitempty" label:"配置hash"`
+		Content         string `json:"content" default:"" validate:"omitempty" label:"配置内容"`
+		Status          string `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
+		UpdateTimeStart string `json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
+		UpdateTimeEnd   string `json:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
+		CreateTimeStart string `json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
+		CreateTimeEnd   string `json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorAll(form); !ok {
+		c.Error(msg)
+		return
+	}
+	where := make(map[string]string)
+	if form.Group != "" {
+		where["group"] = form.Group
+	}
+	if form.Name != "" {
+		where["name"] = form.Name
+	}
+	if form.Type != "" {
+		where["type"] = form.Type
+	}
+	if form.Hash != "" {
+		where["hash"] = form.Hash
+	}
+	if form.Content != "" {
+		where["content"] = form.Content
+	}
+	if form.Status != "" {
+		where["status"] = form.Status
+	}
+	if form.CreateTimeStart != "" {
+		where["create_time_start"] = form.CreateTimeStart
+	}
+	if form.CreateTimeEnd != "" {
+		where["create_time_end"] = form.CreateTimeEnd
+	}
+	if form.UpdateTimeStart != "" {
+		where["update_time_start"] = form.UpdateTimeStart
+	}
+	if form.UpdateTimeEnd != "" {
+		where["update_time_end"] = form.UpdateTimeEnd
+	}
+	data, total, err := service.Config.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	if err != nil {
+		c.Error("获取失败")
+	} else {
+		c.SuccessWithData("获取成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
+	}
 }
 
 func (ControllerConfig) Info(c *server.Context) {
-
+	type Form struct {
+		Group string `json:"group" default:"" validate:"required" label:"配置分组"`
+		Name  string `json:"name" default:"" validate:"required" label:"配置名称"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorAll(form); !ok {
+		c.Error(msg)
+		return
+	}
+	info, err := service.Config.FindByGroupAndName(form.Group, form.Name)
+	if err != nil {
+		c.Error("获取失败")
+	} else {
+		c.SuccessWithData("获取成功", info)
+	}
 }
 
 func (ControllerConfig) Update(c *server.Context) {
-
-}
-
-func (ControllerConfig) Delete(c *server.Context) {
-
+	type Form struct {
+		Keys    []*model.Config `json:"keys" default:"" validate:"required,min=1,max=1000" label:"配置列表"`
+		Type    string          `json:"type" default:"" validate:"omitempty" label:"配置类型"`
+		Content string          `json:"content" default:"" validate:"omitempty" label:"配置内容"`
+		Status  string          `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorAll(form); !ok {
+		c.Error(msg)
+		return
+	}
+	data := make(map[string]interface{})
+	if form.Type != "" {
+		data["type"] = form.Type
+	}
+	if form.Content != "" {
+		data["content"] = form.Content
+		data["hash"] = str.NewStringTool().Md5(form.Content)
+	}
+	if form.Status != "" {
+		n, _ := strconv.Atoi(form.Status)
+		if _, ok := service.Config.Status()[config.Status(n)]; !ok {
+			c.Error("状态值不合法")
+			return
+		}
+		data["status"] = form.Status
+	}
+	err := service.Config.UpdateByGroupAndName(form.Keys, data)
+	if err != nil {
+		c.Success("修改失败")
+		return
+	}
+	c.Success("修改成功")
 }
 
 func (ControllerConfig) Create(c *server.Context) {
-
-}
-
-func (ControllerConfig) Restore(c *server.Context) {
-
+	type Form struct {
+		Group   string `json:"group" default:"" validate:"required" label:"配置分组"`
+		Name    string `json:"name" default:"" validate:"required" label:"配置名称"`
+		Type    string `json:"type" default:"" validate:"required" label:"配置类型"`
+		Content string `json:"content" default:"" validate:"required" label:"配置内容"`
+		Status  int    `json:"status" default:"" validate:"required,numeric" label:"状态"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorAll(form); !ok {
+		c.Error(msg)
+		return
+	}
+	if _, ok := service.Config.Status()[config.Status(form.Status)]; !ok {
+		c.Error("状态值不合法")
+		return
+	}
+	if _, ok := service.Config.Types()[config.Type(form.Type)]; !ok {
+		c.Error("配置类型不合法")
+		return
+	}
+	err := service.Config.Create(&model.Config{
+		Group:   form.Group,
+		Name:    form.Name,
+		Type:    form.Type,
+		Hash:    str.NewStringTool().Md5(form.Content),
+		Content: form.Content,
+		Status:  form.Status,
+	})
+	if err != nil {
+		c.Error("创建失败")
+		return
+	}
+	c.Success("创建成功")
 }

@@ -2,6 +2,7 @@ package config
 
 import (
 	"server/app/model"
+	"server/app/util/str"
 	"sync"
 )
 
@@ -28,4 +29,15 @@ func GetIns() *Service {
 // Config 配置信息
 type Config struct {
 	*model.Config
+}
+
+// SelectConfig 搜索结果
+type SelectConfig struct {
+	Group      string       `gorm:"column:group" json:"group"`
+	Name       string       `gorm:"column:name" json:"name"`
+	Type       string       `gorm:"column:type" json:"type"`
+	Hash       string       `gorm:"column:hash" json:"hash"`
+	Status     int          `gorm:"column:status" json:"status"`
+	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
+	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
 }
