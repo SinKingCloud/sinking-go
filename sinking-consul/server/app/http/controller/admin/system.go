@@ -1,7 +1,12 @@
 package admin
 
 import (
+	sinking_web "github.com/SinKingCloud/sinking-go/sinking-web"
 	"server/app/constant"
+	"server/app/service"
+	"server/app/service/cluster"
+	"server/app/service/config"
+	"server/app/service/node"
 	"server/app/util"
 	"server/app/util/server"
 	"server/app/util/str"
@@ -28,5 +33,27 @@ func (ControllerSystem) Password(c *server.Context) {
 }
 
 func (ControllerSystem) Overview(c *server.Context) {
-	c.Success("获取成功")
+	clusterNum, _ := service.Cluster.CountAll()
+	clusterOnlineNum, _ := service.Cluster.CountByStatus(cluster.Online)
+	nodeNum, _ := service.Node.CountAll()
+	nodeOnlineNum, _ := service.Node.CountByOnlineStatus(node.Online)
+	configNum, _ := service.Config.CountAll()
+	configNormalNum, _ := service.Config.CountByStatus(config.Normal)
+	c.SuccessWithData("获取成功", sinking_web.H{
+		"cluster": sinking_web.H{
+			"total":   clusterNum,
+			"online":  clusterOnlineNum,
+			"offline": clusterNum - clusterOnlineNum,
+		},
+		"node": sinking_web.H{
+			"total":   nodeNum,
+			"online":  nodeOnlineNum,
+			"offline": nodeNum - nodeOnlineNum,
+		},
+		"config": sinking_web.H{
+			"total":    configNum,
+			"normal":   configNormalNum,
+			"abnormal": configNum - configNormalNum,
+		},
+	})
 }
