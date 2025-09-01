@@ -6,21 +6,25 @@ import (
 	"server/app/http/controller/api"
 	"server/app/http/controller/auth"
 	"server/app/http/middleware"
-	"server/app/util"
 	"server/app/util/server"
 	"server/public"
 )
 
+// loadApp 加载app路由
 func loadApp(s *sinking_web.Engine) {
-	if util.IsDebug() {
-		s.Use(server.HandleFunc(middleware.Cors))
-	}
+	loadMiddleware(s)
 	loadApiRoute(s)
 	loadAuthRoute(s)
 	loadAdminRoute(s)
 	loadStaticRoute(s)
 }
 
+// loadMiddleware 加载中间件
+func loadMiddleware(s *sinking_web.Engine) {
+	s.Use(server.HandleFunc(middleware.Cors))
+}
+
+// loadStaticRoute 加载静态资源路由
 func loadStaticRoute(s *sinking_web.Engine) {
 	s.ANY("/", server.HandleFunc(func(c *server.Context) {
 		c.SetHeader("content-type", "text/html;charset=utf-8;")
@@ -32,6 +36,7 @@ func loadStaticRoute(s *sinking_web.Engine) {
 	}))
 }
 
+// loadApiRoute 加载api路由
 func loadApiRoute(s *sinking_web.Engine) {
 	g := s.Group("/api")
 	g.Use(server.HandleFunc(middleware.CheckToken))
@@ -60,16 +65,17 @@ func loadApiRoute(s *sinking_web.Engine) {
 	}
 }
 
+// loadAuthRoute 加载认证路由
 func loadAuthRoute(s *sinking_web.Engine) {
 	g := s.Group("/auth")
 	{
 		g.ANY("/login", server.HandleFunc(auth.Login))     //账号登录
 		g.ANY("/logout", server.HandleFunc(auth.Logout))   //注销登录
 		g.ANY("/captcha", server.HandleFunc(auth.Captcha)) //验证码
-
 	}
 }
 
+// loadAdminRoute 加载管理后台路由
 func loadAdminRoute(s *sinking_web.Engine) {
 	g := s.Group("/admin")
 	g.Use(server.HandleFunc(middleware.CheckLogin))
