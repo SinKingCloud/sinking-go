@@ -66,7 +66,7 @@ func loadAuthRoute(s *sinking_web.Engine) {
 		g.ANY("/login", server.HandleFunc(auth.Login))     //账号登录
 		g.ANY("/logout", server.HandleFunc(auth.Logout))   //注销登录
 		g.ANY("/captcha", server.HandleFunc(auth.Captcha)) //验证码
-		g.ANY("/enum", server.HandleFunc(auth.Enum))       //枚举类型
+
 	}
 }
 
@@ -74,10 +74,16 @@ func loadAdminRoute(s *sinking_web.Engine) {
 	g := s.Group("/admin")
 	g.Use(server.HandleFunc(middleware.CheckLogin))
 
+	person := g.Group("/person")
+	{
+		person.ANY("/info", server.HandleFunc(admin.Person.Info))         //个人信息
+		person.ANY("/password", server.HandleFunc(admin.Person.Password)) //修改密码
+	}
+
 	system := g.Group("/system")
 	{
-		system.ANY("/password", server.HandleFunc(admin.System.Password)) //修改密码
 		system.ANY("/overview", server.HandleFunc(admin.System.Overview)) //统计数据
+		system.ANY("/enum", server.HandleFunc(admin.System.Enum))         //枚举类型
 	}
 
 	cluster := g.Group("/cluster")
