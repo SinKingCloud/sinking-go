@@ -1,0 +1,25 @@
+{
+  "private": true,
+  "author": "",
+  "scripts": {
+    "dev": "PORT=9002 umi dev",
+    "build": "umi build",
+    "postinstall": "umi setup",
+    "setup": "umi setup",
+    "start": "npm run dev"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^6.0.0",
+    "@umijs/plugins": "^4.4.11",
+    "antd": "^5.26.4",
+    "antd-style": "^3.7.1",
+    "go-captcha-react": "^1.0.4",
+    "umi": "^4.4.11",
+    "umi-request": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.5",
+    "typescript": "^5.0.3"
+  }
+}
