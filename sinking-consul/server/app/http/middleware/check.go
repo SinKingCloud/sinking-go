@@ -10,8 +10,7 @@ import (
 // CheckLogin 判断登录
 func CheckLogin(c *server.Context) {
 	token := c.Request.Header.Get(constant.JwtTokenName)
-	types := c.Request.Header.Get(constant.JwtDeviceName)
-	if token == "" || types == "" {
+	if token == "" {
 		c.NotLogin("您还未登陆,请先登陆账户", nil)
 		c.Abort()
 		return
