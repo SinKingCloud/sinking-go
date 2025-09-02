@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Layout, Icon} from "@/components";
 import {useLocation, useModel} from "umi";
 import {deleteHeader, getLoginToken} from "@/utils/auth";
@@ -11,7 +11,6 @@ import {outLogin} from "@/service/user/login";
 import request from "@/utils/request";
 import Title from "../title";
 import {userPath} from "@/../config/routes";
-import {SinKingRef} from "@/components/layout/sinking";
 
 /**
  * 中间件
@@ -36,7 +35,6 @@ const RightTop: React.FC = () => {
     const user = useModel("user");//用户信息
     const {message} = App.useApp()
     const theme = useModel("theme");//主题信息
-    const location = useLocation();
     /**
      * 样式
      */
@@ -156,9 +154,6 @@ const RightTop: React.FC = () => {
         };
     });
     const {styles: {img, nickname, profile, pop, content_top, ava, top_text, box, menu, menuItem, icon}} = useStyles();
-    const currentPath = () => {
-        return getCurrentPath(location?.pathname).slice(1);
-    }
     return <>
         <Tooltip title={theme?.getModeName(theme?.mode)}>
             <Icon type={theme?.isDarkMode() ? Dark : (theme?.isAutoMode() ? Auto : Light)} className={icon}
