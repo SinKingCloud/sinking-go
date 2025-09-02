@@ -2,6 +2,7 @@ package admin
 
 import (
 	"server/app/service"
+	"server/app/service/log"
 	"server/app/service/node"
 	"server/app/util/page"
 	"server/app/util/server"
@@ -59,6 +60,7 @@ func (ControllerNode) List(c *server.Context) {
 	if err != nil {
 		c.Error("获取失败")
 	} else {
+		service.Log.Create(c.GetRequestIp(), log.EventShow, "查看服务节点", "查看服务节点列表")
 		c.SuccessWithData("获取成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }
@@ -87,5 +89,6 @@ func (ControllerNode) Update(c *server.Context) {
 		c.Error(err.Error())
 		return
 	}
+	service.Log.Create(c.GetRequestIp(), log.EventUpdate, "修改服务节点", "修改服务节点数据")
 	c.Success("修改成功")
 }

@@ -4,11 +4,13 @@ import (
 	"server/app/service/auth"
 	"server/app/service/cluster"
 	"server/app/service/config"
+	"server/app/service/log"
 	"server/app/service/node"
 )
 
 // service实例
 var (
+	Log     = log.GetIns()
 	Auth    = auth.GetIns()
 	Cluster = cluster.GetIns()
 	Node    = node.GetIns()
@@ -24,6 +26,9 @@ func Init() {
 
 // Enum 枚举信息
 var Enum = map[string]interface{}{
+	"log": map[string]interface{}{
+		"type": Log.Types(), //日志类型
+	},
 	"cluster": map[string]interface{}{
 		"status": Cluster.Status(), //在线状态
 	},

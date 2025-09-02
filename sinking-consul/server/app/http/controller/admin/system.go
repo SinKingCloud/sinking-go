@@ -5,6 +5,7 @@ import (
 	"server/app/service"
 	"server/app/service/cluster"
 	"server/app/service/config"
+	"server/app/service/log"
 	"server/app/service/node"
 	"server/app/util"
 	"server/app/util/server"
@@ -77,11 +78,13 @@ func (ControllerSystem) Config(c *server.Context) {
 		}
 		err := util.Conf.WriteConfig()
 		if err == nil {
+			service.Log.Create(c.GetRequestIp(), log.EventUpdate, "修改系统配置", "修改系统配置["+form.Group+"]数据")
 			c.Success("保存成功")
 		} else {
 			c.Error("保存失败")
 		}
 	} else {
+		service.Log.Create(c.GetRequestIp(), log.EventShow, "查看系统配置", "查看系统配置["+form.Group+"]列表")
 		c.SuccessWithData("获取成功", util.Conf.AllSettings()[form.Group])
 	}
 }

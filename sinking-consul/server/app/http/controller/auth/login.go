@@ -2,6 +2,7 @@ package auth
 
 import (
 	"server/app/service"
+	"server/app/service/log"
 	"server/app/util/server"
 )
 
@@ -32,5 +33,6 @@ func Login(c *server.Context) {
 		c.Error(e.Error())
 		return
 	}
+	service.Log.Create(c.GetRequestIp(), log.EventLogin, "系统登录", "系统登录成功")
 	c.SuccessWithData("登录成功", token)
 }

@@ -4,6 +4,7 @@ import (
 	"server/app/model"
 	"server/app/service"
 	"server/app/service/config"
+	"server/app/service/log"
 	"server/app/util/page"
 	"server/app/util/server"
 	"server/app/util/str"
@@ -69,6 +70,7 @@ func (ControllerConfig) List(c *server.Context) {
 	if err != nil {
 		c.Error("获取失败")
 	} else {
+		service.Log.Create(c.GetRequestIp(), log.EventShow, "查看服务配置", "查看服务配置列表")
 		c.SuccessWithData("获取成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }
@@ -87,6 +89,7 @@ func (ControllerConfig) Info(c *server.Context) {
 	if err != nil {
 		c.Error("获取失败")
 	} else {
+		service.Log.Create(c.GetRequestIp(), log.EventShow, "查看配置详情", "查看配置["+form.Group+":"+form.Name+"]详情")
 		c.SuccessWithData("获取成功", info)
 	}
 }
@@ -124,6 +127,7 @@ func (ControllerConfig) Update(c *server.Context) {
 		c.Success("修改失败")
 		return
 	}
+	service.Log.Create(c.GetRequestIp(), log.EventUpdate, "修改服务配置", "修改服务配置数据")
 	c.Success("修改成功")
 }
 
@@ -160,6 +164,7 @@ func (ControllerConfig) Create(c *server.Context) {
 		c.Error("创建失败")
 		return
 	}
+	service.Log.Create(c.GetRequestIp(), log.EventCreate, "创建服务配置", "创建服务配置["+form.Group+":"+form.Name+"]")
 	c.Success("创建成功")
 }
 
@@ -186,5 +191,6 @@ func (ControllerConfig) Delete(c *server.Context) {
 		return
 	}
 	service.Cluster.DeleteAllClusterData(form.Keys)
+	service.Log.Create(c.GetRequestIp(), log.EventDelete, "删除服务配置", "删除服务配置数据")
 	c.Success("删除成功")
 }

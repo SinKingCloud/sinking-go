@@ -85,6 +85,7 @@ func loadAdminRoute(s *sinking_web.Engine) {
 	{
 		person.ANY("/info", server.HandleFunc(admin.Person.Info))         //个人信息
 		person.ANY("/password", server.HandleFunc(admin.Person.Password)) //修改密码
+		person.ANY("/log", server.HandleFunc(admin.Person.Log))           //操作日志
 	}
 
 	system := g.Group("/system")
