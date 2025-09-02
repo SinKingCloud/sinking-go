@@ -6,6 +6,7 @@ import (
 	"server/app/service/cluster"
 	"server/app/service/config"
 	"server/app/service/node"
+	"server/app/util"
 	"server/app/util/server"
 )
 
@@ -50,5 +51,37 @@ func (ControllerSystem) Enum(c *server.Context) {
 		c.SuccessWithData("获取数据成功", value)
 	} else {
 		c.Error("枚举类型不存在")
+	}
+}
+
+func (ControllerSystem) Config(c *server.Context) {
+	type Config struct {
+		Key   string `json:"key" default:"" validate:"required,max=50" label:"配置标识"`
+		Value string `json:"value" default:"" validate:"omitempty" label:"配置内容"`
+	}
+	type Form struct {
+		Action  string    `json:"action" default:"get" validate:"oneof=get set" label:"操作类型"`
+		Group   string    `json:"group" default:"web" validate:"oneof=web ui" label:"配置分组"`
+		Configs []*Config `json:"configs" default:"" validate:"omitempty,gte=1" label:"配置标识"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorAll(form); !ok {
+		c.Error(msg)
+		return
+	}
+	if form.Action == "set" {
+		for _, v := range form.Configs {
+			if v.Key != "" {
+				util.Conf.Set(form.Group+"."+v.Key, v.Value)
+			}
+		}
+		err := util.Conf.WriteConfig()
+		if err == nil {
+			c.Success("保存成功")
+		} else {
+			c.Error("保存失败")
+		}
+	} else {
+		c.SuccessWithData("获取成功", util.Conf.AllSettings()[form.Group])
 	}
 }

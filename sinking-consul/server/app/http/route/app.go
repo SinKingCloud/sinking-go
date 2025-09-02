@@ -71,7 +71,7 @@ func loadAuthRoute(s *sinking_web.Engine) {
 	{
 		g.ANY("/login", server.HandleFunc(auth.Login))     //账号登录
 		g.ANY("/logout", server.HandleFunc(auth.Logout))   //注销登录
-		g.ANY("/captcha", server.HandleFunc(auth.Captcha)) //验证码
+		g.ANY("/captcha", server.HandleFunc(auth.Captcha)) //滑块验证
 		g.ANY("/info", server.HandleFunc(auth.Info))       //站点信息
 	}
 }
@@ -91,6 +91,7 @@ func loadAdminRoute(s *sinking_web.Engine) {
 	{
 		system.ANY("/overview", server.HandleFunc(admin.System.Overview)) //统计数据
 		system.ANY("/enum", server.HandleFunc(admin.System.Enum))         //枚举类型
+		system.ANY("/config", server.HandleFunc(admin.System.Config))     //系统配置
 	}
 
 	cluster := g.Group("/cluster")
@@ -110,6 +111,6 @@ func loadAdminRoute(s *sinking_web.Engine) {
 		config.ANY("/info", server.HandleFunc(admin.Config.Info))     //配置信息
 		config.ANY("/update", server.HandleFunc(admin.Config.Update)) //编辑配置
 		config.ANY("/create", server.HandleFunc(admin.Config.Create)) //创建配置
-		config.ANY("/delete", server.HandleFunc(admin.Config.Delete)) //创建配置
+		config.ANY("/delete", server.HandleFunc(admin.Config.Delete)) //删除配置
 	}
 }
