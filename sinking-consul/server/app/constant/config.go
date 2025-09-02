@@ -21,4 +21,15 @@ const (
 
 	ClusterLocal = "cluster.local" //本机地址
 	ClusterNodes = "cluster.nodes" //集群服务器列表
+
+	WebTitle    = "web.title"    //网站标题
+	WebName     = "web.name"     //网站名称
+	WebKeyWords = "web.keywords" //网站关键字
+	WebDescribe = "web.describe" //网站描述
+
+	UiLayout    = "ui.layout"    //界面布局
+	UiWaterMark = "ui.watermark" //水印内容
+	UiTheme     = "ui.theme"     //主题
+	UiCompact   = "ui.compact"   //紧凑模式
+	UiColor     = "ui.color"     //主题色
 )

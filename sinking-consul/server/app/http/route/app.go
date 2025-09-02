@@ -72,6 +72,7 @@ func loadAuthRoute(s *sinking_web.Engine) {
 		g.ANY("/login", server.HandleFunc(auth.Login))     //账号登录
 		g.ANY("/logout", server.HandleFunc(auth.Logout))   //注销登录
 		g.ANY("/captcha", server.HandleFunc(auth.Captcha)) //验证码
+		g.ANY("/info", server.HandleFunc(auth.Info))       //站点信息
 	}
 }
 
