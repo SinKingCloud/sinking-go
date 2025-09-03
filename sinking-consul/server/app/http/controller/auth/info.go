@@ -14,7 +14,6 @@ func Info(c *server.Context) {
 		"name":     c.GetStringWithDefault(config.GetString(constant.WebName), "云上豁者"),
 		"keywords": c.GetStringWithDefault(config.GetString(constant.WebKeyWords), "一站式云服务"),
 		"describe": c.GetStringWithDefault(config.GetString(constant.WebDescribe), "提供一站式云服务解决方案"),
-		"url":      c.GetStringWithDefault(config.GetString(constant.ClusterLocal), ""),
 		"ui": sinking_web.H{
 			"layout":    c.GetStringWithDefault(config.GetString(constant.UiLayout), "left"),
 			"watermark": c.GetStringWithDefault(config.GetString(constant.UiWaterMark), ""),
