@@ -1,5 +1,5 @@
 import {history} from 'umi';
-import route, {user, userPath, index, indexPath, admin, adminPath} from '../../config/routes'
+import route from '../../config/routes'
 import {Icon} from "@/components"
 import React from "react"
 
@@ -141,85 +141,12 @@ export function getParentList(data: any[], name: string): any[] {
     return parentCache[name];
 }
 
-
-/**
- * 获取user菜单
- */
-export function getUserMenuItems(hideMenu = true) {
-    return getMenuItems(user, '/' + userPath, hideMenu);
-}
-
-/**
- * 获取index菜单
- */
-export function getIndexMenuItems(hideMenu = true) {
-    return getMenuItems(index, '/' + indexPath, hideMenu);
-}
-
-/**
- * 获取admin菜单
- */
-export function getAdminMenuItems(hideMenu = true) {
-    return getMenuItems(admin, '/' + adminPath, hideMenu);
-}
-
 /**
  * 获取菜单
  */
 export function getAllMenuItems(hideMenu = true) {
     return getMenuItems(route, '/', hideMenu)
 }
-
-/**
- * 当前访问系统path
- */
-export function getCurrentPath(pathName: any): any {
-    if (pathName == "/" || pathName == "") {
-        pathName = "/index/index";
-    }
-    let mode = "";
-    const regex = /\/([^/]+)\//; // 正则表达式匹配 / 之间的内容
-    const matches = pathName.match(regex); // 匹配结果数组
-    if (matches && matches.length >= 2) {
-        mode = matches[1];
-    }
-    if (mode == userPath) {
-        return '/' + userPath;
-    }
-    if (mode == indexPath) {
-        return '/' + indexPath;
-    }
-    if (mode == adminPath) {
-        return '/' + adminPath;
-    }
-    return '/' + indexPath;
-}
-
-/**
- * 当前访问系统路由
- */
-export function getCurrentMenus(pathName: any, hideMenu = true): any {
-    if (pathName == "/" || pathName == "") {
-        pathName = "/index/index";
-    }
-    let mode = "";
-    const regex = /\/([^/]+)\//; // 正则表达式匹配 / 之间的内容
-    const matches = pathName.match(regex); // 匹配结果数组
-    if (matches && matches.length >= 2) {
-        mode = matches[1];
-    }
-    if (mode == userPath) {
-        return getUserMenuItems(hideMenu);
-    }
-    if (mode == indexPath) {
-        return getIndexMenuItems(hideMenu);
-    }
-    if (mode == adminPath) {
-        return getAdminMenuItems(hideMenu);
-    }
-    return [];
-}
-
 
 /**
  * 获取第一个菜单(排除children)

@@ -3,7 +3,7 @@ import {useLocation, useRouteData} from "umi";
 import {ConfigProvider, Layout} from "antd";
 import {createStyles} from "antd-style";
 import {Spin, Space, Breadcrumb, App} from "antd";
-import {getCurrentMenus, getFirstMenuWithoutChildren, getParentList, historyPush} from "@/utils/route";
+import {getAllMenuItems, getFirstMenuWithoutChildren, getParentList, historyPush} from "@/utils/route";
 import zhCN from 'antd/locale/zh_CN';
 import {Animation, Theme} from "@/components";
 import {Animate} from "@/components/animation";
@@ -70,11 +70,11 @@ const Body: React.FC<BodyProps> = (props) => {
     const location = useLocation();
     const match = useRouteData();
     const initBreadCrumb = () => {
-        const items = getParentList(getCurrentMenus(location?.pathname, false), match?.route?.name);
+        const items = getParentList(getAllMenuItems(false), match?.route?.name);
         let temp = [{
             title: '首页',
             onClick: () => {
-                historyPush(getFirstMenuWithoutChildren(getCurrentMenus(location?.pathname))?.name || "");
+                historyPush(getFirstMenuWithoutChildren(getAllMenuItems(location?.pathname))?.name || "");
             },
             className: breadStyle,
         }];

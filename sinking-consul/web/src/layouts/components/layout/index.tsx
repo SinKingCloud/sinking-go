@@ -1,16 +1,15 @@
 import React, {useEffect, useState} from "react";
 import {Layout, Icon} from "@/components";
-import {useLocation, useModel} from "umi";
+import {useModel} from "umi";
 import {deleteHeader, getLoginToken} from "@/utils/auth";
-import {getCurrentPath, historyPush} from "@/utils/route";
+import {historyPush} from "@/utils/route";
 import {App, Avatar, Col, Popover, Row, Tooltip} from "antd";
 import {createStyles} from "antd-style";
 import Settings from "@/../config/defaultSettings";
-import {Auto, Bottom, Company, Dark, Exit, Light, Log, Right, Set} from "@/components/icon";
+import {Auto, Bottom, Dark, Exit, Light, Log, Right, Set} from "@/components/icon";
 import {outLogin} from "@/service/user/login";
 import request from "@/utils/request";
 import Title from "../title";
-import {userPath} from "@/../config/routes";
 
 /**
  * 中间件
@@ -236,8 +235,7 @@ const SKLayout: React.FC<slide> = ({...props}) => {
      */
     const user = useModel("user");
     const web = useModel("web");
-    const location = useLocation();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const initUser = () => {
         setLoading(true);
         if (getLoginToken() == "") {
@@ -254,12 +252,6 @@ const SKLayout: React.FC<slide> = ({...props}) => {
         initUser();
     }, []);
 
-    /**
-     * 获取当前路径
-     */
-    const currentPath = () => {
-        return getCurrentPath(location?.pathname).slice(1);
-    }
     /**
      * 样式信息
      */
@@ -298,15 +290,6 @@ const SKLayout: React.FC<slide> = ({...props}) => {
                     menuTheme={web?.info?.ui?.theme == "dark" ? "dark" : "light"}
                     footer={<>©{new Date().getFullYear()} All Right
                         Revered {web?.info?.name || Settings?.title}</>}
-                    menuBottomBtnIcon={user?.web?.is_admin ? Company : ""}
-                    menuBottomBtnText={user?.web?.is_admin ? (currentPath() == userPath ? " 管理后台" : " 系统前台") : ""}
-                    onMenuBottomBtnClick={() => {
-                        if (currentPath() == userPath) {
-                            historyPush("admin.index");
-                        } else {
-                            historyPush("user.index");
-                        }
-                    }}
                     headerHidden={false}
                     headerFixed={false}
                     headerRight={<RightTop/>}
@@ -314,14 +297,14 @@ const SKLayout: React.FC<slide> = ({...props}) => {
                     menuUnCollapsedWidth={210}
                     collapsedLogo={() => {
                         return <img
-                            src={web?.info?.logo || (Settings?.basePath || "/") + "logo.svg"}
+                            src={(Settings?.basePath || "/") + "logo.svg"}
                             alt={Settings?.title} className={collapsedImg}/>
                     }}
                     unCollapsedLogo={() => {
                         return (
                             <div className={unCollapsed}>
                                 <img
-                                    src={web?.info?.logo || (Settings?.basePath || "/") + "logo.svg"}
+                                    src={(Settings?.basePath || "/") + "logo.svg"}
                                     alt={web?.info?.name || Settings?.title}/>
                                 <div style={{color: web?.info?.ui?.color ? web?.info?.ui?.color : "rgb(0,81,235)"}}>
                                     {web?.info?.name || Settings?.title}
