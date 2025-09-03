@@ -7,7 +7,7 @@ import {App, Avatar, Col, Popover, Row, Tooltip} from "antd";
 import {createStyles} from "antd-style";
 import Settings from "@/../config/defaultSettings";
 import {Auto, Bottom, Dark, Exit, Light, Log, Right, Set} from "@/components/icon";
-import {outLogin} from "@/service/user/login";
+import {logout} from "@/service/auth/login";
 import request from "@/utils/request";
 import Title from "../title";
 
@@ -185,7 +185,7 @@ const RightTop: React.FC = () => {
                          </li>
                          <li className={menuItem} onClick={async () => {
                              message?.loading({content: '正在退出登录', duration: 600000, key: "outLogin"});
-                             await outLogin({
+                             await logout({
                                  onSuccess: (r) => {
                                      if (r?.code == 200) {
                                          message?.success(r?.message || "退出登录成功")

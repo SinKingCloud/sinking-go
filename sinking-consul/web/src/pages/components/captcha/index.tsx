@@ -93,7 +93,6 @@ const Captcha = forwardRef<CaptchaRef>((_, ref): any => {
      * 关闭验证码
      */
     const close = () => {
-        console.log("close")
         setVisible(false);
         setData(null);
         setLoading(true);

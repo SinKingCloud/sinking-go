@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import {API} from "@/../typings";
-import {getWebInfo} from "@/service/web/info";
+import {getWebInfo} from "@/service/auth/info";
 import defaultSettings from "../../config/defaultSettings";
 import {useModel} from "umi";
 

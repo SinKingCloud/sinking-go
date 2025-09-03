@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {API} from "@/../typings";
-import { getWebUserInfo} from "@/service/person/info";
+import { getAccountInfo} from "@/service/admin/person";
 
 export default () => {
     const [web, setWeb] = useState<API.UserInfo>();//网站用户
@@ -8,7 +8,7 @@ export default () => {
      * 获取网站用户信息
      */
     const getWebUser = async () => {
-        const resp = await getWebUserInfo();
+        const resp = await getAccountInfo();
         if (resp?.code != 200) {
             return undefined;
         }

@@ -5,6 +5,7 @@ import {Layout} from "@/layouts/components";
 import {Outlet, useModel, useSelectedRoutes} from "umi";
 import {createStyles} from "antd-style";
 import {Theme} from "@/components";
+import Title from "./components/title";
 
 /**
  * 样式信息
@@ -35,6 +36,7 @@ export default () => {
         }
         if (routes?.pop()?.route?.auth === false) {
             return <Theme>
+                <Title/>
                 <App>
                     <Outlet/>
                 </App>
