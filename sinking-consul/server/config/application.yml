@@ -14,5 +14,5 @@ auth:
 # 集群配置
 cluster:
   local: #本地集群地址
-  nodes:
+  nodes: #Consul服务器地址
     - 127.0.0.1:5678 #Consul服务器地址1
