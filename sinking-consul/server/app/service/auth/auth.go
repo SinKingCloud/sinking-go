@@ -61,8 +61,8 @@ func (*Service) GenLoginToken(ip string) (s string, e error) {
 	}
 	loginTime := str.DateTime(time.Now())
 	expire := util.Conf.GetInt(constant.AuthExpire)
-	if expire > 0 && expire <= 7200 {
-		expire = 7200
+	if expire <= 86400 {
+		expire = 86400
 	}
 	s = jwt.GetToken(&jwt.User{
 		LoginToken: token,
