@@ -37,6 +37,9 @@ func (c *Service) GetCaptcha(key string) (map[string]interface{}, error) {
 // CheckCaptcha 判断验证码是否正确
 func (c *Service) CheckCaptcha(key string, x int, y int) bool {
 	value := util.Cache.Get(constant.CacheNameWithCaptcha + key)
+	if value == nil {
+		return false
+	}
 	util.Cache.Delete(constant.CacheNameWithCaptcha + key)
 	var dct *slide.Block
 	if err := json.Unmarshal([]byte(value.(string)), &dct); err != nil {

@@ -154,7 +154,7 @@ func (s *Service) getLocalAddr() string {
 			local = ip.GetLocalIP() + ":" + strconv.Itoa(port)
 		}
 		return local
-	}, constant.CacheTimeWithLocalIp*time.Second)
+	}, constant.CacheTimeWithLocalIp)
 	return str.(string)
 }
 
