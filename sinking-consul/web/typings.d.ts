@@ -36,17 +36,11 @@ declare namespace API {
      * 用户信息
      */
     type UserInfo = {
-        id?: number;
-        money?: any;
-        nick_name?: string;
-        avatar?: string;
-        phone?: string;
+        account?: any;
         login_ip?: string;
         login_time?: string;
-        is_admin?: boolean;
     }
     type Ui = {
-        logo?: string;
         water_mark?: string;
         layout?: string;
         theme?: string;
@@ -61,7 +55,6 @@ declare namespace API {
         title?: string;
         keywords?: string;
         describe?: string;
-        contact?: string;
         url?: string;
         ui?: Ui,
     }
