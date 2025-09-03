@@ -101,7 +101,12 @@ const RightTop: React.FC = () => {
                 letterSpacing: "1px",
                 lineHeight: "100%",
                 marginLeft: "8px",
-                width: "auto"
+                width: "auto",
+                "div:first-of-type": {
+                    fontSize: 13,
+                    marginTop: 18,
+                    marginBottom: 10
+                }
             },
             menu: {
                 listStyle: "none",
@@ -148,7 +153,6 @@ const RightTop: React.FC = () => {
                     backgroundColor: "rgba(0, 0, 0, 0.1)",
                 },
                 color: isDarkMode ? token.colorTextSecondary : "rgb(150,150,150)"
-
             },
         };
     });
@@ -164,14 +168,13 @@ const RightTop: React.FC = () => {
                  placement="bottomRight"
                  content={<>
                      <Row className={content_top}>
-                         <Col span={6}><Avatar className={ava} src={user?.web?.avatar}/></Col>
+                         <Col span={6}>
+                             <Avatar
+                                 className={ava}> {(user?.web?.account?.slice(0, 1)?.toUpperCase() || "未设置")}</Avatar>
+                         </Col>
                          <Col span={16} className={top_text}>
-                             <div style={{
-                                 fontSize: 13,
-                                 marginTop: 18,
-                                 marginBottom: 10
-                             }}>{user?.web?.nick_name || "未设置"}</div>
-                             <div>{user?.web?.phone || "未绑定手机"}</div>
+                             <div>{user?.web?.account || "未登录"}</div>
+                             <div>{user?.web?.login_ip || "未登录"}</div>
                          </Col>
                      </Row>
                      <ul className={menu}>
@@ -207,10 +210,10 @@ const RightTop: React.FC = () => {
                      </ul>
                  </>}>
             <div className={pop}>
-                <Avatar className={img} src={user?.web?.avatar} alt={user?.web?.nick_name}>
-                    {(user?.web?.nick_name || "未设置")}
+                <Avatar className={img}>
+                    {(user?.web?.account?.slice(0, 1)?.toUpperCase() || "未登录")}
                 </Avatar>
-                <span className={nickname}>{user?.web?.nick_name || "未设置"}</span>
+                <span className={nickname}>{user?.web?.account || "未登录"}</span>
                 <Icon type={Bottom}/>
             </div>
         </Popover>
