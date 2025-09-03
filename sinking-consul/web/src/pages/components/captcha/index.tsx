@@ -6,16 +6,40 @@ import {getRandStr} from "@/utils/string";
 import {createStyles} from "antd-style";
 
 /**
- * 验证码组件
+ * 验证码组件接口
  */
 export interface CaptchaRef {
-    Show?: (onSuccess: (res: any) => void) => void;
+    Show?: (onSuccess?: (res: any) => void, onClose?: () => void) => void;
+}
+
+/**
+ * 验证码响应数据接口
+ */
+interface CaptchaResponse {
+    token: string;
+    x: number;
+    y: number;
+}
+
+/**
+ * 验证码数据接口
+ */
+interface CaptchaData {
+    key: string;
+    image: string;
+    thumb: string;
+    thumbWidth: number;
+    thumbHeight: number;
+    tileX: number;
+    tileY: number;
+    width: number;
+    height: number;
 }
 
 /**
  * 样式配置
  */
-const useStyles: any = createStyles(({isDarkMode}): any => {
+const useStyles: any = createStyles(({isDarkMode}: { isDarkMode: boolean }) => {
     return {
         modal: {
             ".ant-modal": {
@@ -51,74 +75,90 @@ const useStyles: any = createStyles(({isDarkMode}): any => {
 
 const Captcha = forwardRef<CaptchaRef>((_, ref): any => {
     const {styles} = useStyles();
-
     const {message} = App.useApp();
 
-    let slideRef = useRef<any>(null);
-    const [visible, setVisible] = useState(false);  //弹窗状态
-    const [loading, setLoading] = useState(true);//加载状态
-    const [data, setData] = useState<any>(null); //验证码数据
+    const slideRef = useRef<any>(null);
+    const [visible, setVisible] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState<CaptchaData | null>(null);
 
     /**
-     * 相关数据
+     * 回调函数引用
      */
-    let token = useRef<string>("");
-    let success = useRef<(res: any) => void>(null);
-
+    const token = useRef<string>("");
+    const successCallback = useRef<((res: CaptchaResponse) => void) | null>(null);
+    const closeCallback = useRef<(() => void) | null>(null);
 
     /**
      * 关闭验证码
      */
     const close = () => {
+        console.log("close")
         setVisible(false);
         setData(null);
+        setLoading(true);
+        // 执行关闭回调
+        if (closeCallback.current) {
+            closeCallback.current();
+        }
+        // 清理回调引用
+        successCallback.current = null;
+        closeCallback.current = null;
     };
 
     /**
      * 刷新验证码
      */
     const refresh = async () => {
-        setLoading(true);
-        setVisible(true);
-        token.current = getRandStr(16);
-        await getCaptcha({
-            body: {token: token?.current},
-            onSuccess: (res) => {
-                const d = res?.data;
-                setData({
-                    key: d?.key,
-                    image: d?.image_base64,
-                    thumb: d?.tile_base64,
-                    thumbWidth: d?.tile_width,
-                    thumbHeight: d?.tile_height,
-                    tileX: d?.tile_x,
-                    tileY: d?.tile_y,
-                    width: d?.width,
-                    height: d?.height,
-                });
-            },
-            onFail: () => {
-                message.error("验证码加载失败");
-                close()
-            },
-            onFinally: () => {
-                setLoading(false);
-            }
-        });
-    }
+        try {
+            setLoading(true);
+            token.current = getRandStr(16);
+            await getCaptcha({
+                body: {token: token.current},
+                onSuccess: (res) => {
+                    const d = res?.data;
+                    if (d) {
+                        setData({
+                            key: d.key,
+                            image: d.image_base64,
+                            thumb: d.tile_base64,
+                            thumbWidth: d.tile_width,
+                            thumbHeight: d.tile_height,
+                            tileX: d.tile_x,
+                            tileY: d.tile_y,
+                            width: d.width,
+                            height: d.height,
+                        });
+                    }
+                },
+                onFail: (error) => {
+                    message.error(error?.message || "验证码加载失败");
+                    close();
+                },
+                onFinally: () => {
+                    setLoading(false);
+                }
+            });
+        } catch (error) {
+            message.error("验证码加载失败");
+            setLoading(false);
+            close();
+        }
+    };
 
     /**
      * 显示验证码
-     * @param onSuccess 回调函数
+     * @param onSuccess 成功回调函数
+     * @param onClose 关闭回调函数
      */
-    const show = (onSuccess: (res: any) => void = undefined) => {
-        if (onSuccess) {
-            success.current = onSuccess;
-        }
-        refresh().finally(() => {
-            setVisible(true);
-        });
-    }
+    const show = async (onSuccess?: (res: CaptchaResponse) => void, onClose?: () => void) => {
+        // 设置回调函数
+        successCallback.current = onSuccess || null;
+        closeCallback.current = onClose || null;
+        // 显示模态框并刷新验证码
+        setVisible(true);
+        await refresh();
+    };
 
     /**
      * 方法挂载
@@ -142,12 +182,12 @@ const Captcha = forwardRef<CaptchaRef>((_, ref): any => {
                 <GoCaptcha.Slide
                     ref={slideRef}
                     data={{
-                        image: data?.image,
-                        thumb: data?.thumb,
+                        image: data?.image || "",
+                        thumb: data?.thumb || "",
                         thumbX: 0,
-                        thumbY: data?.tileY,
-                        thumbWidth: data?.thumbWidth,
-                        thumbHeight: data?.thumbHeight,
+                        thumbY: data?.tileY || 0,
+                        thumbWidth: data?.thumbWidth || 0,
+                        thumbHeight: data?.thumbHeight || 0,
                     }}
                     config={{
                         width: data?.width,
@@ -156,14 +196,17 @@ const Captcha = forwardRef<CaptchaRef>((_, ref): any => {
                     }}
                     events={{
                         confirm: (point) => {
-                            close()
-                            if (success) {
-                                success?.current?.({token: token?.current, x: point?.x || 0, y: point?.y || 0});
+                            const result: CaptchaResponse = {
+                                token: token.current,
+                                x: point?.x || 0,
+                                y: point?.y || 0
+                            };
+                            if (successCallback.current) {
+                                successCallback.current(result);
                             }
+                            close();
                         },
-                        refresh: async () => {
-                            await refresh()
-                        },
+                        refresh: refresh,
                         close: close,
                     }}
                 />
