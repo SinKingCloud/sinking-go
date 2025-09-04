@@ -139,9 +139,8 @@ const useStyles: any = createStyles(({token, css}) => ({
         }
 
         .user-name {
-            margin-bottom: 8px;
             font-weight: 600;
-            font-size: 18px;
+            font-size: 25px;
         }
 
         .user-status {
@@ -398,12 +397,9 @@ export default (): React.ReactNode => {
                         <div className="user-header">
                             <Avatar size={64} icon={<UserOutlined/>} className="user-avatar"/>
                             <div className="user-info">
-                                <Typography.Title level={4} className="user-name">
+                                <div level={4} className="user-name">
                                     {userModel.web?.account || '管理员'}
-                                </Typography.Title>
-                                <Typography.Text className="user-status">
-                                    <Tag color="success" icon={<CheckCircleOutlined/>}>在线</Tag>
-                                </Typography.Text>
+                                </div>
                             </div>
                         </div>
                         <div className="user-details">
