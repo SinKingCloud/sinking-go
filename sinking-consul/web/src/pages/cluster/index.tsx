@@ -71,6 +71,7 @@ export default (): React.ReactNode => {
             <ProTable
                 extraRefreshBtn={true}
                 title={<Title>集群管理</Title>}
+                pageInTable={true}
                 rowKey={'address'}
                 columns={columns}
                 request={(params, sort) => {

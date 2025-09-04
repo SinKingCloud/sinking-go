@@ -948,9 +948,9 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
                                     variant: "filled",
                                     size: "small",
                                 },
-                                showQuickJumper: !(device?.mobile || device?.xs || !device?.md),
+                                showQuickJumper: !(device?.xs || device?.sm),
                                 showLessItems: true,
-                                showTotal: (total: any, range: any) => device?.mobile || device?.xs || !device?.md ? false : `第 ${range[0]}-${range[1]} 条 / 共 ${total} 条`,
+                                showTotal: (total: any, range: any) => device?.xs || device?.sm ? false : `第 ${range[0]}-${range[1]} 条 / 共 ${total} 条`,
                                 onChange: (page: any, pageSize: any) => {
                                     setPage(page);
                                     setPageSize(pageSize);

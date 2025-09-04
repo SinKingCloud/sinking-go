@@ -69,8 +69,6 @@ export default (): React.ReactNode => {
                 title={<Title>操作日志</Title>}
                 rowKey={'id'}
                 columns={columns}
-
-
                 request={(params, sort) => {
                     return getData(params, sort, getLog)
                 }}
