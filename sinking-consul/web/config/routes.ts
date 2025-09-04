@@ -23,7 +23,7 @@ export default [
     },
     {
         path: "node",
-        title: "服务管理",
+        title: "服务节点",
         name: "node",
         icon: 'icon-node',
         hideInMenu: false,
