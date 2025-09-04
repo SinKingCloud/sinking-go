@@ -10,6 +10,7 @@ import {Auto, Bottom, Dark, Exit, Light, Log, Right, Set} from "@/components/ico
 import {logout} from "@/service/auth/login";
 import request from "@/utils/request";
 import Title from "../title";
+import defaultSettings from "@/../config/defaultSettings";
 
 /**
  * 中间件
@@ -61,7 +62,7 @@ const RightTop: React.FC = () => {
                 display: initial;
                 padding: 11px 5px;
                 border-radius: 10px;
-                transition: background-color 0.5s ease;
+                transition: background-color 0.3s ease;
                 cursor: pointer;
             `,
             box: css`
@@ -148,7 +149,7 @@ const RightTop: React.FC = () => {
                 marginRight: "5px",
                 cursor: "pointer",
                 borderRadius: "5px",
-                transition: "background-color 0.5s ease",
+                transition: "background-color 0.3s ease",
                 ":hover": {
                     backgroundColor: "rgba(0, 0, 0, 0.1)",
                 },
@@ -169,8 +170,8 @@ const RightTop: React.FC = () => {
                  content={<>
                      <Row className={content_top}>
                          <Col span={6}>
-                             <Avatar
-                                 className={ava}> {(user?.web?.account?.slice(0, 1)?.toUpperCase() || "未设置")}</Avatar>
+                             <Avatar src={(defaultSettings?.basePath || "/") + "images/default_avatar.jpg"}
+                                     className={ava}> {(user?.web?.account?.slice(0, 1)?.toUpperCase() || "未设置")}</Avatar>
                          </Col>
                          <Col span={16} className={top_text}>
                              <div>{user?.web?.account || "未登录"}</div>
@@ -210,7 +211,7 @@ const RightTop: React.FC = () => {
                      </ul>
                  </>}>
             <div className={pop}>
-                <Avatar className={img}>
+                <Avatar className={img} src={(defaultSettings?.basePath || "/") + "images/default_avatar.jpg"}>
                     {(user?.web?.account?.slice(0, 1)?.toUpperCase() || "未登录")}
                 </Avatar>
                 <span className={nickname}>{user?.web?.account || "未登录"}</span>

@@ -25,6 +25,7 @@ const useLayoutStyles = createStyles(({isDarkMode, token, css, responsive}): any
             left: 0,
             top: 0,
             bottom: 0,
+            transition: "all 0.3s,background 0s,height 0s",
             ".ant-layout-header": {
                 backgroundColor: token?.colorBgContainer
             },
@@ -44,7 +45,7 @@ const useLayoutStyles = createStyles(({isDarkMode, token, css, responsive}): any
             padding: "0px !important",
         },
         body: {
-            transition: "margin-left 0.2s !important",
+            transition: "margin-left 0.3s !important",
             backgroundColor: isDarkMode ? "black" : "transparent",
         },
         sticky: {

@@ -73,7 +73,7 @@ const useStyles = createStyles(({token, isDarkMode}): any => {
             overflow: "hidden",
             width: "100%",
             zIndex: 2,
-            transition: "background 0.2s !important",
+            transition: "background 0.3s !important",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
