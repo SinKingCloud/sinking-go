@@ -23,7 +23,7 @@ export default () => {
                 title="403"
                 subTitle="您无权限访问此页面,请联系管理员"
                 extra={<Button type="primary" onClick={() => {
-                    historyPush("user.index");
+                    historyPush("index");
                 }}>返回首页</Button>}
             />
         </Body>

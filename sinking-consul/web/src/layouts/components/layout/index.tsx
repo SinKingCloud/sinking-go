@@ -179,11 +179,11 @@ const RightTop: React.FC = () => {
                          </Col>
                      </Row>
                      <ul className={menu}>
-                         <li className={menuItem} onClick={() => historyPush("user.setting")}>
-                             <div><Icon type={Set} style={{fontSize: 14}}/>账号管理</div>
+                         <li className={menuItem} onClick={() => historyPush("system")}>
+                             <div><Icon type={Set} style={{fontSize: 14}}/>系统管理</div>
                              <Icon type={Right}></Icon>
                          </li>
-                         <li className={menuItem} onClick={() => historyPush("user.log2")}>
+                         <li className={menuItem} onClick={() => historyPush("log")}>
                              <div><Icon type={Log} style={{fontSize: 14}}/>操作日志</div>
                              <Icon type={Right}></Icon>
                          </li>

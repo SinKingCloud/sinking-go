@@ -4,7 +4,7 @@ import {createFromIconfontCN} from '@ant-design/icons';
  * 图标组件(生产环境需使用本地资源)
  */
 const Icon = createFromIconfontCN({
-    scriptUrl: '//at.alicdn.com/t/c/font_4894788_6u4dkb8l8a5.js',
+    scriptUrl: '//at.alicdn.com/t/c/font_5013902_i2h30iyk76f.js',
 });
 /**
  * 图标数据
@@ -18,13 +18,7 @@ const Light = "icon-light";//亮色
 const Dark = "icon-dark";
 const Auto = "icon-auto";
 const Home = "icon-home";
-const Wallet = "icon-wallet";
-const Dot = "icon-dot";
-const User = "icon-user";
-const Users = "icon-users";
 const Setting = "icon-setting";
-const Notice = "icon-notice";
-const Company = "icon-company";
 export {
     Icon,
     Exit,
@@ -36,11 +30,5 @@ export {
     Dark,
     Auto,
     Home,
-    Wallet,
-    Dot,
-    User,
-    Users,
     Setting,
-    Notice,
-    Company
 }
