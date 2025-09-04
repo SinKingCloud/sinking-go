@@ -12,6 +12,7 @@ import {useModel} from 'umi';
 import {getOverviewInfo} from '@/service/admin/system';
 import {createStyles} from 'antd-style';
 import Settings from "../../config/defaultSettings";
+import {historyPush} from "@/utils/route";
 
 const useStyles: any = createStyles(({token, css}) => ({
     welcomeCard: css`
@@ -302,7 +303,7 @@ export default (): React.ReactNode => {
             <Card className={styles.welcomeCard}>
                 <div className="welcome-content">
                     <Typography.Title level={3} className="welcome-title">
-                        欢迎使用 Sinking Consul
+                        欢迎使用 {webModel?.info?.name}
                     </Typography.Title>
                     <Typography.Text className="welcome-text">
                         分布式配置管理系统，为您提供高效的服务注册与发现能力
@@ -313,7 +314,11 @@ export default (): React.ReactNode => {
             <Row gutter={[16, 16]}>
                 {/* 系统概览统计 */}
                 <Col xs={24} sm={8} lg={8}>
-                    <Card className={styles.statCard} title={<Title>集群状态</Title>} extra={<ClusterOutlined/>}>
+                    <Card className={styles.statCard} title={<Title>集群状态</Title>}
+                          extra={<a onClick={() => {
+                              historyPush("cluster")
+                          }}><ClusterOutlined/>
+                          </a>}>
                         <div className="stat-content">
                             <div className="stat-number">{overviewData?.cluster?.total || 0}</div>
                             <div className="stat-label">集群总数</div>
@@ -337,7 +342,9 @@ export default (): React.ReactNode => {
 
                 <Col xs={24} sm={8} lg={8}>
                     <Card className={styles.statCard} title={<Title>节点状态</Title>}
-                          extra={<NodeIndexOutlined/>}>
+                          extra={<a onClick={() => {
+                              historyPush("node")
+                          }}><NodeIndexOutlined/></a>}>
                         <div className="stat-content">
                             <div className="stat-number">{overviewData?.node?.total || 0}</div>
                             <div className="stat-label">节点总数</div>
@@ -360,7 +367,10 @@ export default (): React.ReactNode => {
                 </Col>
 
                 <Col xs={24} sm={8} lg={8}>
-                    <Card className={styles.statCard} title={<Title>配置状态</Title>} extra={<SettingOutlined/>}>
+                    <Card className={styles.statCard} title={<Title>配置状态</Title>}
+                          extra={<a onClick={() => {
+                              historyPush("config")
+                          }}><SettingOutlined/></a>}>
                         <div className="stat-content">
                             <div className="stat-number">{overviewData?.config?.total || 0}</div>
                             <div className="stat-label">配置总数</div>
@@ -419,7 +429,8 @@ export default (): React.ReactNode => {
                 <Col xs={24} sm={24} md={12}>
                     <Card className={styles.systemCard} title={<Title>系统信息</Title>}>
                         <div className="system-header">
-                            <img src={(Settings?.basePath || '/') + 'logo.svg'} className="system-icon" alt={webModel?.info?.name}/>
+                            <img src={(Settings?.basePath || '/') + 'logo.svg'} className="system-icon"
+                                 alt={webModel?.info?.name}/>
                             <Typography.Title level={4}
                                               className="system-title">{webModel?.info?.name}</Typography.Title>
                         </div>
