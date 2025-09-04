@@ -2,6 +2,7 @@ package admin
 
 import (
 	"github.com/SinKingCloud/sinking-go/sinking-web"
+	"server/app/constant"
 	"server/app/service"
 	"server/app/service/cluster"
 	"server/app/service/config"
@@ -21,6 +22,10 @@ func (ControllerSystem) Overview(c *server.Context) {
 	configNum, _ := service.Config.CountAll()
 	configNormalNum, _ := service.Config.CountByStatus(config.Normal)
 	c.SuccessWithData("获取成功", sinking_web.H{
+		"application": sinking_web.H{
+			"mode":    c.GetStringWithDefault(util.Conf.GetString(constant.ServerMode), "release"),
+			"address": util.Conf.GetString(constant.ServerHost) + ":" + c.GetStringWithDefault(util.Conf.GetString(constant.ServerPort), "5678"),
+		},
 		"cluster": sinking_web.H{
 			"total":   clusterNum,
 			"online":  clusterOnlineNum,
