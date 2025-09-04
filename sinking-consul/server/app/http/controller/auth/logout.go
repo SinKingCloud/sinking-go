@@ -14,6 +14,6 @@ func Logout(c *server.Context) {
 		return
 	}
 	_ = service.Auth.ClearLoginToken()
-	service.Log.Create(c.GetRequestIp(), log.EventLogin, "注销登录", "注销登录成功")
+	service.Log.Create(c.GetRequestIp(), log.EventLogin, "注销账户登录", "注销登录成功")
 	c.Success("注销成功")
 }

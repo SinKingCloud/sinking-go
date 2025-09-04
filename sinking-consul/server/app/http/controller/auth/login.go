@@ -33,6 +33,6 @@ func Login(c *server.Context) {
 		c.Error(e.Error())
 		return
 	}
-	service.Log.Create(c.GetRequestIp(), log.EventLogin, "系统登录", "系统登录成功")
+	service.Log.Create(c.GetRequestIp(), log.EventLogin, "系统账户登录", "系统登录成功")
 	c.SuccessWithData("登录成功", token)
 }

@@ -37,7 +37,7 @@ func (ControllerPerson) Password(c *server.Context) {
 	if util.Conf.WriteConfig() != nil {
 		c.Error("修改失败")
 	} else {
-		service.Log.Create(c.GetRequestIp(), log.EventUpdate, "修改信息", "修改登录密码")
+		service.Log.Create(c.GetRequestIp(), log.EventUpdate, "修改登录信息", "修改登录密码")
 		c.Success("修改成功")
 	}
 }
@@ -45,7 +45,7 @@ func (ControllerPerson) Password(c *server.Context) {
 func (ControllerPerson) Log(c *server.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
-		OrderByField    string `json:"order_by_field" default:"sort" validate:"oneof=id type ip create_time update_time" label:"排序字段"`
+		OrderByField    string `json:"order_by_field" default:"id" validate:"oneof=id type ip create_time update_time" label:"排序字段"`
 		OrderByType     string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
 		Type            string `json:"type" default:"" validate:"omitempty,numeric" label:"类型"`
 		Ip              string `json:"ip" default:"" validate:"omitempty" label:"IP地址"`
