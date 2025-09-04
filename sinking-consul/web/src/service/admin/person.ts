@@ -10,3 +10,8 @@ export async function getAccountInfo(params: API.RequestParams = {}) {
 export async function updatePassword(params: API.RequestParams = {}) {
     return post("/admin/person/password", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
 }
+
+/*****  获取操作记录  *****/
+export async function getLog(params: API.RequestParams = {}) {
+    return get("/admin/person/log", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
+}
