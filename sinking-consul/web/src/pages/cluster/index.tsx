@@ -3,6 +3,7 @@ import {Body, ProTable, Title} from '@/components';
 import {getData} from "@/utils/page";
 import {useEnums} from "@/utils/enum";
 import {getClusterList} from "@/service/admin/cluster";
+import {ago} from "@/utils/time";
 
 export default (): React.ReactNode => {
 
@@ -34,7 +35,7 @@ export default (): React.ReactNode => {
             hideInSearch: true,
             render: (text: any) => {
                 if (!text) return '-';
-                return new Date(text * 1000).toLocaleString('zh-CN');
+                return ago(new Date(text * 1000).toLocaleString('zh-CN'));
             },
         },
         {

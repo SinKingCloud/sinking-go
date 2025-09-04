@@ -282,8 +282,8 @@ export default (): React.ReactNode => {
     useEffect(() => {
         setLoading(true);
         getOverviewInfo({
-            onSuccess: (data) => {
-                setOverviewData(data);
+            onSuccess: (r) => {
+                setOverviewData(r?.data || {});
             }
         }).finally(() => {
             setLoading(false);
