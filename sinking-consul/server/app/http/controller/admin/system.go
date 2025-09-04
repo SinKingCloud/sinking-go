@@ -46,7 +46,7 @@ func (ControllerSystem) Overview(c *server.Context) {
 
 func (ControllerSystem) Enum(c *server.Context) {
 	type Form struct {
-		Name string `json:"name" default:"" validate:"required,name" label:"枚举名称"`
+		Name string `json:"name" default:"" validate:"required" label:"枚举名称"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
