@@ -88,7 +88,7 @@ class EnumService {
      * 请求枚举数据
      */
     private async fetchEnum(name: string): Promise<Record<string, string>> {
-        const response = await get(`/auth/web/enum?name=${name}`);
+        const response = await get(`/admin/system/enum?name=${name}`);
         if (response.code !== 200) {
             return {};
         }
