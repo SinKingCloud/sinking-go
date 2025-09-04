@@ -88,7 +88,7 @@ const Login: React.FC = () => {
                     <div className={top}>
                         <div className={header}>
                             <img alt='logo' className={logo}
-                                 src={web?.info?.logo || ((Settings?.basePath || '/') + 'logo.svg')}/>
+                                 src={(Settings?.basePath || '/') + 'logo.svg'}/>
                             <span>{web?.info?.name || Settings?.title}</span>
                         </div>
                         <div className={desc}>
