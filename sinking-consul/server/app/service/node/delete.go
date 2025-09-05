@@ -9,10 +9,10 @@ import (
 func (s *Service) DeleteByAddress(addresses []string) (err error) {
 	list2, err2 := s.SelectInAddress(addresses)
 	err = util.Database.Db.Where("`address` IN ?", addresses).Delete(&model.Node{}).Error
-	if err == nil && list2 != nil && err2 == nil {
+	if list2 != nil && err2 == nil {
 		for _, key := range list2 {
 			if key.Group != "" && key.Name != "" {
-				s.Delete(key.Group, key.Name)
+				s.Delete(key.Group, key.Address)
 			}
 		}
 	}
