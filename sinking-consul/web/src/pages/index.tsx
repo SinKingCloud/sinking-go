@@ -434,14 +434,14 @@ export default (): React.ReactNode => {
                             <div className="detail-item">
                                 <span className="detail-label">
                                     <NodeIndexOutlined style={{marginRight: 8}}/>
-                                    系统名称
+                                    监听地址
                                 </span>
-                                <span className="detail-value">{webModel?.info?.name}</span>
+                                <span className="detail-value">{overviewData?.application?.listen || ":5678"}</span>
                             </div>
                             <div className="detail-item">
                                 <span className="detail-label">
                                     <ClusterOutlined style={{marginRight: 8}}/>
-                                    监听地址
+                                    外网地址
                                 </span>
                                 <span className="detail-value">{overviewData?.application?.address || ":5678"}</span>
                             </div>
