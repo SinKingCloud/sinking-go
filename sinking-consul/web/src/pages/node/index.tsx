@@ -66,16 +66,6 @@ export default (): React.ReactNode => {
             copyable: true,
         },
         {
-            title: '最后心跳',
-            dataIndex: 'last_heart',
-            tip: '最后心跳时间戳',
-            hideInSearch: true,
-            render: (text: any) => {
-                if (!text) return '-';
-                return ago(new Date(text * 1000).toLocaleString('zh-CN'));
-            },
-        },
-        {
             title: '在线状态',
             dataIndex: 'online_status',
             tip: '节点在线状态',
@@ -85,6 +75,16 @@ export default (): React.ReactNode => {
                     {text: value, color: key == '0' ? 'green' : 'red'}
                 ]
             })),
+        },
+        {
+            title: '最后心跳',
+            dataIndex: 'last_heart',
+            tip: '最后心跳时间戳',
+            hideInSearch: true,
+            render: (text: any) => {
+                if (!text) return '-';
+                return ago(new Date(text * 1000).toLocaleString('zh-CN'));
+            },
         },
         {
             title: '服务状态',
@@ -160,11 +160,11 @@ export default (): React.ReactNode => {
                 defaultPageSize={20}
                 rowSelection={{
                     rightExtra: (
-                        <a onClick={() => {
+                        <Button type={"primary"} ghost onClick={() => {
                             form?.resetFields();
                             setEditRecords(tableRef?.current?.getSelectedRowKeys());
                             modalRef.current?.show();
-                        }}>批量编辑</a>
+                        }}>批量编辑</Button>
                     )
                 }}
                 request={(params, sort) => {
