@@ -136,7 +136,7 @@ export default (): React.ReactNode => {
                         },
                     ]
                 }} trigger={['click']} placement="bottom" arrow={true}>
-                    <Button size="small">操作 <DownOutlined/></Button>
+                    <Button size="small">操作</Button>
                 </Dropdown>
             ],
         },
