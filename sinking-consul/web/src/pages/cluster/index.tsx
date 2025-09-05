@@ -7,7 +7,7 @@ import {ago} from "@/utils/time";
 
 export default (): React.ReactNode => {
 
-    const [enumsData, loading] = useEnums(["cluster"]);
+    const [enumsData] = useEnums(["cluster"]);
 
     const columns: any[] = [
         {
@@ -68,7 +68,7 @@ export default (): React.ReactNode => {
     ] as any;
 
     return (
-        <Body loading={loading}>
+        <Body>
             <ProTable
                 extraRefreshBtn={true}
                 title={<Title>集群管理</Title>}
