@@ -4,6 +4,14 @@ import {getData} from "@/utils/page";
 import {useEnums} from "@/utils/enum";
 import {getLog} from "@/service/admin/person";
 
+const color = {
+    0: "green",
+    1: "gray",
+    2: "red",
+    3: "warning",
+    4: "blue",
+}
+
 export default (): React.ReactNode => {
 
     const [enumsData, loading] = useEnums(["log"]);
@@ -30,7 +38,7 @@ export default (): React.ReactNode => {
             valueEnum: Object.fromEntries(Object.entries(enumsData?.log?.type || {}).map(([key, value]) => {
                 return [
                     key,
-                    {text: value, color: 'blue'}
+                    {text: value, color: color[key]}
                 ]
             })),
         },
