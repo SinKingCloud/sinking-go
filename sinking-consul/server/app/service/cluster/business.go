@@ -190,10 +190,13 @@ func (s *Service) RemoteLock(remoteAddress string, status int) error {
 }
 
 // RemoteDeleteData 远程删除数据
-func (s *Service) RemoteDeleteData(remoteAddress string, configs []*model.Config) error {
+func (s *Service) RemoteDeleteData(remoteAddress string, configs []*model.Config, nodes []*model.Node) error {
 	body := map[string]interface{}{}
 	if configs != nil {
 		body["configs"] = configs
+	}
+	if nodes != nil {
+		body["nodes"] = nodes
 	}
 	code, message, _, err := s.request(remoteAddress, "api/cluster/delete", body)
 	if err != nil {
@@ -365,7 +368,7 @@ func (s *Service) ChangeAllClusterLockStatus(status int) error {
 	return lastError
 }
 
-func (s *Service) DeleteAllClusterData(configs []*model.Config) {
+func (s *Service) DeleteAllClusterData(configs []*model.Config, nodes []*model.Node) {
 	list := make([]*Cluster, 0)
 	s.Each(func(key string, value *Cluster) bool {
 		if value.Status == int(Online) {
@@ -376,7 +379,7 @@ func (s *Service) DeleteAllClusterData(configs []*model.Config) {
 	tasks := make([]func() error, 0)
 	for _, cluster := range list {
 		tasks = append(tasks, func() error {
-			return s.RemoteDeleteData(cluster.Address, configs)
+			return s.RemoteDeleteData(cluster.Address, configs, nodes)
 		})
 	}
 	s.executeWithWorkers(10, tasks)

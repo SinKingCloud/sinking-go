@@ -10,3 +10,8 @@ export async function getNodeList(params: API.RequestParams = {}) {
 export async function updateNode(params: API.RequestParams = {}) {
     return post("/admin/node/update", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
 }
+
+/*****  删除node信息  *****/
+export async function deleteNode(params: API.RequestParams = {}) {
+    return post("/admin/node/delete", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
+}

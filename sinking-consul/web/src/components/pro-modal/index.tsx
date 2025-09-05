@@ -101,7 +101,6 @@ const ProModal = forwardRef<ProModalRef, ProModalProps>((props, ref): any => {
             okType={okType}
             width={width}
             maskClosable={false}
-            destroyOnHidden={true}
             {...modalProps}
         >
             {children}

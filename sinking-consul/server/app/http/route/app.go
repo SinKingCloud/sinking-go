@@ -104,6 +104,7 @@ func loadAdminRoute(s *sinking_web.Engine) {
 	{
 		node.ANY("/list", server.HandleFunc(admin.Node.List))     //节点列表
 		node.ANY("/update", server.HandleFunc(admin.Node.Update)) //编辑节点
+		node.ANY("/delete", server.HandleFunc(admin.Node.Delete)) //删除节点
 	}
 
 	config := g.Group("/config")

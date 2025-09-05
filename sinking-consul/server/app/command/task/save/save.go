@@ -3,6 +3,7 @@ package save
 import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"server/app/constant"
 	"server/app/service"
 	"server/app/service/cluster"
 	"server/app/service/config"
@@ -22,6 +23,13 @@ func Init() {
 		ticker := time.NewTicker(saveInterval)
 		defer ticker.Stop()
 		for range ticker.C {
+			for {
+				if util.Cache.IsLock(constant.LockSyncData) {
+					time.Sleep(time.Second)
+				} else {
+					break
+				}
+			}
 			saveClusters()
 			saveNodes()
 			saveConfig()
@@ -83,7 +91,7 @@ func saveNodes() {
 			continue
 		}
 		batch := nodes[i:end]
-		err := util.Database.Db.Debug().Transaction(func(tx *gorm.DB) error {
+		err := util.Database.Db.Transaction(func(tx *gorm.DB) error {
 			for _, nodeData := range batch {
 				tx.Clauses(clause.OnConflict{
 					Columns:   []clause.Column{{Name: "group"}, {Name: "name"}, {Name: "address"}},

@@ -72,6 +72,7 @@ func (ControllerCluster) Lock(c *server.Context) {
 func (ControllerCluster) Delete(c *server.Context) {
 	type Form struct {
 		Configs []*model.Config `json:"configs" default:"" validate:"omitempty" label:"配置列表"`
+		Nodes   []*model.Node   `json:"nodes" default:"" validate:"omitempty" label:"节点列表"`
 	}
 	form := &Form{}
 	if ok, msg := c.ValidatorAll(form); !ok {
@@ -80,6 +81,17 @@ func (ControllerCluster) Delete(c *server.Context) {
 	}
 	if form.Configs != nil && len(form.Configs) > 0 {
 		_ = service.Config.DeleteByGroupAndName(form.Configs)
+	}
+	if form.Nodes != nil && len(form.Nodes) > 0 {
+		addresses := make([]string, 100)
+		for _, node := range form.Nodes {
+			if node != nil && node.Address != "" {
+				addresses = append(addresses, node.Address)
+			}
+		}
+		if addresses != nil && len(addresses) > 0 {
+			_ = service.Node.DeleteByAddress(addresses)
+		}
 	}
 	c.Success("执行成功")
 }

@@ -2,14 +2,14 @@ import React, {useRef, useState} from 'react';
 import {Body, ProTable, Title, ProModal} from '@/components';
 import {getData} from "@/utils/page";
 import {useEnums} from "@/utils/enum";
-import {getNodeList, updateNode} from "@/service/admin/node";
+import {deleteNode, getNodeList, updateNode} from "@/service/admin/node";
 import {ago} from "@/utils/time";
 import {Button, Select, Form, App, Dropdown} from 'antd';
 import {ProModalRef} from "@/components/pro-modal";
 
 export default (): React.ReactNode => {
     const [enumsData] = useEnums(["node"]);
-    const {message} = App.useApp();
+    const {message, modal} = App.useApp();
 
     /**
      * 编辑表单
@@ -37,6 +37,34 @@ export default (): React.ReactNode => {
         });
         setEditBtnLoading(false);
     };
+
+    /**
+     * 删除节点
+     */
+    const onDelete = (records: any[]) => {
+        modal.confirm({
+            title: '删除节点',
+            content: `确定删除选中的 ${records?.length || 0} 个节点吗？`,
+            okText: '确 定',
+            okType: 'danger',
+            cancelText: '取 消',
+            onOk: async () => {
+                await deleteNode({
+                    body: {
+                        addresses: records,
+                    },
+                    onSuccess: (r: any) => {
+                        tableRef.current?.refreshTableData();
+                        tableRef.current?.clearSelectedRows();
+                        message?.success(r?.message || '删除成功');
+                    },
+                    onFail: (r: any) => {
+                        message?.error(r?.message || "请求失败");
+                    }
+                });
+            }
+        } as any)
+    }
 
     /**
      * 表格
@@ -139,6 +167,12 @@ export default (): React.ReactNode => {
                                 modalRef.current?.show();
                             }}>编 辑</a>
                         },
+                        {
+                            key: "delete",
+                            label: <a onClick={() => {
+                                onDelete([record?.address])
+                            }}>删 除</a>
+                        },
                     ]
                 }} trigger={['click']} placement="bottom" arrow={true}>
                     <Button size="small">操作</Button>
@@ -160,11 +194,18 @@ export default (): React.ReactNode => {
                 defaultPageSize={20}
                 rowSelection={{
                     rightExtra: (
-                        <Button type={"primary"} ghost onClick={() => {
-                            form?.resetFields();
-                            setEditRecords(tableRef?.current?.getSelectedRowKeys());
-                            modalRef.current?.show();
-                        }}>批量编辑</Button>
+                        <>
+                            <Button type={"primary"} danger ghost
+                                    onClick={() => {
+                                        onDelete(tableRef?.current?.getSelectedRowKeys());
+                                    }}>批量删除</Button>
+                            <Button type={"primary"} ghost
+                                    onClick={() => {
+                                        form?.resetFields();
+                                        setEditRecords(tableRef?.current?.getSelectedRowKeys());
+                                        modalRef.current?.show();
+                                    }}>批量编辑</Button>
+                        </>
                     )
                 }}
                 request={(params, sort) => {

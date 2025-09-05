@@ -190,7 +190,7 @@ func (ControllerConfig) Delete(c *server.Context) {
 		c.Error("删除失败")
 		return
 	}
-	service.Cluster.DeleteAllClusterData(form.Keys)
+	service.Cluster.DeleteAllClusterData(form.Keys, nil)
 	service.Log.Create(c.GetRequestIp(), log.EventDelete, "删除服务配置", "删除服务配置数据")
 	c.Success("删除成功")
 }
