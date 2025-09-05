@@ -28,5 +28,5 @@ func GetIns() *Service {
 // Node 集群列表
 type Node struct {
 	*model.Node
-	IsLocal bool
+	IsLocal bool `gorm:"-" json:"is_local"`
 }
