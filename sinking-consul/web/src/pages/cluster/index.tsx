@@ -51,20 +51,6 @@ export default (): React.ReactNode => {
                 };
             },
         },
-        {
-            title: '更新时间',
-            valueType: 'dateRange',
-            dataIndex: 'update_time',
-            tip: '更新时间',
-            sorter: true,
-            hideInSearch: true,
-            transform: (value: any) => {
-                return {
-                    update_time_start: value[0]?.format ? value[0].format('YYYY-MM-DD HH:mm:ss') : value[0],
-                    update_time_end: value[1]?.format ? value[1].format('YYYY-MM-DD HH:mm:ss') : value[1],
-                };
-            },
-        },
     ] as any;
 
     return (

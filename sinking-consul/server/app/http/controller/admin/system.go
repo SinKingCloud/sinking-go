@@ -24,7 +24,8 @@ func (ControllerSystem) Overview(c *server.Context) {
 	c.SuccessWithData("获取成功", sinking_web.H{
 		"application": sinking_web.H{
 			"mode":    c.GetStringWithDefault(util.Conf.GetString(constant.ServerMode), "release"),
-			"address": util.Conf.GetString(constant.ServerHost) + ":" + c.GetStringWithDefault(util.Conf.GetString(constant.ServerPort), "5678"),
+			"listen":  util.Conf.GetString(constant.ServerHost) + ":" + c.GetStringWithDefault(util.Conf.GetString(constant.ServerPort), "5678"),
+			"address": service.Cluster.GetLocalAddr(),
 		},
 		"cluster": sinking_web.H{
 			"total":   clusterNum,

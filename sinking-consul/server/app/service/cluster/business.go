@@ -145,8 +145,8 @@ func (s *Service) request(address string, action string, body interface{}) (int,
 	return response.Code, response.Message, response.Data, nil
 }
 
-// getLocalAddr 获取本机地址
-func (s *Service) getLocalAddr() string {
+// GetLocalAddr 获取本机地址
+func (s *Service) GetLocalAddr() string {
 	str := util.Cache.Remember(constant.CacheNameWithLocalIp, func() interface{} {
 		local := util.Conf.GetString(constant.ClusterLocal)
 		if local == "" {
@@ -161,7 +161,7 @@ func (s *Service) getLocalAddr() string {
 // RegisterRemoteService 向集群节点发送注册请求
 func (s *Service) RegisterRemoteService(remoteAddress string) error {
 	body := map[string]string{
-		"address": s.getLocalAddr(),
+		"address": s.GetLocalAddr(),
 	}
 	code, message, _, err := s.request(remoteAddress, "api/cluster/register", body)
 	if err != nil {
