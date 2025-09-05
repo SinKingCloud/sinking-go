@@ -156,6 +156,7 @@ export default (): React.ReactNode => {
                 rowSelection={{
                     rightExtra: (
                         <a onClick={() => {
+                            form?.resetFields();
                             setEditRecords(tableRef?.current?.getSelectedRowKeys());
                             modalRef.current?.show();
                         }}>批量编辑</a>
