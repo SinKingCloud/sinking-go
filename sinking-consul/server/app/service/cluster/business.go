@@ -71,6 +71,7 @@ func (s *Service) Register(address string) {
 // Init 初始化服务
 func (s *Service) Init() {
 	clusterOnce.Do(func() {
+		_ = s.DeleteAll()
 		list := util.Conf.GetStringSlice(constant.ClusterNodes)
 		for _, v := range list {
 			d, e := s.FindByAddress(v)
@@ -79,21 +80,6 @@ func (s *Service) Init() {
 					Address:   v,
 					Status:    int(Offline),
 					LastHeart: 0,
-				})
-			}
-		}
-		_ = s.UpdateAll(map[string]interface{}{"status": Offline})
-		all, e := s.SelectAll()
-		if e == nil && all != nil {
-			for _, v := range all {
-				s.Set(v.Address, &Cluster{
-					Cluster: &model.Cluster{
-						Address:    v.Address,
-						Status:     v.Status,
-						LastHeart:  v.LastHeart,
-						CreateTime: v.CreateTime,
-						UpdateTime: v.UpdateTime,
-					},
 				})
 			}
 		}
