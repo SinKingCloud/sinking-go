@@ -5,13 +5,15 @@ import {useEnums} from "@/utils/enum";
 import {getNodeList, updateNode} from "@/service/admin/node";
 import {ago} from "@/utils/time";
 import {Button, Select, Form, App, Dropdown} from 'antd';
-import {DownOutlined} from '@ant-design/icons';
 import {ProModalRef} from "@/components/pro-modal";
 
 export default (): React.ReactNode => {
     const [enumsData] = useEnums(["node"]);
     const {message} = App.useApp();
 
+    /**
+     * 编辑表单
+     */
     const modalRef = useRef<ProModalRef>({} as ProModalRef);
     const [form] = Form.useForm();
     const [editRecords, setEditRecords] = useState([]);
@@ -36,6 +38,9 @@ export default (): React.ReactNode => {
         setEditBtnLoading(false);
     };
 
+    /**
+     * 表格
+     */
     const tableRef = React.useRef<any>(null);
     const columns: any[] = [
         {
