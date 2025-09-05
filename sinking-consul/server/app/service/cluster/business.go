@@ -83,6 +83,20 @@ func (s *Service) Init() {
 				})
 			}
 		}
+		all, e := s.SelectAll()
+		if e == nil && all != nil {
+			for _, v := range all {
+				s.Set(v.Address, &Cluster{
+					Cluster: &model.Cluster{
+						Address:    v.Address,
+						Status:     v.Status,
+						LastHeart:  v.LastHeart,
+						CreateTime: v.CreateTime,
+						UpdateTime: v.UpdateTime,
+					},
+				})
+			}
+		}
 	})
 }
 
