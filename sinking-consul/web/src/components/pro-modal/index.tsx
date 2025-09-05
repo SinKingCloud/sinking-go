@@ -1,7 +1,5 @@
 // noinspection TypeScriptValidateTypes
-
-import React, {forwardRef, useImperativeHandle, useState} from "react";
-import {createStyles} from "antd-style";
+import React, {forwardRef, useImperativeHandle, useState, useMemo} from "react";
 import {Modal, ModalProps} from "antd";
 
 /**
@@ -10,13 +8,13 @@ import {Modal, ModalProps} from "antd";
 export type ProModalProps = {
     modalProps?: ModalProps & any & undefined;// modal属性
     title?: any; // 标题
-    onOk?: (values: any) => void | any; // 确认按钮回调
+    onOk?: () => void | any; // 确认按钮回调
     onCancel?: () => void | any; // 取消按钮回调
     afterClose?: () => void | any; // 关闭后回调
     okText?: string; // 确认按钮文本
     okType?: "primary" | "default" | "dashed" | "link" | "text"; // 确认按钮类型
     width?: number | string; // 模态框宽度
-    afterOpenChange?: (open: boolean) => void | any; // 打开状态变化回调
+    afterOpenChange?: (open: boolean) => void | any; // 打开状态变化回调（可选）
     children?: React.ReactNode; // 子组件内容
 };
 
@@ -24,20 +22,13 @@ export type ProModalProps = {
  * ProModal组件
  */
 export interface ProModalRef {
-    show?: () => void | any; // 显示模态框
-    hide?: () => void | any; // 隐藏模态框
+    show: () => void; // 显示模态框
+    hide: () => void; // 隐藏模态框
 }
-
-/**
- * 样式配置
- */
-const useStyles: any = createStyles(({token, isDarkMode}: any): any => {
-    return {};
-});
 
 const ProModal = forwardRef<ProModalRef, ProModalProps>((props, ref): any => {
     const {
-        modalProps = {},
+        modalProps = {} as ModalProps & any & undefined,
         title,
         onOk,
         onCancel,
@@ -49,56 +40,52 @@ const ProModal = forwardRef<ProModalRef, ProModalProps>((props, ref): any => {
         children,
     } = props;
 
-    const {styles} = useStyles();
-    const [open, setOpen] = useState<boolean>(false);
+    const isControlled = useMemo(() => modalProps.open !== undefined, [modalProps.open]);// 是否受控
+    const [internalOpen, setInternalOpen] = useState<boolean>(false);// 内部状态管理模态框的打开与关闭
+    const open = isControlled ? modalProps.open : internalOpen;// 是否打开模态框
 
-    // 暴露给父组件的方法
+    /**
+     * 暴露给父组件的方法
+     */
     useImperativeHandle(ref, () => ({
         show: () => {
-            setOpen(true);
+            if (!isControlled) {
+                setInternalOpen(true);
+            }
             afterOpenChange?.(true);
         },
         hide: () => {
-            setOpen(false);
+            if (!isControlled) {
+                setInternalOpen(false);
+            }
             afterOpenChange?.(false);
         }
     }));
 
-    // 处理确认按钮点击
+    /**
+     * 处理确认按钮点击事件
+     */
     const handleOk = async () => {
-        try {
-            if (onOk) {
-                const result = await onOk({});
-                // 如果 onOk 返回 false，则不关闭模态框
-                if (result !== false) {
-                    setOpen(false);
-                    afterOpenChange?.(false);
-                }
-            } else {
-                setOpen(false);
-                afterOpenChange?.(false);
-            }
-        } catch (error) {
-            console.error('Modal onOk error:', error);
-        }
+        await onOk?.();
     };
 
-    // 处理取消按钮点击
+    /**
+     * 处理取消按钮点击事件
+     */
     const handleCancel = () => {
         if (onCancel) {
-            const result = onCancel();
-            // 如果 onCancel 返回 false，则不关闭模态框
-            if (result !== false) {
-                setOpen(false);
+            onCancel();
+        } else {
+            if (!isControlled) {
+                setInternalOpen(false);
                 afterOpenChange?.(false);
             }
-        } else {
-            setOpen(false);
-            afterOpenChange?.(false);
         }
     };
 
-    // 处理模态框关闭后的回调
+    /**
+     * 处理模态框关闭后的事件
+     */
     const handleAfterClose = () => {
         afterClose?.();
     };
@@ -114,11 +101,14 @@ const ProModal = forwardRef<ProModalRef, ProModalProps>((props, ref): any => {
             okType={okType}
             width={width}
             maskClosable={false}
+            destroyOnHidden={true}
             {...modalProps}
         >
             {children}
         </Modal>
     );
 });
+
+ProModal.displayName = "ProModal";
 
 export default ProModal;

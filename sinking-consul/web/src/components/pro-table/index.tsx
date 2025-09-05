@@ -226,7 +226,12 @@ const useStyles: any = createStyles(({token, isDarkMode}: any): any => {
                 ".ant-table-cell": {
                     padding: "10px !important",
                     fontSize: token?.fontSizeSM + 1,
-                    color: fontColor
+                    color: fontColor,
+                    ".ant-btn": {
+                        height: "25px",
+                        padding: "10px ",
+                        fontSize: token?.fontSizeSM,
+                    }
                 },
                 ".ant-typography": {
                     fontSize: token?.fontSizeSM + 1,
