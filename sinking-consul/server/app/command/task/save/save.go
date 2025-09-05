@@ -3,7 +3,6 @@ package save
 import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"server/app/constant"
 	"server/app/service"
 	"server/app/service/cluster"
 	"server/app/service/config"
@@ -23,13 +22,6 @@ func Init() {
 		ticker := time.NewTicker(saveInterval)
 		defer ticker.Stop()
 		for range ticker.C {
-			for {
-				if util.Cache.IsLock(constant.LockSyncData) {
-					time.Sleep(time.Second)
-				} else {
-					break
-				}
-			}
 			saveClusters()
 			saveNodes()
 			saveConfig()
