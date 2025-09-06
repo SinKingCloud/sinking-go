@@ -5,15 +5,15 @@ import {updatePassword} from "@/service/admin/person";
 
 const PasswordView: React.FC = () => {
 
-    const [isLoading, setIsLoading] = useState(false);
-    const {message} = App.useApp()
+    const [submitLoading, setSubmitLoading] = useState(false);
+    const {message} = App.useApp();
     const [form] = Form.useForm();
 
     /**
      * 提交表单
      */
     const onFinish = async (values: any) => {
-        setIsLoading(true);
+        setSubmitLoading(true);
         await updatePassword({
             body: {
                 password: values.password
@@ -26,14 +26,20 @@ const PasswordView: React.FC = () => {
                 message?.error(r?.message || "密码修改失败");
             },
             onFinally: () => {
-                setIsLoading(false);
+                setSubmitLoading(false);
             }
         });
     }
 
+    /**
+     * 重置表单
+     */
+    const onReset = () => {
+        form.resetFields();
+    }
+
     return (
-        <Spin spinning={isLoading} size="default">
-            <div style={{display: isLoading ? 'none' : 'block'}}>
+        <div>
                 <Form form={form} onFinish={onFinish} layout="vertical">
                     <Form.Item
                         name="password"
@@ -68,13 +74,15 @@ const PasswordView: React.FC = () => {
                         <Input.Password placeholder="请再次输入密码"/>
                     </Form.Item>
                     <Form.Item>
-                        <Button type="primary" htmlType="submit" loading={isLoading}>
-                            修改密码
+                        <Button onClick={onReset} style={{marginRight: 8}}>
+                            重置
+                        </Button>
+                        <Button type="primary" htmlType="submit" loading={submitLoading}>
+                            提交
                         </Button>
                     </Form.Item>
                 </Form>
-            </div>
-        </Spin>
+        </div>
     );
 };
 

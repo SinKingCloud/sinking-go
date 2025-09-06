@@ -4,7 +4,8 @@ import {App, Form, Spin, Input, Button} from "antd";
 import {useModel} from "umi";
 
 const WebView: React.FC = () => {
-    const [isLoading, setIsLoading] = useState(false);
+    const [dataLoading, setDataLoading] = useState(true);
+    const [submitLoading, setSubmitLoading] = useState(false);
     const {message} = App.useApp()
     const [form] = Form.useForm();
     const web = useModel("web");
@@ -13,16 +14,27 @@ const WebView: React.FC = () => {
      * 初始化表单值
      */
     const getConfigs = () => {
+        setDataLoading(true);
         return getConfig({
             body: {
                 action: "get",
                 group: "web"
             },
             onSuccess: (r: any) => {
-                form.setFieldsValue(r?.data || {});
+                const data = r?.data || {};
+                // 处理空值，确保空字符串被转换为undefined以显示placeholder
+                const processedData = Object.keys(data).reduce((acc, key) => {
+                    const value = data[key];
+                    acc[key] = value === '' || value === null ? undefined : value;
+                    return acc;
+                }, {} as any);
+                form.setFieldsValue(processedData);
             },
             onFail: (r: any) => {
                 message?.error(r?.message || "加载配置失败");
+            },
+            onFinally: () => {
+                setDataLoading(false);
             }
         });
     }
@@ -31,7 +43,7 @@ const WebView: React.FC = () => {
      * 提交表单
      */
     const onFinish = async (values: any) => {
-        setIsLoading(true);
+        setSubmitLoading(true);
         const configs = Object.entries(values).map(([key, value]) => ({key, value}));
         await setConfig({
             body: {
@@ -47,9 +59,16 @@ const WebView: React.FC = () => {
                 message?.error(r?.message || "配置保存失败");
             },
             onFinally: () => {
-                setIsLoading(false);
+                setSubmitLoading(false);
             }
         });
+    }
+
+    /**
+     * 重置表单
+     */
+    const onReset = () => {
+        form.resetFields();
     }
 
     /**
@@ -60,8 +79,8 @@ const WebView: React.FC = () => {
     }, []);
 
     return (
-        <Spin spinning={isLoading} size="default">
-            <div style={{display: isLoading ? 'none' : 'block'}}>
+        <Spin spinning={dataLoading} size="default">
+            <div style={{display: dataLoading ? 'none' : 'block'}}>
                 <Form form={form} onFinish={onFinish} layout="vertical">
                     <Form.Item
                         name="name"
@@ -96,8 +115,11 @@ const WebView: React.FC = () => {
                         <Input.TextArea placeholder="请输入网站描述" rows={4}/>
                     </Form.Item>
                     <Form.Item>
-                        <Button type="primary" htmlType="submit" loading={isLoading}>
-                            保存配置
+                        <Button onClick={onReset} style={{marginRight: 8}}>
+                            重置
+                        </Button>
+                        <Button type="primary" htmlType="submit" loading={submitLoading}>
+                            提交
                         </Button>
                     </Form.Item>
                 </Form>
