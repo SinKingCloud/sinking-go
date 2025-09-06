@@ -1,0 +1,1 @@
+export { useSystemConfig } from './useSystemConfig';
