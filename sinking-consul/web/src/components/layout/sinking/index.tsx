@@ -93,7 +93,8 @@ const useLayoutStyles = createStyles(({isDarkMode, token, css, responsive}): any
         },
         flow: {
             display: "flex",
-            justifyContent: "space-between"
+            justifyContent: "space-between",
+            height: "55px",
         },
         logo: {
             display: "inline-flex",

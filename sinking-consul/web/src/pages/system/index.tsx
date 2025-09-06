@@ -109,7 +109,7 @@ const Settings: React.FC = () => {
 
     return (
         <Body>
-            <Card title={<Title>网站设置</Title>}>
+            <Card title={<Title>网站设置</Title>} variant={"borderless"}>
                 <div className={main}>
                     <div className={leftMenu}>
                         <Menu
