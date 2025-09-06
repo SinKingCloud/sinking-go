@@ -1,20 +1,9 @@
 import React, {useState} from 'react';
 import {App, Form, Spin, Input, Button} from "antd";
-import {createStyles} from "antd-style";
 import {updatePassword} from "@/service/admin/person";
 
-const useStyles = createStyles(({css}) => {
-    return {
-        box: css`
-            .ant-form-item .ant-form-item-control {
-                margin-bottom: 10px !important;
-            }
-        `
-    }
-})
 
 const PasswordView: React.FC = () => {
-    const {styles: {box}} = useStyles()
 
     const [isLoading, setIsLoading] = useState(false);
     const {message} = App.useApp()
@@ -45,7 +34,7 @@ const PasswordView: React.FC = () => {
     return (
         <Spin spinning={isLoading} size="default">
             <div style={{display: isLoading ? 'none' : 'block'}}>
-                <Form form={form} onFinish={onFinish} className={box} layout="vertical">
+                <Form form={form} onFinish={onFinish} layout="vertical">
                     <Form.Item
                         name="password"
                         label="新密码"

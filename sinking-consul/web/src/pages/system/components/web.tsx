@@ -1,22 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import {getConfig, setConfig} from "@/service/admin/system";
 import {App, Form, Spin, Input, Button} from "antd";
-import {createStyles} from "antd-style";
-import {useModel} from "@@/exports";
-
-const useStyles = createStyles(({css}) => {
-    return {
-        box: css`
-            .ant-form-item .ant-form-item-control {
-                margin-bottom: 10px !important;
-            }
-        `
-    }
-})
+import {useModel} from "umi";
 
 const WebView: React.FC = () => {
-    const {styles: {box}} = useStyles()
-
     const [isLoading, setIsLoading] = useState(false);
     const {message} = App.useApp()
     const [form] = Form.useForm();
@@ -25,9 +12,8 @@ const WebView: React.FC = () => {
     /**
      * 初始化表单值
      */
-    const getConfigs = async () => {
-        setIsLoading(true);
-        return await getConfig({
+    const getConfigs = () => {
+        return getConfig({
             body: {
                 action: "get",
                 group: "web"
@@ -37,9 +23,6 @@ const WebView: React.FC = () => {
             },
             onFail: (r: any) => {
                 message?.error(r?.message || "加载配置失败");
-            },
-            onFinally: () => {
-                setIsLoading(false);
             }
         });
     }
@@ -79,7 +62,7 @@ const WebView: React.FC = () => {
     return (
         <Spin spinning={isLoading} size="default">
             <div style={{display: isLoading ? 'none' : 'block'}}>
-                <Form form={form} onFinish={onFinish} className={box} layout="vertical">
+                <Form form={form} onFinish={onFinish} layout="vertical">
                     <Form.Item
                         name="name"
                         label="网站名称"

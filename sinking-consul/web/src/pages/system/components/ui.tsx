@@ -1,10 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {App, ColorPicker, Form, Spin, Upload, Select, Input, Button} from "antd";
+import {App, ColorPicker, Form, Spin, Select, Button} from "antd";
 import {getConfig, setConfig} from "@/service/admin/system";
-import {LoadingOutlined, PlusOutlined} from "@ant-design/icons";
-import {createStyles} from "antd-style";
 import {useModel} from "umi";
-
 
 const UiView: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -15,9 +12,8 @@ const UiView: React.FC = () => {
     /**
      * 初始化表单值
      */
-    const getConfigs = async () => {
-        setIsLoading(true);
-        return await getConfig({
+    const getConfigs = () => {
+        return getConfig({
             body: {
                 action: "get",
                 group: "ui"
@@ -27,13 +23,9 @@ const UiView: React.FC = () => {
             },
             onFail: (r: any) => {
                 message?.error(r?.message || "加载配置失败")
-            },
-            onFinally: () => {
-                setIsLoading(false)
             }
         });
     }
-
 
     /**
      * 提交表单
@@ -59,7 +51,6 @@ const UiView: React.FC = () => {
             }
         });
     }
-
 
     /**
      * 初始化数据
