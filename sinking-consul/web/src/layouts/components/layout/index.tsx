@@ -33,8 +33,9 @@ const RightTop: React.FC = () => {
      * 全局数据
      */
     const user = useModel("user");//用户信息
-    const {message} = App.useApp()
+    const web = useModel("web");//站点信息
     const theme = useModel("theme");//主题信息
+    const {message} = App.useApp();
     /**
      * 样式
      */
@@ -48,6 +49,9 @@ const RightTop: React.FC = () => {
                 fontSize: "13px",
                 color: isDarkMode ? token.colorTextSecondary : "rgb(150,150,150)",
                 fontWeight: "bold",
+            },
+            bottomIconDark: {
+                color: isDarkMode ? token.colorTextSecondary : "rgb(150,150,150)",
             },
             profile: css`
                 margin-left: 10px;
@@ -157,7 +161,22 @@ const RightTop: React.FC = () => {
             },
         };
     });
-    const {styles: {img, nickname, profile, pop, content_top, ava, top_text, box, menu, menuItem, icon}} = useStyles();
+    const {
+        styles: {
+            img,
+            nickname,
+            bottomIconDark,
+            profile,
+            pop,
+            content_top,
+            ava,
+            top_text,
+            box,
+            menu,
+            menuItem,
+            icon
+        }
+    } = useStyles();
     return <>
         <Tooltip title={theme?.getModeName(theme?.mode)}>
             <Icon type={theme?.isDarkMode() ? Dark : (theme?.isAutoMode() ? Auto : Light)} className={icon}
@@ -215,7 +234,7 @@ const RightTop: React.FC = () => {
                     {(user?.web?.account?.slice(0, 1)?.toUpperCase() || "未登录")}
                 </Avatar>
                 <span className={nickname}>{user?.web?.account || "未登录"}</span>
-                <Icon type={Bottom}/>
+                <Icon className={web?.info?.ui?.theme == "dark" ? bottomIconDark : ""} type={Bottom}/>
             </div>
         </Popover>
     </>
