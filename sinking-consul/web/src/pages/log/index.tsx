@@ -6,7 +6,7 @@ import {getLog} from "@/service/admin/person";
 
 const color = {
     0: "green",
-    1: "gray",
+    1: "geekblue",
     2: "red",
     3: "warning",
     4: "blue",

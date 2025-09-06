@@ -48,6 +48,7 @@ export default (): React.ReactNode => {
             okText: '确 定',
             okType: 'danger',
             cancelText: '取 消',
+            maskClosable: true,
             onOk: async () => {
                 await deleteNode({
                     body: {
