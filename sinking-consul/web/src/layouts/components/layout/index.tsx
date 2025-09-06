@@ -288,7 +288,7 @@ const SKLayout: React.FC<slide> = ({...props}) => {
         <>
             <Title/>
             <Layout loading={loading}
-                    waterMark={web?.info?.ui?.water_mark ? [user?.web?.nick_name, user?.web?.email] : ""}
+                    waterMark={web?.info?.ui?.watermark ? [web?.info?.name, user?.web?.account] : ""}
                     menus={menu}
                     layout={web?.info?.ui?.layout != "left" ? "horizontal" : "inline"}
                     menuTheme={web?.info?.ui?.theme == "dark" ? "dark" : "light"}

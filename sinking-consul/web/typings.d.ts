@@ -41,7 +41,7 @@ declare namespace API {
         login_time?: string;
     }
     type Ui = {
-        water_mark?: string;
+        watermark?: string;
         layout?: string;
         theme?: string;
         color?: string;

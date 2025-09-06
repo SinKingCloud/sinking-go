@@ -16,7 +16,7 @@ func Info(c *server.Context) {
 		"describe": c.GetStringWithDefault(config.GetString(constant.WebDescribe), "提供一站式云服务解决方案"),
 		"ui": sinking_web.H{
 			"layout":    c.GetStringWithDefault(config.GetString(constant.UiLayout), "left"),
-			"watermark": c.GetStringWithDefault(config.GetString(constant.UiWaterMark), ""),
+			"watermark": c.GetBoolWithDefault(config.GetString(constant.UiWaterMark), false),
 			"theme":     c.GetStringWithDefault(config.GetString(constant.UiTheme), "light"),
 			"compact":   c.GetBoolWithDefault(config.GetString(constant.UiCompact), false),
 			"color":     c.GetStringWithDefault(config.GetString(constant.UiColor), "rgb(0,81,235)"),
