@@ -67,28 +67,29 @@ const useLayoutStyles = createStyles(({isDarkMode, token, css, responsive}): any
                 color: isDarkMode ? "rgb(255,255,255,0.85)" : ""
             }
         },
-        content: css`
+        horizontalContent: css`
             min-height: calc(100vh - 125px);
             width: 100%;
             height: 100%;
-
-            > div > div > div > div:first-of-type {
+        `,
+        inlineContent: {
+            minHeight: "calc(100vh - 125px)",
+            width: "100% !important",
+            height: "100%",
+        },
+        flowContent: css`
+            .ant-layout-body {
                 width: 80%;
                 margin-left: 10%;
             }
 
             ${responsive.md} {
-                > div > div > div > div:first-of-type {
+                .ant-layout-body {
                     width: 100%;
                     margin-left: 0;
                 }
             }
         `,
-        content1: {
-            minHeight: "calc(100vh - 125px)",
-            width: "100% !important",
-            height: "100%",
-        },
         footer: {
             textAlign: 'center',
         },
@@ -131,6 +132,7 @@ export type LayoutProps = {
     menuBottomBtnText?: any,
     onMenuBottomBtnClick?: () => void,
     layout?: string,
+    flowLayout?: boolean,
     menuTheme?: string,
     waterMark?: any,
 };
@@ -164,6 +166,7 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
         menuBottomBtnText = undefined,
         onMenuBottomBtnClick,
         layout = 'inline',
+        flowLayout = false,
         menuTheme = "light",
         waterMark = undefined
     } = props;
@@ -177,17 +180,18 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
         styles: {
             container,
             sider,
-            content1,
+            inlineContent,
             sticky,
             header,
-            content,
+            horizontalContent,
             footer,
             body,
             drawMenu,
             menuBtn,
             flow,
             logo,
-            darkColor
+            darkColor,
+            flowContent
         }
     } = useLayoutStyles();
     const {mobile, md} = useResponsive();
@@ -225,7 +229,6 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
             onMenuBtnClick?.(status);
         }
     }));
-
 
 
     /**
@@ -304,8 +307,8 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
                                            onClick={menuBtnOnClick} className={menuBtn}/>{headerLeft}</div>}
                         right={headerRight}/>
             </Layout.Header>
-            <Layout.Content className={content1}>
-                <BreadCrumb enabled={breadCrumb} />
+            <Layout.Content className={inlineContent + (flowLayout ? " " + flowContent : "")}>
+                <BreadCrumb enabled={breadCrumb}/>
                 {getOutlet()}
             </Layout.Content>
             {props?.footer && <Layout.Footer className={footer}>
@@ -334,8 +337,8 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
                 </div>
             }
         </Layout.Header>
-        <Layout.Content className={content}>
-            <BreadCrumb enabled={breadCrumb} />
+        <Layout.Content className={horizontalContent + (flowLayout ? " " + flowContent : "")}>
+            <BreadCrumb enabled={breadCrumb}/>
             {getOutlet()}
         </Layout.Content>
         {props?.footer && <Layout.Footer className={footer}>

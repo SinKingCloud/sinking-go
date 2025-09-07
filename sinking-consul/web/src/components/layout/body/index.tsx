@@ -57,7 +57,7 @@ const Body: React.FC<BodyProps> = (props) => {
         <App>
             {(loading && <Spin spinning={true} size="large" className={load}></Spin>) ||
                 <Layout style={style}>
-                    <div className={(className ? className : body)}>
+                    <div className={"ant-layout-body " + (className ? className : body)}>
                         <Animation animate={animation ? Animate.FadeUp : Animate.None}>
                             {(space && <Space direction="vertical" size="middle" className={gutter}>
                                 {children}

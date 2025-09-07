@@ -310,6 +310,7 @@ const SKLayout: React.FC<slide> = ({...props}) => {
                     waterMark={web?.info?.ui?.watermark ? [web?.info?.name, user?.web?.account] : ""}
                     menus={menu}
                     layout={web?.info?.ui?.layout != "left" ? "horizontal" : "inline"}
+                    flowLayout={web?.info?.ui?.layout != "left"}
                     menuTheme={web?.info?.ui?.theme == "dark" ? "dark" : "light"}
                     footer={<>©{new Date().getFullYear()} All Right
                         Revered {web?.info?.name || Settings?.title}</>}
