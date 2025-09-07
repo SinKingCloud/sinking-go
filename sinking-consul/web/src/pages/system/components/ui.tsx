@@ -22,7 +22,6 @@ const UiView: React.FC = () => {
                 label="紧凑模式"
                 tooltip="控制界面元素间距，开启后界面更紧凑"
                 placeholder="请选择紧凑模式是否开启"
-                allowClear={true}
                 options={[
                     {value: '1', label: '开启'},
                     {value: '0', label: '关闭'}
@@ -34,7 +33,6 @@ const UiView: React.FC = () => {
                 label="网站布局"
                 tooltip="选择网站的整体布局方式，上下布局或左右布局"
                 placeholder="请选择网站布局方式"
-                allowClear={true}
                 options={[
                     {value: 'top', label: '上下布局'},
                     {value: 'left', label: '左右布局'}
@@ -46,7 +44,6 @@ const UiView: React.FC = () => {
                 label="菜单主题"
                 tooltip="选择菜单的主题模式，亮色或暗色"
                 placeholder="请选择菜单主题模式"
-                allowClear={true}
                 options={[
                     {value: 'light', label: '亮色模式'},
                     {value: 'dark', label: '暗色模式'}
@@ -58,7 +55,6 @@ const UiView: React.FC = () => {
                 label="界面水印"
                 tooltip="控制系统界面是否显示用户昵称水印效果"
                 placeholder="请选择是否显示界面水印"
-                allowClear={true}
                 options={[
                     {value: '1', label: '开启'},
                     {value: '0', label: '关闭'}

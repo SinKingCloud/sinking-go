@@ -1,14 +1,14 @@
 import Footer from "../footer";
 import Header from "../header";
 import Sider from "../sider";
+import BreadCrumb from "../../breadcrumb";
 import {createStyles, useResponsive, useTheme} from "antd-style";
-import React, {forwardRef, useEffect, useImperativeHandle, useState} from "react";
-import {Outlet, useLocation, useRouteData, useSelectedRoutes} from "umi";
+import React, {forwardRef, useImperativeHandle, useState} from "react";
+import {Outlet} from "umi";
 import {MenuFoldOutlined, MenuUnfoldOutlined} from "@ant-design/icons";
 import Loading from "@/loading"
-import {App, Breadcrumb, Button, ConfigProvider, Drawer, Layout, Watermark} from "antd";
+import {App, Button, ConfigProvider, Drawer, Layout, Watermark} from "antd";
 import zhCN from 'antd/locale/zh_CN';
-import {getAllMenuItems, getFirstMenuWithoutChildren, getParentList, historyPush} from "@/utils/route";
 
 const useLayoutStyles = createStyles(({isDarkMode, token, css, responsive}): any => {
     return {
@@ -107,15 +107,6 @@ const useLayoutStyles = createStyles(({isDarkMode, token, css, responsive}): any
         darkColor: {
             backgroundColor: "#001529 !important"
         },
-        bread: {
-            backgroundColor: token?.colorBgContainer,
-            padding: "5px 15px 5px 15px",
-            fontSize: "12px",
-        },
-        breadStyle: {
-            color: "rgb(156, 156, 156)",
-            cursor: "pointer"
-        },
     };
 });
 
@@ -196,9 +187,7 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
             menuBtn,
             flow,
             logo,
-            darkColor,
-            bread,
-            breadStyle
+            darkColor
         }
     } = useLayoutStyles();
     const {mobile, md} = useResponsive();
@@ -237,55 +226,7 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
         }
     }));
 
-    /**
-     * 面包屑
-     */
-    const [breadCrumbData, setBreadCrumb] = useState<any>([]);
-    const location = useLocation();
-    const match = useSelectedRoutes();
-    const initBreadCrumb = () => {
-        const items = getParentList(getAllMenuItems(false), match?.at(-1)?.route?.name);
-        let temp = [{
-            title: '首页',
-            onClick: () => {
-                historyPush(getFirstMenuWithoutChildren(getAllMenuItems(location?.pathname))?.name || "");
-            },
-            className: breadStyle,
-        }];
-        const onClick = (x: any) => {
-            if (x?.children && x?.children?.length > 0) {
-                historyPush(getFirstMenuWithoutChildren(x?.children)?.name || "");
-            } else {
-                historyPush(x?.name);
-            }
-        }
-        items.map((x) => {
-            temp.push({
-                title: x?.label,
-                onClick: () => {
-                    onClick(x);
-                },
-                className: breadStyle,
-            });
-        });
-        setBreadCrumb(temp);
-    }
-    useEffect(() => {
-        if (breadCrumb) {
-            initBreadCrumb();
-        }
-    }, [breadCrumb, location?.pathname]);
 
-    /**
-     * 获取面包屑
-     */
-    const getBreadCrumb = () => {
-        if (match?.at(-1)?.route?.hideBreadCrumb) {
-            return;
-        }
-        return breadCrumb && breadCrumbData?.length > 0 &&
-            <Breadcrumb className={bread} items={breadCrumbData}/>
-    }
 
     /**
      * 获取菜单主题颜色
@@ -308,7 +249,7 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
      * 获取菜单
      * @param mode 布局模式
      */
-    const getSider = (mode) => {
+    const getSider = (mode: string) => {
         mode = mode == "horizontal" ? mode : "inline";
         menuTheme = menuTheme == "dark" ? menuTheme : "light";
         return <Sider layout={mode} theme={menuTheme} collapsed={collapsed}
@@ -364,7 +305,7 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
                         right={headerRight}/>
             </Layout.Header>
             <Layout.Content className={content1}>
-                {getBreadCrumb()}
+                <BreadCrumb enabled={breadCrumb} />
                 {getOutlet()}
             </Layout.Content>
             {props?.footer && <Layout.Footer className={footer}>
@@ -394,7 +335,7 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
             }
         </Layout.Header>
         <Layout.Content className={content}>
-            {getBreadCrumb()}
+            <BreadCrumb enabled={breadCrumb} />
             {getOutlet()}
         </Layout.Content>
         {props?.footer && <Layout.Footer className={footer}>
