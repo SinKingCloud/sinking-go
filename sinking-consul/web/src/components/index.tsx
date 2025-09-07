@@ -1,4 +1,5 @@
 import {Icon} from "@/components/icon";
+import Breadcrumb from "@/components/breadcrumb";
 import Antd, {Message, Notification, Modal} from "@/components/antd";
 import Theme from "@/components/theme";
 import Animation from "@/components/animation";
@@ -23,4 +24,5 @@ export {
     Sider,
     ProTable,
     ProModal,
+    Breadcrumb
 }
