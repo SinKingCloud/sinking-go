@@ -11,6 +11,7 @@ export default [
         name: "index",
         icon: 'icon-home',
         hideInMenu: false,
+        hideBreadCrumb: true,
         component: "@/pages/index",
     },
     {

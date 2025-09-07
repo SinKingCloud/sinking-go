@@ -81,7 +81,7 @@ const Login: React.FC = () => {
     const web = useModel("web");
 
     return (
-        <Body breadCrumb={false}>
+        <Body>
             <div className={container}>
                 <Captcha ref={captcha}/>
                 <div className={content}>

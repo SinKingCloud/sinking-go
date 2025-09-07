@@ -17,7 +17,7 @@ const useStyles = createStyles(({token}): any => {
 export default () => {
     const {styles: {body}} = useStyles();
     return (
-        <Body className={body} breadCrumb={false}>
+        <Body className={body}>
             <Result
                 status="403"
                 title="403"
