@@ -7,6 +7,7 @@ import Title from "@/components/title";
 import Layout, {Body, Header, Footer, Sider} from "@/components/layout";
 import ProTable from "@/components/pro-table";
 import ProModal from "@/components/pro-modal";
+import Script from "@/components/script";
 
 export {
     Icon,
@@ -24,5 +25,6 @@ export {
     Sider,
     ProTable,
     ProModal,
-    Breadcrumb
+    Breadcrumb,
+    Script
 }
