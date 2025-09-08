@@ -1,4 +1,4 @@
-import React, {useRef, useEffect, useState, useCallback, useMemo} from 'react';
+import React, {useRef, useEffect, useState, useCallback, useMemo, useLayoutEffect} from 'react';
 import Script, {preloadScript, isScriptLoaded} from '@/components/script';
 
 // Ace Editor 配置接口
@@ -54,7 +54,6 @@ export interface AceEditorProps {
     enableSnippets?: boolean;
     showLineNumbers?: boolean;
     acePath?: string; // 自定义 Ace 资源路径
-    loadingContent?: React.ReactNode; // 自定义加载内容
     onError?: (error: Error) => void; // 错误处理回调
 }
 
@@ -95,16 +94,68 @@ const AceEditor: React.FC<AceEditorProps> = ({
                                                  enableSnippets = true,
                                                  showLineNumbers = true,
                                                  acePath = '/ace',
-                                                 loadingContent,
                                                  onError
                                              }) => {
-    const containerRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement | null>(null);
     const editorRef = useRef<any>(null);
     const [aceLoaded, setAceLoaded] = useState(false);
     const [editorValue, setEditorValue] = useState(value || defaultValue);
 
+    // 创建一个稳定的容器元素，避免 React 重新创建
+    const stableContainer = useRef<HTMLDivElement | null>(null);
+    const mountedRef = useRef(false);
+    const [containerMounted, setContainerMounted] = useState(false);
+    const outerContainerRef = useRef<any>(null);
+
+    // 创建稳定容器（只执行一次）
+    useLayoutEffect(() => {
+        // 创建稳定的容器元素，只创建一次
+        if (!stableContainer.current) {
+            stableContainer.current = document.createElement('div');
+            stableContainer.current.style.overflow = 'hidden';
+        }
+
+        return () => {
+            if (stableContainer.current && stableContainer.current.parentNode) {
+                stableContainer.current.parentNode.removeChild(stableContainer.current);
+                mountedRef.current = false;
+            }
+        };
+    }, []);
+
+    // 挂载稳定容器到 React 容器中
+    useLayoutEffect(() => {
+        if (containerRef.current && stableContainer.current && !mountedRef.current) {
+            // 设置初始尺寸
+            const initialWidth = typeof width === 'number' ? `${width}px` : width;
+            const initialHeight = typeof height === 'number' ? `${height}px` : height;
+
+            // 设置外层容器初始尺寸
+            if (outerContainerRef.current) {
+                outerContainerRef.current.style.width = initialWidth;
+                outerContainerRef.current.style.height = initialHeight;
+            }
+
+            // 设置稳定容器初始尺寸
+            stableContainer.current.style.width = initialWidth;
+            stableContainer.current.style.height = initialHeight;
+
+            containerRef.current.appendChild(stableContainer.current);
+            mountedRef.current = true;
+            setContainerMounted(true);
+        }
+    });
+
     // 只加载核心脚本，扩展按需加载
     const coreScript = useMemo(() => `${acePath}/src-min/ace.js`, [acePath]);
+
+    // React 容器样式 - 使用固定样式，通过稳定容器控制实际尺寸
+    const containerStyle = useMemo(() => ({
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        position: 'relative' as const
+    }), []);
 
     // 动态加载模式文件
     const loadMode = useCallback(async (modeName: string) => {
@@ -150,7 +201,7 @@ const AceEditor: React.FC<AceEditorProps> = ({
         if (!aceLoaded || editorRef.current) return;
 
         const initialize = async () => {
-            if (!containerRef.current || !window.ace) return;
+            if (!stableContainer.current || !window.ace || !mountedRef.current) return;
 
             // 预先加载初始的模式和主题
             const modeUrl = `${acePath}/src-min/mode-${mode}.js`;
@@ -189,11 +240,11 @@ const AceEditor: React.FC<AceEditorProps> = ({
                     await Promise.all(loadTasks);
                 }
 
-                // 直接初始化编辑器
-                if (!editorRef.current && containerRef.current && window.ace) {
+                // 直接初始化编辑器，使用稳定容器
+                if (!editorRef.current && stableContainer.current && window.ace) {
                     onBeforeLoad?.(window.ace);
 
-                    const editor = window.ace.edit(containerRef.current);
+                    const editor = window.ace.edit(stableContainer.current);
                     editorRef.current = editor;
 
                     // 基础配置
@@ -273,7 +324,7 @@ const AceEditor: React.FC<AceEditorProps> = ({
         };
 
         initialize();
-    }, [aceLoaded]); // 只依赖 aceLoaded，避免无限循环
+    }, [aceLoaded, containerMounted]); // 依赖 aceLoaded 和容器挂载状态
 
     // 更新编辑器配置
     useEffect(() => {
@@ -309,6 +360,29 @@ const AceEditor: React.FC<AceEditorProps> = ({
         highlightActiveLine, highlightSelectedWord, wrapEnabled,
         autoScrollEditorIntoView, maxLines, minLines, placeholder, showLineNumbers
     ]);
+
+    // 处理尺寸变化，直接更新外层和稳定容器的样式
+    useLayoutEffect(() => {
+        const newWidth = typeof width === 'number' ? `${width}px` : width;
+        const newHeight = typeof height === 'number' ? `${height}px` : height;
+
+        // 更新外层容器尺寸
+        if (outerContainerRef.current) {
+            outerContainerRef.current.style.width = newWidth;
+            outerContainerRef.current.style.height = newHeight;
+        }
+
+        // 更新稳定容器尺寸
+        if (stableContainer.current) {
+            stableContainer.current.style.width = newWidth;
+            stableContainer.current.style.height = newHeight;
+        }
+
+        // 通知编辑器重新计算大小
+        if (editorRef.current) {
+            editorRef.current.resize();
+        }
+    }, [width, height]);
 
     // 处理模式变化
     useEffect(() => {
@@ -347,24 +421,18 @@ const AceEditor: React.FC<AceEditorProps> = ({
     }, []);
 
     return (
-        <div className={className} style={style}>
+        <div className={className} style={style} ref={outerContainerRef}>
             <Script
                 src={coreScript}
                 parallel={false}
                 timeout={10000}
                 retryCount={2}
                 cache={true}
-                onLoad={() => setAceLoaded(true)}
-                loading={loadingContent}
+                onLoad={useCallback(() => setAceLoaded(true), [])}
             >
                 <div
                     ref={containerRef}
-                    style={{
-                        width: typeof width === 'number' ? `${width}px` : width,
-                        height: typeof height === 'number' ? `${height}px` : height,
-                        
-                        overflow: 'hidden'
-                    }}
+                    style={containerStyle as any}
                 />
             </Script>
         </div>

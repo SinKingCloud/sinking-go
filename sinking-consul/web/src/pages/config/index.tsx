@@ -678,16 +678,7 @@ print(f"用户总数: {len(service.users)}")`,
                                 type: 'warning'
                             }
                         ] : []}
-                        markers={aceMode === 'javascript' ? [
-                            {
-                                startRow: 38,
-                                startCol: 0,
-                                endRow: 40,
-                                endCol: 0,
-                                className: 'ace_selection',
-                                type: 'background'
-                            }
-                        ] : []}
+                        markers={[]}
                         className="custom-ace-editor"
                         style={{
                             border: '2px solid #1890ff',
