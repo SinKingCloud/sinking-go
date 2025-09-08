@@ -1,6 +1,5 @@
-import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { Spin, Alert } from 'antd';
-import Script, { preloadScript, isScriptLoaded } from '@/components/script';
+import React, {useRef, useEffect, useState, useCallback, useMemo} from 'react';
+import Script, {preloadScript, isScriptLoaded} from '@/components/script';
 
 // Ace Editor 配置接口
 export interface AceEditorProps {
@@ -56,47 +55,49 @@ export interface AceEditorProps {
     showLineNumbers?: boolean;
     acePath?: string; // 自定义 Ace 资源路径
     loadingContent?: React.ReactNode; // 自定义加载内容
+    onError?: (error: Error) => void; // 错误处理回调
 }
 
 
 const AceEditor: React.FC<AceEditorProps> = ({
-    value = '',
-    defaultValue = '',
-    mode = 'javascript',
-    theme = 'monokai',
-    width = '100%',
-    height = 400,
-    fontSize = 14,
-    tabSize = 4,
-    readOnly = false,
-    showPrintMargin = true,
-    showGutter = true,
-    highlightActiveLine = true,
-    highlightSelectedWord = true,
-    wrapEnabled = false,
-    autoScrollEditorIntoView = false,
-    maxLines,
-    minLines,
-    placeholder = '',
-    className = '',
-    style = {},
-    onChange,
-    onSelectionChange,
-    onCursorChange,
-    onBlur,
-    onFocus,
-    onLoad,
-    onBeforeLoad,
-    commands = [],
-    annotations = [],
-    markers = [],
-    enableBasicAutocompletion = true,
-    enableLiveAutocompletion = true,
-    enableSnippets = true,
-    showLineNumbers = true,
-    acePath = '/ace',
-    loadingContent
-}) => {
+                                                 value = '',
+                                                 defaultValue = '',
+                                                 mode = 'text',
+                                                 theme = 'monokai',
+                                                 width = '100%',
+                                                 height = 400,
+                                                 fontSize = 14,
+                                                 tabSize = 4,
+                                                 readOnly = false,
+                                                 showPrintMargin = true,
+                                                 showGutter = true,
+                                                 highlightActiveLine = true,
+                                                 highlightSelectedWord = true,
+                                                 wrapEnabled = false,
+                                                 autoScrollEditorIntoView = false,
+                                                 maxLines,
+                                                 minLines,
+                                                 placeholder = '',
+                                                 className = '',
+                                                 style = {},
+                                                 onChange,
+                                                 onSelectionChange,
+                                                 onCursorChange,
+                                                 onBlur,
+                                                 onFocus,
+                                                 onLoad,
+                                                 onBeforeLoad,
+                                                 commands = [],
+                                                 annotations = [],
+                                                 markers = [],
+                                                 enableBasicAutocompletion = true,
+                                                 enableLiveAutocompletion = true,
+                                                 enableSnippets = true,
+                                                 showLineNumbers = true,
+                                                 acePath = '/ace',
+                                                 loadingContent,
+                                                 onError
+                                             }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const editorRef = useRef<any>(null);
     const [aceLoaded, setAceLoaded] = useState(false);
@@ -108,11 +109,11 @@ const AceEditor: React.FC<AceEditorProps> = ({
     // 动态加载模式文件
     const loadMode = useCallback(async (modeName: string) => {
         if (!modeName || modeName === 'text') return;
-        
+
         const scriptUrl = `${acePath}/src-min/mode-${modeName}.js`;
-        
+
         if (isScriptLoaded(scriptUrl)) return;
-        
+
         try {
             await preloadScript(scriptUrl, {
                 cache: true,
@@ -120,18 +121,18 @@ const AceEditor: React.FC<AceEditorProps> = ({
                 retryCount: 2
             });
         } catch (error) {
-            // 静默处理错误
+            onError?.(error as Error);
         }
     }, [acePath]);
 
     // 动态加载主题文件
     const loadTheme = useCallback(async (themeName: string) => {
         if (!themeName) return;
-        
+
         const scriptUrl = `${acePath}/src-min/theme-${themeName}.js`;
-        
+
         if (isScriptLoaded(scriptUrl)) return;
-        
+
         try {
             await preloadScript(scriptUrl, {
                 cache: true,
@@ -139,7 +140,7 @@ const AceEditor: React.FC<AceEditorProps> = ({
                 retryCount: 2
             });
         } catch (error) {
-            // 静默处理错误
+            onError?.(error as Error);
         }
     }, [acePath]);
 
@@ -147,47 +148,47 @@ const AceEditor: React.FC<AceEditorProps> = ({
     // 当 Ace 加载完成后初始化编辑器
     useEffect(() => {
         if (!aceLoaded || editorRef.current) return;
-        
+
         const initialize = async () => {
             if (!containerRef.current || !window.ace) return;
-            
+
             // 预先加载初始的模式和主题
             const modeUrl = `${acePath}/src-min/mode-${mode}.js`;
             const themeUrl = `${acePath}/src-min/theme-${theme}.js`;
-            
+
             try {
                 // 并行加载所有需要的资源
                 const loadTasks = [];
-                
+
                 // 加载模式文件
                 if (mode !== 'text' && !isScriptLoaded(modeUrl)) {
-                    loadTasks.push(preloadScript(modeUrl, { cache: true }));
+                    loadTasks.push(preloadScript(modeUrl, {cache: true}));
                 }
-                
+
                 // 加载主题文件
                 if (!isScriptLoaded(themeUrl)) {
-                    loadTasks.push(preloadScript(themeUrl, { cache: true }));
+                    loadTasks.push(preloadScript(themeUrl, {cache: true}));
                 }
-                
+
                 // 加载扩展文件
                 if (enableBasicAutocompletion || enableLiveAutocompletion) {
                     const langToolsUrl = `${acePath}/src-min/ext-language_tools.js`;
                     if (!isScriptLoaded(langToolsUrl)) {
-                        loadTasks.push(preloadScript(langToolsUrl, { cache: true }));
+                        loadTasks.push(preloadScript(langToolsUrl, {cache: true}));
                     }
                 }
-                
+
                 if (enableSnippets) {
                     const searchboxUrl = `${acePath}/src-min/ext-searchbox.js`;
                     if (!isScriptLoaded(searchboxUrl)) {
-                        loadTasks.push(preloadScript(searchboxUrl, { cache: true }));
+                        loadTasks.push(preloadScript(searchboxUrl, {cache: true}));
                     }
                 }
-                
+
                 if (loadTasks.length > 0) {
                     await Promise.all(loadTasks);
                 }
-                
+
                 // 直接初始化编辑器
                 if (!editorRef.current && containerRef.current && window.ace) {
                     onBeforeLoad?.(window.ace);
@@ -208,7 +209,7 @@ const AceEditor: React.FC<AceEditorProps> = ({
                     editor.setHighlightSelectedWord(highlightSelectedWord);
                     editor.session.setUseWrapMode(wrapEnabled);
                     editor.setAutoScrollEditorIntoView(autoScrollEditorIntoView);
-                    
+
                     if (maxLines) editor.setOption('maxLines', maxLines);
                     if (minLines) editor.setOption('minLines', minLines);
                     if (placeholder) editor.setOption('placeholder', placeholder);
@@ -265,12 +266,12 @@ const AceEditor: React.FC<AceEditorProps> = ({
 
                     onLoad?.(editor);
                 }
-                
+
             } catch (error) {
-                // 静默处理错误
+                onError?.(error as Error);
             }
         };
-        
+
         initialize();
     }, [aceLoaded]); // 只依赖 aceLoaded，避免无限循环
 
@@ -279,7 +280,7 @@ const AceEditor: React.FC<AceEditorProps> = ({
         if (!editorRef.current) return;
 
         const editor = editorRef.current;
-        
+
         // 更新值（避免无限循环）
         if (value !== undefined && value !== editor.getValue()) {
             const cursorPosition = editor.getCursorPosition();
@@ -298,11 +299,11 @@ const AceEditor: React.FC<AceEditorProps> = ({
         editor.setHighlightSelectedWord(highlightSelectedWord);
         editor.session.setUseWrapMode(wrapEnabled);
         editor.setAutoScrollEditorIntoView(autoScrollEditorIntoView);
-        
+
         if (maxLines) editor.setOption('maxLines', maxLines);
         if (minLines) editor.setOption('minLines', minLines);
         if (placeholder) editor.setOption('placeholder', placeholder);
-        
+
     }, [
         value, fontSize, tabSize, readOnly, showPrintMargin, showGutter,
         highlightActiveLine, highlightSelectedWord, wrapEnabled,
@@ -354,43 +355,14 @@ const AceEditor: React.FC<AceEditorProps> = ({
                 retryCount={2}
                 cache={true}
                 onLoad={() => setAceLoaded(true)}
-                loading={
-                    loadingContent || (
-                        <div 
-                            style={{ 
-                                width: typeof width === 'number' ? `${width}px` : width,
-                                height: typeof height === 'number' ? `${height}px` : height,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                border: '1px solid #d9d9d9',
-                                borderRadius: '6px',
-                                backgroundColor: '#fafafa'
-                            }}
-                        >
-                            <Spin size="large" />
-                        </div>
-                    )
-                }
-                fallback={
-                    <Alert
-                        message="代码编辑器加载失败"
-                        type="error"
-                        showIcon
-                        style={{
-                            width: typeof width === 'number' ? `${width}px` : width,
-                            height: typeof height === 'number' ? `${height}px` : height
-                        }}
-                    />
-                }
+                loading={loadingContent}
             >
                 <div
                     ref={containerRef}
                     style={{
                         width: typeof width === 'number' ? `${width}px` : width,
                         height: typeof height === 'number' ? `${height}px` : height,
-                        border: '1px solid #d9d9d9',
-                        borderRadius: '6px',
+                        
                         overflow: 'hidden'
                     }}
                 />
