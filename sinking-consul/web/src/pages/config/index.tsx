@@ -90,7 +90,7 @@ console.log('用户名列表:', userNames);`);
     // 可用的模式和主题
     const modes = [
         'text', 'javascript', 'typescript', 'python', 'java', 'json', 'html', 'css', 'scss', 'less',
-        'xml', 'yaml', 'markdown', 'sql', 'php', 'go', 'rust', 'c_cpp', 'csharp', 'ruby'
+        'xml', 'yaml', 'markdown', 'sql', 'php', 'golang', 'rust', 'c_cpp', 'csharp', 'ruby'
     ];
 
     const themes = [
@@ -634,10 +634,10 @@ print(f"用户总数: {len(service.users)}")`,
                         }}
                         onLoad={(editor) => {
                             message.success('🎉 AceEditor 加载成功！');
-                            console.log('Editor loaded:', editor);
+                            //console.log('Editor loaded:', editor);
                         }}
                         onBeforeLoad={(ace) => {
-                            console.log('Ace loaded:', ace);
+                            //console.log('Ace loaded:', ace);
                         }}
                         onError={handleError}
                         commands={[
