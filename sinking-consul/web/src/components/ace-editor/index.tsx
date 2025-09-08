@@ -100,7 +100,6 @@ const AceEditor: React.FC<AceEditorProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const editorRef = useRef<any>(null);
     const [aceLoaded, setAceLoaded] = useState(false);
-    const [loadingResources, setLoadingResources] = useState<Set<string>>(new Set());
     const [editorValue, setEditorValue] = useState(value || defaultValue);
 
     // 只加载核心脚本，扩展按需加载
@@ -114,25 +113,16 @@ const AceEditor: React.FC<AceEditorProps> = ({
         
         if (isScriptLoaded(scriptUrl)) return;
         
-        const resourceKey = `mode-${modeName}`;
-        if (loadingResources.has(resourceKey)) return;
-        
-        setLoadingResources(prev => new Set(prev).add(resourceKey));
-        
         try {
             await preloadScript(scriptUrl, {
                 cache: true,
                 timeout: 5000,
                 retryCount: 2
             });
-        } finally {
-            setLoadingResources(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(resourceKey);
-                return newSet;
-            });
+        } catch (error) {
+            // 静默处理错误
         }
-    }, [acePath, loadingResources]);
+    }, [acePath]);
 
     // 动态加载主题文件
     const loadTheme = useCallback(async (themeName: string) => {
@@ -142,25 +132,16 @@ const AceEditor: React.FC<AceEditorProps> = ({
         
         if (isScriptLoaded(scriptUrl)) return;
         
-        const resourceKey = `theme-${themeName}`;
-        if (loadingResources.has(resourceKey)) return;
-        
-        setLoadingResources(prev => new Set(prev).add(resourceKey));
-        
         try {
             await preloadScript(scriptUrl, {
                 cache: true,
                 timeout: 5000,
                 retryCount: 2
             });
-        } finally {
-            setLoadingResources(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(resourceKey);
-                return newSet;
-            });
+        } catch (error) {
+            // 静默处理错误
         }
-    }, [acePath, loadingResources]);
+    }, [acePath]);
 
 
     // 当 Ace 加载完成后初始化编辑器
@@ -328,26 +309,31 @@ const AceEditor: React.FC<AceEditorProps> = ({
         autoScrollEditorIntoView, maxLines, minLines, placeholder, showLineNumbers
     ]);
 
-    // 处理模式和主题变化
+    // 处理模式变化
     useEffect(() => {
-        if (editorRef.current) {
+        if (editorRef.current && mode) {
             const updateMode = async () => {
                 await loadMode(mode);
-                editorRef.current.session.setMode(`ace/mode/${mode}`);
+                if (editorRef.current) {
+                    editorRef.current.session.setMode(`ace/mode/${mode}`);
+                }
             };
             updateMode();
         }
-    }, [mode, loadMode]);
+    }, [mode]);
 
+    // 处理主题变化
     useEffect(() => {
-        if (editorRef.current) {
+        if (editorRef.current && theme) {
             const updateTheme = async () => {
                 await loadTheme(theme);
-                editorRef.current.setTheme(`ace/theme/${theme}`);
+                if (editorRef.current) {
+                    editorRef.current.setTheme(`ace/theme/${theme}`);
+                }
             };
             updateTheme();
         }
-    }, [theme, loadTheme]);
+    }, [theme]);
 
     // 组件卸载时清理
     useEffect(() => {
