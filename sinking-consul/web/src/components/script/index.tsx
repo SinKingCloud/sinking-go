@@ -63,7 +63,18 @@ const createScriptElement = (config: ScriptConfig): HTMLScriptElement => {
  * 加载单个脚本
  */
 const loadScript = (config: ScriptConfig): Promise<void> => {
-    const {src, timeout = 10000, retryCount = 2, retryDelay = 1000, cache = true} = config;
+    const {
+        src, 
+        timeout = 10000, 
+        retryCount = 2, 
+        retryDelay = 1000, 
+        cache = true
+    } = config;
+    
+    // 确保参数有合理的默认值
+    const finalTimeout = timeout ?? 10000;
+    const finalRetryCount = retryCount ?? 2;
+    const finalRetryDelay = retryDelay ?? 1000;
 
     // 检查缓存
     if (cache && loadedScripts.has(src)) {
@@ -71,7 +82,14 @@ const loadScript = (config: ScriptConfig): Promise<void> => {
     }
 
     if (cache && scriptCache.has(src)) {
-        return scriptCache.get(src)!;
+        const cachedPromise = scriptCache.get(src)!;
+        // 检查缓存的 Promise 是否仍然有效
+        return cachedPromise.catch(() => {
+            // 如果缓存的 Promise 失败了，清除缓存并重新加载
+            scriptCache.delete(src);
+            loadedScripts.delete(src);
+            return loadScript(config);
+        });
     }
 
     const loadPromise = new Promise<void>((resolve, reject) => {
@@ -96,28 +114,52 @@ const loadScript = (config: ScriptConfig): Promise<void> => {
 
             const onError = () => {
                 cleanup();
-                document.head.removeChild(script);
+                // 安全地移除脚本元素
+                try {
+                    if (script.parentNode) {
+                        script.parentNode.removeChild(script);
+                    }
+                } catch (e) {
+                    console.warn('Failed to remove script element:', e);
+                }
 
-                if (retryAttempts < retryCount) {
+                if (retryAttempts < finalRetryCount) {
                     retryAttempts++;
-                    setTimeout(attemptLoad, retryDelay);
+                    setTimeout(attemptLoad, finalRetryDelay);
                 } else {
                     const error = new Error(`Failed to load script: ${src}`);
                     config.onError?.(error);
+                    // 清除失败的缓存
+                    if (cache) {
+                        scriptCache.delete(src);
+                        loadedScripts.delete(src);
+                    }
                     reject(error);
                 }
             };
 
             const onTimeout = () => {
                 cleanup();
-                document.head.removeChild(script);
+                // 安全地移除脚本元素
+                try {
+                    if (script.parentNode) {
+                        script.parentNode.removeChild(script);
+                    }
+                } catch (e) {
+                    console.warn('Failed to remove script element:', e);
+                }
 
-                if (retryAttempts < retryCount) {
+                if (retryAttempts < finalRetryCount) {
                     retryAttempts++;
-                    setTimeout(attemptLoad, retryDelay);
+                    setTimeout(attemptLoad, finalRetryDelay);
                 } else {
                     const error = new Error(`Script load timeout: ${src}`);
                     config.onTimeout?.();
+                    // 清除超时的缓存
+                    if (cache) {
+                        scriptCache.delete(src);
+                        loadedScripts.delete(src);
+                    }
                     reject(error);
                 }
             };
@@ -125,8 +167,8 @@ const loadScript = (config: ScriptConfig): Promise<void> => {
             script.addEventListener('load', onLoad);
             script.addEventListener('error', onError);
 
-            if (timeout > 0) {
-                timeoutId = setTimeout(onTimeout, timeout);
+            if (finalTimeout > 0) {
+                timeoutId = setTimeout(onTimeout, finalTimeout);
             }
 
             document.head.appendChild(script);
@@ -152,51 +194,106 @@ const Script: React.FC<ScriptProps> = ({
     loading,
     parallel = true,
     removeOnUnmount = false,
-    ...config
+    async,
+    defer,
+    crossOrigin,
+    integrity,
+    noModule,
+    type,
+    charset,
+    timeout,
+    retryCount,
+    retryDelay,
+    cache = true,
+    onLoad,
+    onError,
+    onTimeout
 }) => {
     const [status, setStatus] = useState<ScriptLoadStatus>(ScriptLoadStatus.IDLE);
     const loadedScriptsRef = useRef<Set<string>>(new Set());
 
-    // 标准化脚本配置
-    const scriptConfigs = useMemo(() => {
-        const urls = Array.isArray(src) ? src : [src];
-        return urls.map(url => ({
-            ...config,
-            src: url
-        }));
-    }, [src, config]);
+    // 稳定化回调函数
+    const stableOnLoad = useCallback(() => {
+        onLoad?.();
+    }, [onLoad]);
 
-    // 加载脚本的核心逻辑
-    const loadScripts = useCallback(async () => {
-        if (scriptConfigs.length === 0) return;
+    const stableOnError = useCallback((error: Error) => {
+        onError?.(error);
+    }, [onError]);
 
-        setStatus(ScriptLoadStatus.LOADING);
+    const stableOnTimeout = useCallback(() => {
+        onTimeout?.();
+    }, [onTimeout]);
 
-        try {
-            if (parallel) {
-                // 并行加载
-                await Promise.all(scriptConfigs.map(loadScript));
-            } else {
-                // 串行加载
-                for (const scriptConfig of scriptConfigs) {
-                    await loadScript(scriptConfig);
+
+    // 当 src 改变时重置状态
+    useEffect(() => {
+        setStatus(ScriptLoadStatus.IDLE);
+        loadedScriptsRef.current.clear();
+    }, [src]);
+
+    // 组件挂载时加载脚本 - 使用独立的 effect
+    useEffect(() => {
+        let cancelled = false;
+        
+        const load = async () => {
+            const urls = Array.isArray(src) ? src : [src];
+            if (urls.length === 0) return;
+            
+            // 创建脚本配置，确保有合理的默认值
+            const configs = urls.map(url => ({
+                src: url,
+                async,
+                defer,
+                crossOrigin,
+                integrity,
+                noModule,
+                type,
+                charset,
+                timeout: timeout ?? 10000,
+                retryCount: retryCount ?? 2,
+                retryDelay: retryDelay ?? 1000,
+                cache,
+                onLoad: stableOnLoad,
+                onError: stableOnError,
+                onTimeout: stableOnTimeout
+            }));
+            
+            setStatus(ScriptLoadStatus.LOADING);
+            
+            try {
+                if (parallel) {
+                    await Promise.all(configs.map(config => {
+                        if (cancelled) return Promise.resolve();
+                        return loadScript(config);
+                    }));
+                } else {
+                    for (const config of configs) {
+                        if (cancelled) break;
+                        await loadScript(config);
+                    }
+                }
+                
+                if (!cancelled) {
+                    configs.forEach(({src}) => {
+                        loadedScriptsRef.current.add(src);
+                    });
+                    setStatus(ScriptLoadStatus.LOADED);
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    console.error('Script loading failed:', err);
+                    setStatus(ScriptLoadStatus.ERROR);
                 }
             }
-
-            scriptConfigs.forEach(({src}) => {
-                loadedScriptsRef.current.add(src);
-            });
-
-            setStatus(ScriptLoadStatus.LOADED);
-        } catch (err) {
-            setStatus(ScriptLoadStatus.ERROR);
-        }
-    }, [scriptConfigs, parallel]);
-
-    // 组件挂载时加载脚本
-    useEffect(() => {
-        loadScripts();
-    }, [loadScripts]);
+        };
+        
+        load();
+        
+        return () => {
+            cancelled = true;
+        };
+    }, [src, parallel, async, defer, crossOrigin, integrity, noModule, type, charset, timeout, retryCount, retryDelay, cache, stableOnLoad, stableOnError, stableOnTimeout]);
 
     // 组件卸载时清理
     useEffect(() => {
