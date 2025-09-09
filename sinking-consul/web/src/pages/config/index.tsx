@@ -83,7 +83,7 @@ console.log('用户名列表:', userNames);`);
     const [enableLiveAutocompletion, setEnableLiveAutocompletion] = useState(true);
     const [enableSnippets, setEnableSnippets] = useState(true);
     const [editorWidth, setEditorWidth] = useState('100%');
-    const [editorHeight, setEditorHeight] = useState(500);
+    const [editorHeight, setEditorHeight] = useState(600);
     const [maxLines, setMaxLines] = useState<number | undefined>(undefined);
     const [minLines, setMinLines] = useState<number | undefined>(undefined);
 
@@ -135,7 +135,7 @@ const processor = new DataProcessor([
 processor.process().then(result => {
     console.log('处理结果:', result);
 });`,
-        
+
         python: `# Python 示例代码
 import asyncio
 from typing import List, Dict, Optional
@@ -315,7 +315,7 @@ print(f"用户总数: {len(service.users)}")`,
             <Space direction="vertical" size="large" style={{width: '100%'}}>
                 {/* 标题和介绍 */}
                 <Card>
-                    <div style={{ textAlign: 'center' }}>
+                    <div style={{textAlign: 'center'}}>
                         <Title level={2}>🚀 AceEditor 完整功能演示</Title>
                         <Text type="secondary">
                             展示 AceEditor 组件的所有配置选项和功能特性，包括语法高亮、主题切换、智能补全等
@@ -389,14 +389,14 @@ print(f"用户总数: {len(service.users)}")`,
 
                         {/* 尺寸配置 */}
                         <Col span={24}>
-                            <Divider />
+                            <Divider/>
                             <Title level={5}>尺寸配置</Title>
                         </Col>
                         <Col span={8}>
                             <Space direction="vertical" style={{width: '100%'}}>
                                 <Text strong>编辑器高度: {editorHeight}px</Text>
                                 <Slider
-                                    min={200}
+                                    min={10}
                                     max={800}
                                     value={editorHeight}
                                     onChange={setEditorHeight}
@@ -432,7 +432,7 @@ print(f"用户总数: {len(service.users)}")`,
 
                         {/* 功能开关 */}
                         <Col span={24}>
-                            <Divider />
+                            <Divider/>
                             <Title level={5}>功能开关</Title>
                         </Col>
                         <Col span={6}>
@@ -512,7 +512,7 @@ print(f"用户总数: {len(service.users)}")`,
 
                         {/* 智能补全 */}
                         <Col span={24}>
-                            <Divider />
+                            <Divider/>
                             <Title level={5}>智能补全</Title>
                         </Col>
                         <Col span={8}>
@@ -545,7 +545,7 @@ print(f"用户总数: {len(service.users)}")`,
 
                         {/* 快速切换示例 */}
                         <Col span={24}>
-                            <Divider />
+                            <Divider/>
                             <Title level={5}>快速切换示例</Title>
                         </Col>
                         <Col span={24}>
@@ -594,7 +594,7 @@ print(f"用户总数: {len(service.users)}")`,
                         enableBasicAutocompletion={enableBasicAutocompletion}
                         enableLiveAutocompletion={enableLiveAutocompletion}
                         enableSnippets={enableSnippets}
-                        acePath="/ace"
+                        acePath="/ace/"
                         loadingContent={
                             <div style={{
                                 width: typeof editorWidth === 'number' ? `${editorWidth}px` : editorWidth,
@@ -606,12 +606,12 @@ print(f"用户总数: {len(service.users)}")`,
                                 borderRadius: '6px',
                                 backgroundColor: '#fafafa'
                             }}>
-                                <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: '32px', marginBottom: '16px' }}>⚡</div>
-                                    <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>
+                                <div style={{textAlign: 'center'}}>
+                                    <div style={{fontSize: '32px', marginBottom: '16px'}}>⚡</div>
+                                    <div style={{fontSize: '18px', fontWeight: 'bold', marginBottom: '8px'}}>
                                         正在加载 AceEditor
                                     </div>
-                                    <div style={{ fontSize: '14px', color: '#666' }}>
+                                    <div style={{fontSize: '14px', color: '#666'}}>
                                         动态加载编辑器资源中...
                                     </div>
                                 </div>
@@ -664,7 +664,7 @@ print(f"用户总数: {len(service.users)}")`,
                                 }
                             }
                         ]}
-                        annotations={aceMode === 'javascript' ? [
+                        annotations={[
                             {
                                 row: 2,
                                 column: 0,
@@ -677,11 +677,10 @@ print(f"用户总数: {len(service.users)}")`,
                                 text: '建议添加参数类型检查',
                                 type: 'warning'
                             }
-                        ] : []}
+                        ]}
                         markers={[]}
                         className="custom-ace-editor"
                         style={{
-                            border: '2px solid #1890ff',
                             borderRadius: '8px'
                         }}
                     />
