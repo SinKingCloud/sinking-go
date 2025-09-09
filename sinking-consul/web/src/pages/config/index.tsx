@@ -1,6 +1,5 @@
 import React, {useState} from "react";
-import {Body} from "@/components";
-import AceEditor from "@/components/ace-editor";
+import {AceEditor, Body} from "@/components";
 import {
     Button, Card, Space, Typography, Alert, App, Row, Col, Switch,
     InputNumber, Select, Slider, Divider, Tag, notification

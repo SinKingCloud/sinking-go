@@ -8,6 +8,7 @@ import Layout, {Body, Header, Footer, Sider} from "@/components/layout";
 import ProTable from "@/components/pro-table";
 import ProModal from "@/components/pro-modal";
 import Script from "@/components/script";
+import AceEditor from "@/components/ace-editor";
 
 export {
     Icon,
@@ -26,5 +27,6 @@ export {
     ProTable,
     ProModal,
     Breadcrumb,
-    Script
+    Script,
+    AceEditor
 }
