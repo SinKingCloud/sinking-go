@@ -22,7 +22,6 @@ const (
 	YAML            = "yaml"
 	INI             = "ini"
 	TOML            = "toml"
-	HCL             = "hcl"
 	PROPERTIES      = "properties"
 )
 
@@ -33,7 +32,6 @@ func (s *Service) Types() map[Type]string {
 		YAML:       "YAML",
 		INI:        "INI",
 		TOML:       "TOML",
-		HCL:        "HCL",
 		PROPERTIES: "Properties",
 	}
 }
