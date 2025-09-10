@@ -5,6 +5,9 @@ import {useEnums} from "@/utils/enum";
 import {App, Button, Dropdown, Form, Input, Select, Spin, Row, Col} from 'antd';
 import {ProModalRef} from "@/components/pro-modal";
 import {createConfig, deleteConfig, getConfigInfo, getConfigList, updateConfig} from "@/service/admin/config";
+import defaultSettings from "../../../config/defaultSettings";
+
+const AcePath = defaultSettings?.basePath + "ace/" || "/ace/";
 
 export default (): React.ReactNode => {
     const [enumsData] = useEnums(["config"]);
@@ -229,15 +232,13 @@ export default (): React.ReactNode => {
         },
     ] as any;
 
-    const rowKey = 'hash';
-
     return (
         <Body>
             <ProTable
                 ref={tableRef}
                 extraRefreshBtn={true}
                 title={<Title>配置管理</Title>}
-                rowKey={rowKey}
+                rowKey={'hash'}
                 columns={columns}
                 defaultPage={1}
                 defaultPageSize={20}
@@ -317,7 +318,7 @@ export default (): React.ReactNode => {
                                         <Select placeholder="请选择类型" allowClear
                                                 onChange={(v) => setEditAceMode(mapTypeToAceMode(v))}>
                                             {Object.entries(enumsData?.config?.type || {}).map(([key, value]) => (
-                                                <Option key={key} value={key}>{value as any}</Option>
+                                                <Select.Option key={key} value={key}>{value as any}</Select.Option>
                                             ))}
                                         </Select>
                                     </Form.Item>
@@ -326,7 +327,8 @@ export default (): React.ReactNode => {
                                     <Form.Item name="status" label="状态">
                                         <Select placeholder="请选择状态" allowClear>
                                             {Object.entries(enumsData?.config?.status || {}).map(([key, value]) => (
-                                                <Option key={key} value={parseInt(key)}>{value as any}</Option>
+                                                <Select.Option key={key}
+                                                               value={parseInt(key)}>{value as any}</Select.Option>
                                             ))}
                                         </Select>
                                     </Form.Item>
@@ -340,7 +342,7 @@ export default (): React.ReactNode => {
                                     theme={'monokai'}
                                     width={'100%'}
                                     height={400}
-                                    acePath={'/ace/'}
+                                    acePath={AcePath}
                                     onChange={(v: string) => setEditAceContent(v)}
                                 />
                             </Form.Item>
@@ -365,7 +367,7 @@ export default (): React.ReactNode => {
                     >
                         <Select placeholder="请选择状态">
                             {Object.entries(enumsData?.config?.status || {}).map(([key, value]) => (
-                                <Option key={key} value={parseInt(key)}>{value as any}</Option>
+                                <Select.Option key={key} value={parseInt(key)}>{value as any}</Select.Option>
                             ))}
                         </Select>
                     </Form.Item>
@@ -402,7 +404,7 @@ export default (): React.ReactNode => {
                                 <Select placeholder="请选择类型"
                                         onChange={(v) => setCreateAceMode(mapTypeToAceMode(v))}>
                                     {Object.entries(enumsData?.config?.type || {}).map(([key, value]) => (
-                                        <Option key={key} value={key}>{value as any}</Option>
+                                        <Select.Option key={key} value={key}>{value as any}</Select.Option>
                                     ))}
                                 </Select>
                             </Form.Item>
@@ -411,7 +413,7 @@ export default (): React.ReactNode => {
                             <Form.Item name="status" label="状态" rules={[{required: true, message: '请选择状态'}]}>
                                 <Select placeholder="请选择状态">
                                     {Object.entries(enumsData?.config?.status || {}).map(([key, value]) => (
-                                        <Option key={key} value={parseInt(key)}>{value as any}</Option>
+                                        <Select.Option key={key} value={parseInt(key)}>{value as any}</Select.Option>
                                     ))}
                                 </Select>
                             </Form.Item>
@@ -424,7 +426,7 @@ export default (): React.ReactNode => {
                             theme={'monokai'}
                             width={'100%'}
                             height={400}
-                            acePath={'/ace/'}
+                            acePath={AcePath}
                             onChange={(v: string) => setCreateAceContent(v)}
                         />
                     </Form.Item>
