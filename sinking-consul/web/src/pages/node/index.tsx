@@ -218,7 +218,7 @@ export default (): React.ReactNode => {
 
             <ProModal
                 ref={modalRef}
-                title="编辑节点"
+                title={<Title>编辑节点</Title>}
                 onOk={form?.submit}
                 width={350}
                 modalProps={{

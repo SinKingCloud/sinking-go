@@ -18,16 +18,22 @@ func (s *Service) Status() map[Status]string {
 type Type string
 
 const (
-	JSON Type = "json"
-	YAML      = "yaml"
-	INI       = "ini"
+	JSON       Type = "json"
+	YAML            = "yaml"
+	INI             = "ini"
+	TOML            = "toml"
+	HCL             = "hcl"
+	PROPERTIES      = "properties"
 )
 
 // Types 类型数据
 func (s *Service) Types() map[Type]string {
 	return map[Type]string{
-		JSON: "JSON",
-		YAML: "YAML",
-		INI:  "INI",
+		JSON:       "JSON",
+		YAML:       "YAML",
+		INI:        "INI",
+		TOML:       "TOML",
+		HCL:        "HCL",
+		PROPERTIES: "Properties",
 	}
 }

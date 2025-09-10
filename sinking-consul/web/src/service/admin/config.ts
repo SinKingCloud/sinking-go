@@ -2,12 +2,12 @@ import {API} from "@/../typings";
 import {get, post} from "@/utils/request";
 
 /*****  获取config列表  *****/
-export async function getNodeList(params: API.RequestParams = {}) {
+export async function getConfigList(params: API.RequestParams = {}) {
     return get("/admin/config/list", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
 }
 
 /*****  获取config信息  *****/
-export async function getNodeInfo(params: API.RequestParams = {}) {
+export async function getConfigInfo(params: API.RequestParams = {}) {
     return get("/admin/config/info", params?.body, params?.onSuccess, params?.onFail, params?.onFinally);
 }
 

@@ -136,7 +136,7 @@ func (ControllerConfig) Create(c *server.Context) {
 		Group   string `json:"group" default:"" validate:"required" label:"配置分组"`
 		Name    string `json:"name" default:"" validate:"required" label:"配置名称"`
 		Type    string `json:"type" default:"" validate:"required" label:"配置类型"`
-		Content string `json:"content" default:"" validate:"required" label:"配置内容"`
+		Content string `json:"content" default:"" validate:"omitempty" label:"配置内容"`
 		Status  int    `json:"status" default:"" validate:"numeric" label:"状态"`
 	}
 	form := &Form{}
@@ -152,14 +152,17 @@ func (ControllerConfig) Create(c *server.Context) {
 		c.Error("配置类型不合法")
 		return
 	}
-	err := service.Config.Create(&model.Config{
-		Group:   form.Group,
-		Name:    form.Name,
-		Type:    form.Type,
-		Hash:    str.NewStringTool().Md5(form.Content),
-		Content: form.Content,
-		Status:  form.Status,
-	})
+	d := &model.Config{
+		Group:  form.Group,
+		Name:   form.Name,
+		Type:   form.Type,
+		Status: form.Status,
+	}
+	if form.Content != "" {
+		d.Hash = str.NewStringTool().Md5(form.Content)
+		d.Content = form.Content
+	}
+	err := service.Config.Create(d)
 	if err != nil {
 		c.Error("创建失败")
 		return
