@@ -2,11 +2,9 @@ import React, {useRef, useState} from 'react';
 import {Body, ProTable, Title, ProModal, AceEditor} from '@/components';
 import {getData} from "@/utils/page";
 import {useEnums} from "@/utils/enum";
-import {App, Button, Dropdown, Form, Input, Select, Space, Spin, Row, Col} from 'antd';
+import {App, Button, Dropdown, Form, Input, Select, Spin, Row, Col} from 'antd';
 import {ProModalRef} from "@/components/pro-modal";
 import {createConfig, deleteConfig, getConfigInfo, getConfigList, updateConfig} from "@/service/admin/config";
-
-const {Option} = Select;
 
 export default (): React.ReactNode => {
     const [enumsData] = useEnums(["config"]);
@@ -35,11 +33,7 @@ export default (): React.ReactNode => {
 
     const mapTypeToAceMode = (t?: string) => {
         if (!t) return 'text';
-        const lower = (t || '').toLowerCase();
-        if (lower === 'json') return 'json';
-        if (lower === 'yaml' || lower === 'yml') return 'yaml';
-        if (lower === 'ini') return 'ini';
-        return 'text';
+        return (t || '').toLowerCase();
     }
 
     // 删除配置（支持批量）
@@ -70,13 +64,14 @@ export default (): React.ReactNode => {
     // 提交编辑（单条）
     const onEditFinish = async (values: any) => {
         setEditBtnLoading(true);
-        const body: any = {
-            keys: editKeys,
-        };
-        if (values?.type) body.type = values.type;
+        const body: any = {keys: editKeys, ...values};
         if (values?.status !== undefined && values?.status !== null) body.status = String(values.status);
-        // 单条编辑允许修改内容
-        body.content = editAceContent;
+        // 仅当有内容输入时才提交 content，避免清空原内容
+        if (editAceContent.trim() != "") {
+            body.content = editAceContent;
+        } else {
+            delete body.content;
+        }
         await updateConfig({
             body,
             onSuccess: (r: any) => {
@@ -112,14 +107,14 @@ export default (): React.ReactNode => {
     // 提交创建
     const onCreateFinish = async (values: any) => {
         setCreateBtnLoading(true);
+        const body: any = {...values};
+        if (createAceContent.trim() != "") {
+            body.content = createAceContent;
+        } else {
+            delete body.content;
+        }
         await createConfig({
-            body: {
-                group: values.group,
-                name: values.name,
-                type: values.type,
-                status: values.status, // 后端为 int
-                content: createAceContent,
-            },
+            body,
             onSuccess: (r: any) => {
                 createModalRef.current?.hide();
                 tableRef.current?.refreshTableData();
@@ -207,12 +202,8 @@ export default (): React.ReactNode => {
                                 // 设置编辑 keys
                                 const keys = [{group: record?.group, name: record?.name}];
                                 setEditKeys(keys);
-                                editForm?.setFieldsValue({
-                                    group: record?.group,
-                                    name: record?.name,
-                                    type: record?.type,
-                                    status: record?.status,
-                                });
+                                // 直接回填整条记录	only used fields will render
+                                editForm?.setFieldsValue(record);
                                 setEditAceMode(mapTypeToAceMode(record?.type));
                                 setEditInfoLoading(true);
                                 // 先展示弹窗 + loading
@@ -426,7 +417,7 @@ export default (): React.ReactNode => {
                             </Form.Item>
                         </Col>
                     </Row>
-                    <Form.Item label="配置内容" name="content" required>
+                    <Form.Item label="配置内容" name="content">
                         <AceEditor
                             value={createAceContent}
                             mode={createAceMode}
