@@ -19,7 +19,7 @@ type Type string
 
 const (
 	JSON Type = "json"
-	YML       = "yml"
+	YAML      = "yaml"
 	INI       = "ini"
 )
 
@@ -27,7 +27,7 @@ const (
 func (s *Service) Types() map[Type]string {
 	return map[Type]string{
 		JSON: "JSON",
-		YML:  "YML",
+		YAML: "YAML",
 		INI:  "INI",
 	}
 }
