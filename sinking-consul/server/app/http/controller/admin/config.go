@@ -3,6 +3,7 @@ package admin
 import (
 	"server/app/model"
 	"server/app/service"
+	"server/app/service/cluster"
 	"server/app/service/config"
 	"server/app/service/log"
 	"server/app/util/page"
@@ -95,13 +96,7 @@ func (ControllerConfig) Info(c *server.Context) {
 }
 
 func (ControllerConfig) Update(c *server.Context) {
-	type Form struct {
-		Keys    []*model.Config `json:"keys" default:"" validate:"required,min=1,max=1000" label:"配置列表"`
-		Type    string          `json:"type" default:"" validate:"omitempty" label:"配置类型"`
-		Content string          `json:"content" default:"" validate:"omitempty" label:"配置内容"`
-		Status  string          `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
-	}
-	form := &Form{}
+	form := &cluster.ConfigUpdateValidate{}
 	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
@@ -122,11 +117,20 @@ func (ControllerConfig) Update(c *server.Context) {
 		}
 		data["status"] = form.Status
 	}
-	err := service.Config.UpdateByGroupAndName(form.Keys, data)
+	err := service.Cluster.ChangeAllClusterLockStatus(0)
+	if err != nil {
+		c.Error("获取分布式锁失败")
+		return
+	}
+	defer func() {
+		_ = service.Cluster.ChangeAllClusterLockStatus(1)
+	}()
+	err = service.Config.UpdateByGroupAndName(form.Keys, data)
 	if err != nil {
 		c.Success("修改失败")
 		return
 	}
+	service.Cluster.UpdateAllClusterData(form, nil)
 	service.Log.Create(c.GetRequestIp(), log.EventUpdate, "修改服务配置", "修改服务配置数据")
 	c.Success("修改成功")
 }
@@ -162,11 +166,20 @@ func (ControllerConfig) Create(c *server.Context) {
 		d.Hash = str.NewStringTool().Md5(form.Content)
 		d.Content = form.Content
 	}
-	err := service.Config.Create(d)
+	err := service.Cluster.ChangeAllClusterLockStatus(0)
+	if err != nil {
+		c.Error("获取分布式锁失败")
+		return
+	}
+	defer func() {
+		_ = service.Cluster.ChangeAllClusterLockStatus(1)
+	}()
+	err = service.Config.Create(d)
 	if err != nil {
 		c.Error("创建失败")
 		return
 	}
+	service.Cluster.CreateAllClusterData(d, nil)
 	service.Log.Create(c.GetRequestIp(), log.EventCreate, "创建服务配置", "创建服务配置["+form.Group+":"+form.Name+"]")
 	c.Success("创建成功")
 }

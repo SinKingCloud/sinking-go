@@ -3,7 +3,9 @@ package api
 import (
 	"server/app/model"
 	"server/app/service"
+	"server/app/service/cluster"
 	"server/app/util/server"
+	"server/app/util/str"
 )
 
 type ControllerCluster struct {
@@ -92,6 +94,61 @@ func (ControllerCluster) Delete(c *server.Context) {
 		if addresses != nil && len(addresses) > 0 {
 			_ = service.Node.DeleteByAddress(addresses)
 		}
+	}
+	c.Success("执行成功")
+}
+
+// Create 创建数据
+func (ControllerCluster) Create(c *server.Context) {
+	type Form struct {
+		Config *model.Config `json:"config" default:"" validate:"omitempty" label:"配置信息"`
+		Node   *model.Node   `json:"node" default:"" validate:"omitempty" label:"节点信息"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorAll(form); !ok {
+		c.Error(msg)
+		return
+	}
+	if form.Config != nil {
+		_ = service.Config.Create(form.Config)
+	}
+	if form.Node != nil {
+		_ = service.Node.Create(form.Node)
+	}
+	c.Success("执行成功")
+}
+
+// Update 更新数据
+func (ControllerCluster) Update(c *server.Context) {
+	type Form struct {
+		Configs *cluster.ConfigUpdateValidate `json:"configs" default:"" validate:"omitempty" label:"配置列表"`
+		Nodes   *cluster.NodeUpdateValidate   `json:"nodes" default:"" validate:"omitempty" label:"节点列表"`
+	}
+	form := &Form{}
+	if ok, msg := c.ValidatorAll(form); !ok {
+		c.Error(msg)
+		return
+	}
+	if form.Configs != nil && len(form.Configs.Keys) > 0 {
+		data := make(map[string]interface{})
+		if form.Configs.Type != "" {
+			data["type"] = form.Configs.Type
+		}
+		if form.Configs.Content != "" {
+			data["content"] = form.Configs.Content
+			data["hash"] = str.NewStringTool().Md5(form.Configs.Content)
+		}
+		if form.Configs.Status != "" {
+			data["status"] = form.Configs.Status
+		}
+		_ = service.Config.UpdateByGroupAndName(form.Configs.Keys, data)
+	}
+	if form.Nodes != nil && len(form.Nodes.Addresses) > 0 {
+		data := make(map[string]interface{})
+		if form.Nodes.Status != "" {
+			data["status"] = form.Nodes.Status
+		}
+		_ = service.Node.UpdateByAddresses(form.Nodes.Addresses, data)
 	}
 	c.Success("执行成功")
 }

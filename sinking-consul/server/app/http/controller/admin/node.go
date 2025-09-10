@@ -3,6 +3,7 @@ package admin
 import (
 	"server/app/model"
 	"server/app/service"
+	"server/app/service/cluster"
 	"server/app/service/log"
 	"server/app/service/node"
 	"server/app/util/page"
@@ -67,11 +68,7 @@ func (ControllerNode) List(c *server.Context) {
 }
 
 func (ControllerNode) Update(c *server.Context) {
-	type Form struct {
-		Addresses []string `json:"addresses" default:"" validate:"required,min=1,max=1000,unique" label:"节点列表"`
-		Status    string   `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
-	}
-	form := &Form{}
+	form := &cluster.NodeUpdateValidate{}
 	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
 		return
@@ -85,11 +82,20 @@ func (ControllerNode) Update(c *server.Context) {
 		}
 		data["status"] = form.Status
 	}
-	err := service.Node.UpdateByAddresses(form.Addresses, data)
+	err := service.Cluster.ChangeAllClusterLockStatus(0)
+	if err != nil {
+		c.Error("获取分布式锁失败")
+		return
+	}
+	defer func() {
+		_ = service.Cluster.ChangeAllClusterLockStatus(1)
+	}()
+	err = service.Node.UpdateByAddresses(form.Addresses, data)
 	if err != nil {
 		c.Error(err.Error())
 		return
 	}
+	service.Cluster.UpdateAllClusterData(nil, form)
 	service.Log.Create(c.GetRequestIp(), log.EventUpdate, "修改服务节点", "修改服务节点数据")
 	c.Success("修改成功")
 }

@@ -49,6 +49,8 @@ func loadApiRoute(s *sinking_web.Engine) {
 		cluster.ANY("/config", server.HandleFunc(api.Cluster.Config))     //配置列表
 		cluster.ANY("/lock", server.HandleFunc(api.Cluster.Lock))         //分布式锁
 		cluster.ANY("/delete", server.HandleFunc(api.Cluster.Delete))     //删除数据
+		cluster.ANY("/create", server.HandleFunc(api.Cluster.Create))     //创建数据
+		cluster.ANY("/update", server.HandleFunc(api.Cluster.Update))     //更新数据
 	}
 
 	//注册中心相关路由

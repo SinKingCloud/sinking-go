@@ -208,6 +208,44 @@ func (s *Service) RemoteDeleteData(remoteAddress string, configs []*model.Config
 	return nil
 }
 
+// RemoteCreateData 远程创建数据
+func (s *Service) RemoteCreateData(remoteAddress string, config *model.Config, node *model.Node) error {
+	body := map[string]interface{}{}
+	if config != nil {
+		body["config"] = config
+	}
+	if node != nil {
+		body["node"] = node
+	}
+	code, message, _, err := s.request(remoteAddress, "api/cluster/create", body)
+	if err != nil {
+		return err
+	}
+	if code != 200 {
+		return errors.New(message)
+	}
+	return nil
+}
+
+// RemoteUpdateData 远程更新数据
+func (s *Service) RemoteUpdateData(remoteAddress string, configs *ConfigUpdateValidate, nodes *NodeUpdateValidate) error {
+	body := map[string]interface{}{}
+	if configs != nil {
+		body["configs"] = configs
+	}
+	if nodes != nil {
+		body["nodes"] = nodes
+	}
+	code, message, _, err := s.request(remoteAddress, "api/cluster/update", body)
+	if err != nil {
+		return err
+	}
+	if code != 200 {
+		return errors.New(message)
+	}
+	return nil
+}
+
 // SynchronizeRemoteData 同步集群信息
 func (s *Service) SynchronizeRemoteData(remoteAddress string) error {
 	for {
@@ -368,6 +406,7 @@ func (s *Service) ChangeAllClusterLockStatus(status int) error {
 	return lastError
 }
 
+// DeleteAllClusterData 删除所有节点数据
 func (s *Service) DeleteAllClusterData(configs []*model.Config, nodes []*model.Node) {
 	list := make([]*Cluster, 0)
 	s.Each(func(key string, value *Cluster) bool {
@@ -380,6 +419,42 @@ func (s *Service) DeleteAllClusterData(configs []*model.Config, nodes []*model.N
 	for _, cluster := range list {
 		tasks = append(tasks, func() error {
 			return s.RemoteDeleteData(cluster.Address, configs, nodes)
+		})
+	}
+	s.executeWithWorkers(10, tasks)
+}
+
+// UpdateAllClusterData 更新所有节点数据
+func (s *Service) UpdateAllClusterData(configs *ConfigUpdateValidate, nodes *NodeUpdateValidate) {
+	list := make([]*Cluster, 0)
+	s.Each(func(key string, value *Cluster) bool {
+		if value.Status == int(Online) {
+			list = append(list, value)
+		}
+		return true
+	})
+	tasks := make([]func() error, 0)
+	for _, cluster := range list {
+		tasks = append(tasks, func() error {
+			return s.RemoteUpdateData(cluster.Address, configs, nodes)
+		})
+	}
+	s.executeWithWorkers(10, tasks)
+}
+
+// CreateAllClusterData 创建所有节点数据
+func (s *Service) CreateAllClusterData(config *model.Config, node *model.Node) {
+	list := make([]*Cluster, 0)
+	s.Each(func(key string, value *Cluster) bool {
+		if value.Status == int(Online) {
+			list = append(list, value)
+		}
+		return true
+	})
+	tasks := make([]func() error, 0)
+	for _, cluster := range list {
+		tasks = append(tasks, func() error {
+			return s.RemoteCreateData(cluster.Address, config, node)
 		})
 	}
 	s.executeWithWorkers(10, tasks)
