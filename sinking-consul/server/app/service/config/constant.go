@@ -19,7 +19,7 @@ type Type string
 
 const (
 	TEXT       Type = "text"
-	JSON       Type = "json"
+	JSON            = "json"
 	YAML            = "yaml"
 	INI             = "ini"
 	TOML            = "toml"
