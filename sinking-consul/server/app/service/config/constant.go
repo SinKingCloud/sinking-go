@@ -29,7 +29,7 @@ const (
 // Types 类型数据
 func (s *Service) Types() map[Type]string {
 	return map[Type]string{
-		TEXT:       "text",
+		TEXT:       "TEXT",
 		JSON:       "JSON",
 		YAML:       "YAML",
 		INI:        "INI",
