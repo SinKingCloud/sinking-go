@@ -44,6 +44,7 @@ func loadApiRoute(s *sinking_web.Engine) {
 	//集群中心相关路由
 	cluster := g.Group("/cluster")
 	{
+		cluster.ANY("/testing", server.HandleFunc(api.Cluster.Testing))   //节点测试
 		cluster.ANY("/register", server.HandleFunc(api.Cluster.Register)) //注册集群
 		cluster.ANY("/node", server.HandleFunc(api.Cluster.Node))         //服务列表
 		cluster.ANY("/config", server.HandleFunc(api.Cluster.Config))     //配置列表

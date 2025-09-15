@@ -6,9 +6,15 @@ import (
 	"server/app/service/cluster"
 	"server/app/util/server"
 	"server/app/util/str"
+	"time"
 )
 
 type ControllerCluster struct {
+}
+
+// Testing 节点测试
+func (ControllerCluster) Testing(c *server.Context) {
+	c.SuccessWithData("获取成功", time.Now().Unix())
 }
 
 // Register 注册服务
