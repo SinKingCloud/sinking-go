@@ -100,16 +100,17 @@ func (c *Client) GetService(name string, types Type) (*Node, error) {
 	defer c.mu.RUnlock()
 	// 查找指定名称的所有节点
 	serviceNodes, exists := c.nodes[name]
-	if !exists || len(serviceNodes) == 0 {
+	num := len(serviceNodes)
+	if !exists || num == 0 {
 		return nil, errors.New("服务不存在")
 	}
 	switch types {
 	case Poll: // 轮询
 		counter := atomic.AddUint64(&c.pollCounter, 1)
-		index := counter % uint64(len(serviceNodes))
+		index := counter % uint64(num)
 		return serviceNodes[index], nil
 	case Rand: // 随机
-		index := rand.Intn(len(serviceNodes))
+		index := rand.Intn(num)
 		return serviceNodes[index], nil
 	default:
 		return serviceNodes[0], nil
