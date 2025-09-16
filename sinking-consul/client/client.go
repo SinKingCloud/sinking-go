@@ -56,19 +56,15 @@ func (c *Client) Connect() error {
 	if !atomic.CompareAndSwapInt32(&c.running, 0, 1) {
 		return errors.New("客户端已经在运行中")
 	}
-	// 首次连接测试
 	addr := c.getAddr(false)
 	if err := c.testing(addr); err != nil {
 		atomic.StoreInt32(&c.running, 0)
 		return errors.New("连接服务器失败: " + err.Error())
 	}
-	// 启动注册任务（每5秒）
 	c.wg.Add(1)
 	go c.registerTask()
-	// 启动节点同步任务（每10秒）
 	c.wg.Add(1)
 	go c.syncNodeTask()
-	// 启动配置同步任务（每10秒）
 	c.wg.Add(1)
 	go c.syncConfigTask()
 	return nil
@@ -79,11 +75,8 @@ func (c *Client) Close() error {
 	if !atomic.CompareAndSwapInt32(&c.running, 1, 0) {
 		return errors.New("客户端未在运行中")
 	}
-	// 取消所有goroutine
 	c.cancel()
-	// 等待所有goroutine结束
 	c.wg.Wait()
-	// 清理缓存
 	c.mu.Lock()
 	c.nodes = make(map[string][]*Node)
 	c.configs = make(map[string]*Config)
@@ -98,7 +91,6 @@ func (c *Client) Close() error {
 func (c *Client) GetService(name string, types Type) (*Node, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	// 查找指定名称的所有节点
 	serviceNodes, exists := c.nodes[name]
 	num := len(serviceNodes)
 	if !exists || num == 0 {
@@ -147,7 +139,6 @@ func (c *Client) GetServiceNodes(name string) ([]*Node, error) {
 func (c *Client) GetConfig(name string) (*ConfigParser, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	// 直接从解析器缓存中查找（同步时已经创建好了）
 	parser, exists := c.parsers[name]
 	if !exists {
 		return nil, errors.New("配置不存在或已禁用")
@@ -159,7 +150,6 @@ func (c *Client) GetConfig(name string) (*ConfigParser, error) {
 func (c *Client) GetAllConfigs() ([]*ConfigParser, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	// 直接从解析器缓存中获取所有配置（同步时已经创建好了）
 	var parsers []*ConfigParser
 	for _, parser := range c.parsers {
 		parsers = append(parsers, parser)
