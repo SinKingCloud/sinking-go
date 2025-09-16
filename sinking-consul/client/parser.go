@@ -23,6 +23,8 @@ import (
 // 3. 高并发优化：读写锁保护、缓存机制（默认启用）
 // 4. 动态更新：支持运行时更新配置内容
 type ConfigParser struct {
+	content      string                 // 原始配置内容字符串
+	format       string                 // 配置格式（json/yaml/toml/ini/properties/text）
 	data         map[string]interface{} // 解析后的数据（展平格式，便于路径访问）
 	isTextType   bool                   // 是否为Text格式（仅支持content路径）
 	arrayRegex   *regexp.Regexp         // 预编译正则：匹配数组路径（如 "arr[0]"）
@@ -36,33 +38,36 @@ type ConfigParser struct {
 // format：配置格式（支持：json/yaml/yml/toml/ini/properties/text，不区分大小写）
 // 返回：解析器实例，若格式不支持或解析失败返回nil和错误
 func NewConfigParser(configString, format string) (*ConfigParser, error) {
+	// 统一格式为小写，避免大小写判断问题
+	format = strings.ToLower(format)
+
 	parser := &ConfigParser{
+		content:      configString,
+		format:       format,
 		data:         make(map[string]interface{}),
 		arrayRegex:   regexp.MustCompile(`^(\w+)\[(\d+)]$`), // 匹配 "键[索引]" 格式
 		cacheEnabled: true,                                  // 默认启用缓存
 	}
 
-	// 统一格式为小写，避免大小写判断问题
-	format = strings.ToLower(format)
 	switch format {
 	case "json":
-		if err := parser.parseJSON(configString); err != nil {
+		if err := parser.parseJSON(); err != nil {
 			return nil, fmt.Errorf("json解析失败: %w", err)
 		}
 	case "yaml", "yml":
-		if err := parser.parseYAML(configString); err != nil {
+		if err := parser.parseYAML(); err != nil {
 			return nil, fmt.Errorf("yaml解析失败: %w", err)
 		}
 	case "toml":
-		if err := parser.parseTOML(configString); err != nil {
+		if err := parser.parseTOML(); err != nil {
 			return nil, fmt.Errorf("toml解析失败: %w", err)
 		}
 	case "ini":
-		if err := parser.parseINI(configString); err != nil {
+		if err := parser.parseINI(); err != nil {
 			return nil, fmt.Errorf("ini解析失败: %w", err)
 		}
 	case "properties":
-		if err := parser.parseProperties(configString); err != nil {
+		if err := parser.parseProperties(); err != nil {
 			return nil, fmt.Errorf("properties解析失败: %w", err)
 		}
 	case "text":
@@ -78,6 +83,20 @@ func NewConfigParser(configString, format string) (*ConfigParser, error) {
 	}
 
 	return parser, nil
+}
+
+// GetRawContent 获取原始配置内容字符串
+func (p *ConfigParser) GetRawContent() string {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	return p.content
+}
+
+// GetFormat 获取配置格式
+func (p *ConfigParser) GetFormat() string {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	return p.format
 }
 
 // EnableCache 启用/禁用缓存
@@ -158,7 +177,9 @@ func (p *ConfigParser) UpdateConfig(configString, format string) error {
 		return fmt.Errorf("更新配置失败: %w", err)
 	}
 
-	// 同步核心状态（数据 + Text格式标识）
+	// 同步核心状态（内容 + 格式 + 数据 + Text格式标识）
+	p.content = newParser.content
+	p.format = newParser.format
 	p.data = newParser.data
 	p.isTextType = newParser.isTextType
 
@@ -415,24 +436,24 @@ func (p *ConfigParser) GetIntSlice(path string) []int {
 // ------------------------------
 
 // parseJSON 解析JSON格式配置
-func (p *ConfigParser) parseJSON(content string) error {
-	return json.Unmarshal([]byte(content), &p.data)
+func (p *ConfigParser) parseJSON() error {
+	return json.Unmarshal([]byte(p.content), &p.data)
 }
 
 // parseYAML 解析YAML格式配置（支持yaml/yml后缀）
-func (p *ConfigParser) parseYAML(content string) error {
-	return yaml.Unmarshal([]byte(content), &p.data)
+func (p *ConfigParser) parseYAML() error {
+	return yaml.Unmarshal([]byte(p.content), &p.data)
 }
 
 // parseTOML 解析TOML格式配置
-func (p *ConfigParser) parseTOML(content string) error {
-	_, err := toml.Decode(content, &p.data)
+func (p *ConfigParser) parseTOML() error {
+	_, err := toml.Decode(p.content, &p.data)
 	return err
 }
 
 // parseINI 解析INI格式配置（Section+Key形式，展平为 "Section.Key" 路径）
-func (p *ConfigParser) parseINI(content string) error {
-	cfg, err := ini.Load([]byte(content))
+func (p *ConfigParser) parseINI() error {
+	cfg, err := ini.Load([]byte(p.content))
 	if err != nil {
 		return err
 	}
@@ -453,8 +474,8 @@ func (p *ConfigParser) parseINI(content string) error {
 }
 
 // parseProperties 解析Properties格式配置（Key=Value形式，直接使用Key作为路径）
-func (p *ConfigParser) parseProperties(content string) error {
-	props, err := properties.LoadString(content)
+func (p *ConfigParser) parseProperties() error {
+	props, err := properties.LoadString(p.content)
 	if err != nil {
 		return err
 	}

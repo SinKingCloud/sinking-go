@@ -55,7 +55,8 @@ func (c *Client) testing(addr string) error {
 }
 
 // register 注册请求
-func (c *Client) register(addr string) error {
+func (c *Client) register() error {
+	addr := c.getAddr(false)
 	body := map[string]string{
 		"group":   c.group,
 		"name":    c.name,
@@ -75,7 +76,8 @@ func (c *Client) register(addr string) error {
 }
 
 // getNodeList 获取节点信息
-func (c *Client) getNodeList(addr string, lastSyncTime int64) (error, []*Node) {
+func (c *Client) getNodeList(lastSyncTime int64) ([]*Node, error) {
+	addr := c.getAddr(false)
 	body := map[string]interface{}{
 		"group":          c.group,
 		"last_sync_time": lastSyncTime,
@@ -85,21 +87,22 @@ func (c *Client) getNodeList(addr string, lastSyncTime int64) (error, []*Node) {
 		c.getAddr(true)
 	}
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	if code != ResponseSuccess {
-		return errors.New(message), nil
+		return nil, errors.New(message)
 	}
 	var list []*Node
 	err = json.Unmarshal(data, &list)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
-	return nil, list
+	return list, nil
 }
 
 // getConfigList 获取配置信息
-func (c *Client) getConfigList(addr string, lastSyncTime int64) (error, []*Config) {
+func (c *Client) getConfigList(lastSyncTime int64) ([]*Config, error) {
+	addr := c.getAddr(false)
 	body := map[string]interface{}{
 		"group":          c.group,
 		"last_sync_time": lastSyncTime,
@@ -109,17 +112,17 @@ func (c *Client) getConfigList(addr string, lastSyncTime int64) (error, []*Confi
 		c.getAddr(true)
 	}
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	if code != ResponseSuccess {
-		return errors.New(message), nil
+		return nil, errors.New(message)
 	}
 	var list []*Config
 	err = json.Unmarshal(data, &list)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
-	return nil, list
+	return list, nil
 }
 
 // request 向集群节点发送请求

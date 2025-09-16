@@ -50,6 +50,7 @@ func Init() {
 			for k, v := range temp1 {
 				if v2, ok := nodeTemp[k]; !ok || v2 != v {
 					service.Node.SetOperateTime(k)
+					nodeTemp = temp1
 				}
 			}
 			temp2 := make(map[string]uint64)
@@ -59,6 +60,7 @@ func Init() {
 			for k, v := range temp2 {
 				if v2, ok := configTemp[k]; !ok || v2 != v {
 					service.Config.SetOperateTime(k)
+					configTemp = temp2
 				}
 			}
 			if i == 3 {

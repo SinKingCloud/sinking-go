@@ -14,8 +14,8 @@ const (
 type Type int
 
 const (
-	Poll Type = 0 //轮询
-	Rand          //随机
+	Poll Type = iota //轮询
+	Rand             //随机
 )
 
 // ResponseCode 响应码
