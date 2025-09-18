@@ -45,19 +45,23 @@ func (c *Client) doSyncNodes() {
 	nodes, err := c.getNodeList(lastSyncTime)
 	// 更新缓存
 	if err == nil && nodes != nil {
-		c.mu.Lock()
-		// 清空现有节点缓存，重新构建（接口返回全量数据）
-		c.nodes = make(map[string][]*Node)
+		// 先在锁外构建新的节点缓存
+		newNodes := make(map[string][]*Node)
 		if len(nodes) > 0 {
 			// 按服务名分组节点
 			for _, node := range nodes {
-				if c.nodes[node.Name] == nil {
-					c.nodes[node.Name] = make([]*Node, 0)
+				if newNodes[node.Name] == nil {
+					newNodes[node.Name] = make([]*Node, 0)
 				}
-				c.nodes[node.Name] = append(c.nodes[node.Name], node)
+				newNodes[node.Name] = append(newNodes[node.Name], node)
 			}
 		}
-		c.mu.Unlock()
+
+		// 加锁快速更新缓存
+		c.nodesMu.Lock()
+		c.nodes = newNodes
+		c.nodesMu.Unlock()
+
 		atomic.StoreInt64(&c.nodeLastSyncTime, time.Now().Unix())
 	}
 }
@@ -85,25 +89,30 @@ func (c *Client) doSyncConfigs() {
 	configs, err := c.getConfigList(lastSyncTime)
 	// 更新缓存
 	if err == nil && configs != nil {
-		c.mu.Lock()
-		defer c.mu.Unlock()
-		// 清空现有配置缓存，重新构建（接口返回全量数据）
-		c.configs = make(map[string]*Config)
-		c.parsers = make(map[string]*ConfigParser)
+		// 先在锁外构建新的配置缓存和解析器
+		newConfigs := make(map[string]*Config)
+		newParsers := make(map[string]*ConfigParser)
+
 		if len(configs) > 0 {
 			for _, config := range configs {
-				// 更新配置缓存
-				c.configs[config.Name] = config
 				// 创建ConfigParser
 				parser, err := NewConfigParser(config.Content, config.Type)
 				if err != nil {
-					// 解析失败，删除该配置
-					delete(c.configs, config.Name)
+					// 解析失败，跳过该配置
 					continue
 				}
-				c.parsers[config.Name] = parser
+				// 只有解析成功才添加到缓存
+				newConfigs[config.Name] = config
+				newParsers[config.Name] = parser
 			}
 		}
+
+		// 加锁快速更新缓存
+		c.configsMu.Lock()
+		c.configs = newConfigs
+		c.parsers = newParsers
+		c.configsMu.Unlock()
+
 		atomic.StoreInt64(&c.configLastSyncTime, time.Now().Unix())
 	}
 }
