@@ -26,7 +26,6 @@ func (c *Client) syncNodeTask() {
 	defer c.wg.Done()
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
-	// Connect方法已经执行过一次同步，这里直接开始定时任务
 	for {
 		select {
 		case <-c.ctx.Done():
@@ -69,7 +68,6 @@ func (c *Client) syncConfigTask() {
 	defer c.wg.Done()
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
-	// Connect方法已经执行过一次同步，这里直接开始定时任务
 	for {
 		select {
 		case <-c.ctx.Done():
