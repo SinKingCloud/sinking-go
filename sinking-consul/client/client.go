@@ -62,6 +62,13 @@ func (c *Client) Connect() error {
 		atomic.StoreInt32(&c.running, 0)
 		return errors.New("连接服务器失败: " + err.Error())
 	}
+
+	// 先执行一次注册和同步，确保客户端连接后立即有可用数据
+	_ = c.register()
+	c.doSyncNodes()
+	c.doSyncConfigs()
+
+	// 启动异步同步任务
 	c.wg.Add(1)
 	go c.registerTask()
 	c.wg.Add(1)
