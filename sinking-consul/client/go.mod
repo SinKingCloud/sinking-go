@@ -1,4 +1,4 @@
-module client
+module github.com/SinKingCloud/sinking-go/sinking-consul/client
 
 go 1.23.3
 
