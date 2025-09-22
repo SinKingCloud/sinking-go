@@ -17,7 +17,7 @@ func Author(engine *Engine, addr string) {
 	}
 	log.Printf("The total handle is %d\n", len(engine.router.handlers))
 	log.Printf("The request url is %s\n", addr)
-	if debug {
+	if engine.debug {
 		log.Printf("The run mode is debug\n")
 	} else {
 		log.Printf("The run mode is release\n")
