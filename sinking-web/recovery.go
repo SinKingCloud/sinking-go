@@ -26,7 +26,7 @@ func Recovery() HandlerFunc {
 	return func(c *Context) {
 		defer func() {
 			if err := recover(); err != nil {
-				if !debug {
+				if !c.engine.debug {
 					c.Fail(http.StatusInternalServerError, MessageInternalServerError)
 				} else {
 					message := fmt.Sprintf("%s", err)

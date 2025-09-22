@@ -7,7 +7,10 @@ import (
 	"net/http/httputil"
 	"path"
 	"strings"
+	"time"
 )
+
+type H map[string]interface{}
 
 type HandlerFunc func(*Context)
 
@@ -32,11 +35,20 @@ type (
 		htmlTemplates      *template.Template
 		funcMap            template.FuncMap
 		MaxMultipartMemory int64
+		debug              bool
+		readTimeout        time.Duration
+		writeTimeout       time.Duration
 	}
 )
 
 func New() *Engine {
-	engine := &Engine{router: newRouter(), MaxMultipartMemory: defaultMultipartMemory}
+	engine := &Engine{
+		router:             newRouter(),
+		MaxMultipartMemory: defaultMultipartMemory,
+		debug:              false,
+		readTimeout:        time.Second * 60,
+		writeTimeout:       time.Second * 60,
+	}
 	engine.RouterGroup = &RouterGroup{engine: engine}
 	engine.groups = []*RouterGroup{engine.RouterGroup}
 	return engine
@@ -45,7 +57,7 @@ func New() *Engine {
 func Default() *Engine {
 	engine := New()
 	engine.Use(Recovery())
-	if debug {
+	if engine.debug {
 		engine.Use(Logger())
 	}
 	return engine
@@ -164,6 +176,19 @@ func (engine *Engine) LoadHtmlGlob(pattern string) *Engine {
 	return engine
 }
 
+// SetDebugMode 设置运行模式为debug
+func (engine *Engine) SetDebugMode(mode bool) *Engine {
+	engine.debug = mode
+	return engine
+}
+
+// SetTimeOut 设置超时时间
+func (engine *Engine) SetTimeOut(read time.Duration, write time.Duration) *Engine {
+	engine.readTimeout = read
+	engine.writeTimeout = write
+	return engine
+}
+
 func (group *RouterGroup) PROXY(pattern string, uri string, logger *log.Logger, filter func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy), errorHandle func(http.ResponseWriter, *http.Request, error)) *RouterGroup {
 	fun := func(c *Context) {
 		prefix := uri[0:2]
@@ -185,8 +210,8 @@ func (group *RouterGroup) PROXY(pattern string, uri string, logger *log.Logger, 
 func server(addr string, engine *Engine) *http.Server {
 	Author(engine, addr)
 	server := &http.Server{
-		ReadTimeout:  readTimeOut,
-		WriteTimeout: writeTimeout,
+		ReadTimeout:  engine.readTimeout,
+		WriteTimeout: engine.writeTimeout,
 		Addr:         addr,
 		Handler:      engine,
 	}
