@@ -143,7 +143,10 @@ func (c *Client) GetServiceNodes(name string) ([]*Node, error) {
 	if !exists || len(serviceNodes) == 0 {
 		return nil, errors.New("服务不存在")
 	}
-	return serviceNodes, nil
+	// 返回切片副本，避免指针引用问题
+	result := make([]*Node, len(serviceNodes))
+	copy(result, serviceNodes)
+	return result, nil
 }
 
 // GetConfig 获取配置信息

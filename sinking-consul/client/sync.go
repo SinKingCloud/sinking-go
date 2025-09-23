@@ -40,25 +40,17 @@ func (c *Client) syncNodeTask() {
 func (c *Client) doSyncNodes() {
 	lastSyncTime := atomic.LoadInt64(&c.nodeLastSyncTime)
 	nodes, err := c.getNodeList(lastSyncTime)
-	// 更新缓存
-	if err == nil && nodes != nil {
-		// 先在锁外构建新的节点缓存
+	if err == nil && nodes != nil && len(nodes) > 0 {
 		newNodes := make(map[string][]*Node)
-		if len(nodes) > 0 {
-			// 按服务名分组节点
-			for _, node := range nodes {
-				if newNodes[node.Name] == nil {
-					newNodes[node.Name] = make([]*Node, 0)
-				}
-				newNodes[node.Name] = append(newNodes[node.Name], node)
+		for _, node := range nodes {
+			if newNodes[node.Name] == nil {
+				newNodes[node.Name] = make([]*Node, 0)
 			}
+			newNodes[node.Name] = append(newNodes[node.Name], node)
 		}
-
-		// 加锁快速更新缓存
 		c.nodesMu.Lock()
 		c.nodes = newNodes
 		c.nodesMu.Unlock()
-
 		atomic.StoreInt64(&c.nodeLastSyncTime, time.Now().Unix())
 	}
 }
@@ -82,32 +74,66 @@ func (c *Client) syncConfigTask() {
 func (c *Client) doSyncConfigs() {
 	lastSyncTime := atomic.LoadInt64(&c.configLastSyncTime)
 	configs, err := c.getConfigList(lastSyncTime)
-	// 更新缓存
 	if err == nil && configs != nil {
-		// 先在锁外构建新的配置缓存和解析器
-		newConfigs := make(map[string]*Config)
-		newParsers := make(map[string]*ConfigParser)
-
-		if len(configs) > 0 {
-			for _, config := range configs {
-				// 创建ConfigParser
-				parser, err := NewConfigParser(config.Content, config.Type)
-				if err != nil {
-					// 解析失败，跳过该配置
-					continue
-				}
-				// 只有解析成功才添加到缓存
-				newConfigs[config.Name] = config
-				newParsers[config.Name] = parser
+		type updateAction struct {
+			config         *Config
+			existingParser *ConfigParser
+			newParser      *ConfigParser
+			actionType     string
+		}
+		var actions []updateAction
+		c.configsMu.RLock()
+		for _, config := range configs {
+			if existingParser, exists := c.parsers[config.Name]; exists {
+				actions = append(actions, updateAction{
+					config:         config,
+					existingParser: existingParser,
+					actionType:     "update",
+				})
+			} else {
+				actions = append(actions, updateAction{
+					config:     config,
+					actionType: "create",
+				})
 			}
 		}
-
-		// 加锁快速更新缓存
+		c.configsMu.RUnlock()
+		for i := range actions {
+			action := &actions[i]
+			switch action.actionType {
+			case "update":
+				if err := action.existingParser.UpdateConfig(action.config.Content, action.config.Type); err != nil {
+					if newParser, parseErr := NewConfigParser(action.config.Content, action.config.Type); parseErr == nil {
+						action.newParser = newParser
+						action.actionType = "replace"
+					} else {
+						action.actionType = "skip" // 解析失败，跳过
+					}
+				}
+			case "create":
+				if newParser, parseErr := NewConfigParser(action.config.Content, action.config.Type); parseErr == nil {
+					action.newParser = newParser
+				} else {
+					action.actionType = "skip" // 解析失败，跳过
+				}
+			}
+		}
 		c.configsMu.Lock()
-		c.configs = newConfigs
-		c.parsers = newParsers
+		for _, action := range actions {
+			switch action.actionType {
+			case "update":
+				c.configs[action.config.Name] = action.config
+			case "replace":
+				c.configs[action.config.Name] = action.config
+				c.parsers[action.config.Name] = action.newParser
+			case "create":
+				c.configs[action.config.Name] = action.config
+				c.parsers[action.config.Name] = action.newParser
+			case "skip":
+				continue
+			}
+		}
 		c.configsMu.Unlock()
-
 		atomic.StoreInt64(&c.configLastSyncTime, time.Now().Unix())
 	}
 }
