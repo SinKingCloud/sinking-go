@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"fmt"
 	"github.com/spf13/viper"
 	"server/app/constant"
 	"server/app/util"
@@ -8,7 +9,6 @@ import (
 	"strings"
 )
 
-// LoadConf 加载本地配置
 func LoadConf() {
 	path := constant.ConfPath
 	if !strings.HasSuffix(path, "/") {
@@ -17,17 +17,35 @@ func LoadConf() {
 	configType := "yml"
 	fileName := constant.ConfFile
 	disk := file.NewDisk(path)
-	_ = disk.AutoCreate(fileName + "." + configType)
+	if err := disk.AutoCreate(fileName + "." + configType); err != nil {
+		panic(fmt.Errorf("创建配置文件失败: %w", err))
+		return
+	}
 	config := viper.New()
-	config.AutomaticEnv() //读取环境变量
 	config.AddConfigPath(path)
 	config.SetConfigName(fileName)
 	config.SetConfigType(configType)
 	config.WatchConfig()
 	if err := config.ReadInConfig(); err != nil {
-		panic(err)
-		return
+		panic(fmt.Errorf("读取配置文件失败: %w", err))
 	}
-	//赋值到util
+	config.AutomaticEnv()
+	config.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	keys := []string{
+		constant.ServerPort,
+		constant.ServerHost,
+		constant.ServerMode,
+		constant.AuthAccount,
+		constant.AuthPassword,
+		constant.AuthApiToken,
+		constant.AuthExpire,
+		constant.ClusterLocal,
+		constant.ClusterNodes,
+	}
+	for _, key := range keys {
+		if !config.IsSet(key) {
+			_ = config.BindEnv(key)
+		}
+	}
 	util.Conf = config
 }

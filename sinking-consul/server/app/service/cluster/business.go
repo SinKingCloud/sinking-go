@@ -72,7 +72,13 @@ func (s *Service) Register(address string) {
 func (s *Service) Init() {
 	clusterOnce.Do(func() {
 		_ = s.DeleteAll()
-		list := util.Conf.GetStringSlice(constant.ClusterNodes)
+		var list []string
+		str := util.Conf.GetString(constant.ClusterNodes)
+		if str == "" {
+			list = util.Conf.GetStringSlice(constant.ClusterNodes)
+		} else {
+			list = strings.Split(str, ",")
+		}
 		for _, v := range list {
 			d, e := s.FindByAddress(v)
 			if e != nil || d == nil {
