@@ -28,6 +28,7 @@ func LoadConf() {
 	config.WatchConfig()
 	if err := config.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("读取配置文件失败: %w", err))
+		return
 	}
 	config.AutomaticEnv()
 	config.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
@@ -43,9 +44,7 @@ func LoadConf() {
 		constant.ClusterNodes,
 	}
 	for _, key := range keys {
-		if !config.IsSet(key) {
-			_ = config.BindEnv(key)
-		}
+		_ = config.BindEnv(key)
 	}
 	util.Conf = config
 }
