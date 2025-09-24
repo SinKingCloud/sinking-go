@@ -15,10 +15,15 @@ func (s *Service) DeleteByGroupAndName(keys []*model.Config) (err error) {
 	}
 	err = util.Database.Db.Where("(`group`, `name`) IN (?)", conditions).Delete(&model.Config{}).Error
 	if err == nil {
+		g := make(map[string]int64)
 		for _, key := range keys {
+			g[key.Group] = 1
 			if key.Group != "" && key.Name != "" {
 				s.Delete(key.Group, key.Name)
 			}
+		}
+		for group := range g {
+			s.SetOperateTime(group)
 		}
 	}
 	return
