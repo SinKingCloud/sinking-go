@@ -55,10 +55,10 @@ func (c *Client) doSyncNodes() {
 	}
 }
 
-// syncConfigTask 配置同步任务（每10秒执行一次）
+// syncConfigTask 配置同步任务（每5秒执行一次）
 func (c *Client) syncConfigTask() {
 	defer c.wg.Done()
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 	for {
 		select {
