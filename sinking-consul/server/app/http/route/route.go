@@ -23,10 +23,10 @@ func loadErrorHandle(s *sinking_web.Engine) {
 
 // Init 初始化server
 func Init() {
-	//设置是否以debug模式运行
-	sinking_web.SetDebugMode(util.IsDebug())
 	//实例化一个http server
 	r := sinking_web.Default()
+	//设置是否以debug模式运行
+	r.SetDebugMode(util.IsDebug())
 	//加载错误handle
 	loadErrorHandle(r)
 	//加载app
