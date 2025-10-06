@@ -61,13 +61,6 @@ const UiView: React.FC = () => {
                 ]}
             />
             <FormField
-                type="color"
-                name="color"
-                label="主题颜色"
-                tooltip="选择网站的主题颜色，影响整体视觉风格"
-                format="rgb"
-            />
-            <FormField
                 type="select"
                 name="radius"
                 label="主题圆角"
@@ -91,6 +84,13 @@ const UiView: React.FC = () => {
                     {value: '14', label: '14px'},
                     {value: '15', label: '15px'}
                 ]}
+            />
+            <FormField
+                type="color"
+                name="color"
+                label="主题颜色"
+                tooltip="选择网站的主题颜色，影响整体视觉风格"
+                format="rgb"
             />
         </BaseForm>
     );
