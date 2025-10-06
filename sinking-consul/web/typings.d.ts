@@ -46,6 +46,7 @@ declare namespace API {
         theme?: string;
         color?: string;
         compact?: boolean;
+        radius?: number;
     }
     /**
      * 网站信息

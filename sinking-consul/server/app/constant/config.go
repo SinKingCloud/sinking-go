@@ -32,4 +32,5 @@ const (
 	UiTheme     = "ui.theme"     //主题
 	UiCompact   = "ui.compact"   //紧凑模式
 	UiColor     = "ui.color"     //主题色
+	UiRadius    = "ui.radius"    //主题圆角
 )

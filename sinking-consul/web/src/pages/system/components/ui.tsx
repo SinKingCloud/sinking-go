@@ -67,6 +67,31 @@ const UiView: React.FC = () => {
                 tooltip="选择网站的主题颜色，影响整体视觉风格"
                 format="rgb"
             />
+            <FormField
+                type="select"
+                name="radius"
+                label="主题圆角"
+                tooltip="调整界面元素的圆角大小，数值越大圆角越明显"
+                placeholder="请选择主题圆角大小"
+                options={[
+                    {value: '0', label: '0px (无圆角)'},
+                    {value: '1', label: '1px'},
+                    {value: '2', label: '2px'},
+                    {value: '3', label: '3px'},
+                    {value: '4', label: '4px'},
+                    {value: '5', label: '5px'},
+                    {value: '6', label: '6px'},
+                    {value: '7', label: '7px'},
+                    {value: '8', label: '8px'},
+                    {value: '9', label: '9px'},
+                    {value: '10', label: '10px'},
+                    {value: '11', label: '11px'},
+                    {value: '12', label: '12px'},
+                    {value: '13', label: '13px'},
+                    {value: '14', label: '14px'},
+                    {value: '15', label: '15px'}
+                ]}
+            />
         </BaseForm>
     );
 };

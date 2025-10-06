@@ -25,6 +25,9 @@ export default () => {
             if (d?.ui?.color) {
                 theme?.setColor(d?.ui?.color);
             }
+            if (d?.ui?.radius >= 0) {
+                theme?.setRadius(d?.ui?.radius <= 15 ? d?.ui?.radius : 0);
+            }
             if (d?.ui?.compact) {
                 theme?.setCompactTheme();
             } else {

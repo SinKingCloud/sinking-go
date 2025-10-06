@@ -20,6 +20,7 @@ func Info(c *context.Context) {
 			"theme":     c.GetStringWithDefault(config.GetString(constant.UiTheme), "dark"),
 			"compact":   c.GetBoolWithDefault(config.GetString(constant.UiCompact), false),
 			"color":     c.GetStringWithDefault(config.GetString(constant.UiColor), "rgb(0,81,235)"),
+			"radius":    c.GetIntWithDefault(config.GetString(constant.UiRadius), 0),
 		},
 	})
 }

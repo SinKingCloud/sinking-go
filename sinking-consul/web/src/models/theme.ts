@@ -1,17 +1,19 @@
 import {useState} from "react";
 import {theme} from "antd";
+import defaultSettings from "../../config/defaultSettings";
 // 获取风格
-const getDefaultTheme = (color): any => {
+const getDefaultTheme = (color, radius): any => {
     return {
         token: {
             colorPrimary: color,
             colorInfo: color,
+            borderRadius: radius
         },
     }
 }
 // 获取风格
-const getCompactTheme = (color): any => {
-    let temp = getDefaultTheme(color);
+const getCompactTheme = (color, radius): any => {
+    let temp = getDefaultTheme(color, radius);
     temp.algorithm = [theme.compactAlgorithm];
     return temp;
 }
@@ -34,7 +36,7 @@ const setMode = (mode): void => {
 }
 
 export default () => {
-    const [themes, setThemes] = useState<any>(getDefaultTheme("rgba(7,53,237,1)"));//系统主题
+    const [themes, setThemes] = useState<any>(getDefaultTheme(defaultSettings?.color, defaultSettings?.radius));//系统主题
     const [mode, setMode2] = useState<any>(getMode());//系统主题模式
     const [appearance, setAppearance] = useState<any>(null);//当前主题风格
 
@@ -48,14 +50,14 @@ export default () => {
      * 设置默认主题
      */
     const setDefaultTheme = () => {
-        setThemes(getDefaultTheme(themes?.token?.colorPrimary))
+        setThemes(getDefaultTheme(themes?.token?.colorPrimary, themes?.token?.borderRadius))
     }
 
     /**
      * 设置紧凑主题
      */
     const setCompactTheme = () => {
-        setThemes(getCompactTheme(themes?.token?.colorPrimary))
+        setThemes(getCompactTheme(themes?.token?.colorPrimary, themes?.token?.borderRadius))
     }
 
     /**
@@ -65,6 +67,15 @@ export default () => {
         let temp = {...themes}
         temp.token.colorPrimary = color;
         temp.token.colorInfo = color;
+        setThemes(temp);
+    }
+
+    /**
+     * 设置主题圆角
+     */
+    const setRadius = (radius) => {
+        let temp = {...themes}
+        temp.token.borderRadius = radius;
         setThemes(temp);
     }
 
@@ -159,6 +170,7 @@ export default () => {
     return {
         themes,
         setColor,
+        setRadius,
         setThemes,
         setDefaultTheme,
         setCompactTheme,
