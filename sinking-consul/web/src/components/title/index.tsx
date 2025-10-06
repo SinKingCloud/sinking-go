@@ -20,7 +20,7 @@ const Title: React.FC<TitleProps> = ({...props}) => {
         placement = "left",
         size = "normal" as TitleSize,
         open = true,
-        width = 5,
+        width = 4,
         height = 0,
         radius = -1,
         space = 7,
