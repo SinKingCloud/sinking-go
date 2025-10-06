@@ -80,6 +80,8 @@ export default (): React.ReactNode => {
                 request={(params, sort) => {
                     return getData(params, sort, getLog)
                 }}
+                paginationAffix={true}
+                selectionAffix={true}
             />
         </Body>
     );
