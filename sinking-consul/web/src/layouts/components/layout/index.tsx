@@ -6,7 +6,7 @@ import {historyPush} from "@/utils/route";
 import {App, Avatar, Col, Popover, Row, Tooltip} from "antd";
 import {createStyles} from "antd-style";
 import Settings from "@/../config/defaultSettings";
-import {Auto, Bottom, Dark, Exit, Light, Log, Right, Set} from "@/components/icon";
+import {Auto, Bottom, Dark, Exit, Light, Log, Logo, Right, Set} from "@/components/icon";
 import {logout} from "@/service/auth/login";
 import request from "@/utils/request";
 import Title from "../title";
@@ -281,15 +281,14 @@ const SKLayout: React.FC<slide> = ({...props}) => {
     const useStyles = createStyles((): any => {
         return {
             collapsedImg: {
-                width: "35px",
+                fontSize: "27px",
             },
             unCollapsed: {
                 overflow: "hidden",
                 position: "absolute",
                 display: "inline-flex",
-                ">img": {
-                    width: "35px",
-                    float: "left"
+                ">span": {
+                    fontSize: "27px",
                 },
                 ">div": {
                     fontSize: "25px",
@@ -320,17 +319,14 @@ const SKLayout: React.FC<slide> = ({...props}) => {
                     menuCollapsedWidth={60}
                     menuUnCollapsedWidth={210}
                     collapsedLogo={() => {
-                        return <img
-                            src={(Settings?.basePath || "/") + "logo.svg"}
-                            alt={Settings?.title} className={collapsedImg}/>
+                        return <Icon type={Logo} style={{color: web?.info?.ui?.color || "rgb(0,81,235)"}}
+                                     className={collapsedImg}/>;
                     }}
                     unCollapsedLogo={() => {
                         return (
                             <div className={unCollapsed}>
-                                <img
-                                    src={(Settings?.basePath || "/") + "logo.svg"}
-                                    alt={web?.info?.name || Settings?.title}/>
-                                <div style={{color: web?.info?.ui?.color ? web?.info?.ui?.color : "rgb(0,81,235)"}}>
+                                <Icon type={Logo} style={{color: web?.info?.ui?.color || "rgb(0,81,235)"}}/>
+                                <div style={{color: web?.info?.ui?.color || "rgb(0,81,235)"}}>
                                     {web?.info?.name || Settings?.title}
                                 </div>
                             </div>)

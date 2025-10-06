@@ -1,7 +1,7 @@
 import {LockOutlined, UserOutlined} from '@ant-design/icons';
 import {App, Button, Form, Input} from 'antd';
 import React, {useRef, useState} from 'react';
-import {Body} from '@/components';
+import {Body, Icon} from '@/components';
 import {useModel} from "umi";
 import {login} from "@/service/auth/login";
 import {setLoginToken} from "@/utils/auth";
@@ -9,8 +9,9 @@ import Captcha, {CaptchaRef} from "@/pages/components/captcha";
 import {createStyles} from "antd-style";
 import Settings from "@/../config/defaultSettings";
 import {historyPush} from "@/utils/route";
+import {Logo} from "@/components/icon";
 
-const useStyles = createStyles(({css, responsive}): any => {
+const useStyles = createStyles(({css, responsive, token}): any => {
     return {
         container: {
             display: "flex",
@@ -52,6 +53,8 @@ const useStyles = createStyles(({css, responsive}): any => {
             height: 40,
             marginRight: 16,
             verticalAlign: "top",
+            fontSize: 27,
+            color: token?.colorPrimary,
         },
         desc: {
             marginTop: 12,
@@ -87,8 +90,8 @@ const Login: React.FC = () => {
                 <div className={content}>
                     <div className={top}>
                         <div className={header}>
-                            <img alt='logo' className={logo}
-                                 src={(Settings?.basePath || '/') + 'logo.svg'}/>
+                            <Icon type={Logo}
+                                  className={logo}/>
                             <span>{web?.info?.name || Settings?.title}</span>
                         </div>
                         <div className={desc}>
