@@ -24,6 +24,132 @@ const check = async (ctx: any, next: any) => {
     }
 }
 request.use(check);
+
+/**
+ * 样式
+ */
+const useRightTopStyles = createStyles(({css, token, isDarkMode}): any => {
+    return {
+        img: {
+            marginBottom: "5px",
+        },
+        nickname: {
+            marginLeft: "3px",
+            fontSize: "13px",
+            color: isDarkMode ? token.colorTextSecondary : "rgb(150,150,150)",
+            fontWeight: "bold",
+        },
+        bottomIconDark: {
+            color: isDarkMode ? token.colorTextSecondary : "rgb(150,150,150)",
+        },
+        profile: css`
+            margin-left: 10px;
+            margin-right: 20px;
+
+            .anticon {
+                margin-left: 2px;
+                font-size: 10px;
+            }
+        `,
+        pop: css`
+            display: initial;
+            padding: 11px 5px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        `,
+        box: css`
+            .ant-popover-inner {
+                box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.15) !important;
+                padding: 0 !important;
+            }
+
+            .ant-popover-arrow:before {
+                background-color: ${token?.colorPrimary} !important;
+            }
+
+            .ant-popover-inner-content {
+                width: 210px;
+            }
+        `,
+        content_top: css`
+            height: 70px;
+            width: 100%;
+            background-color: ${token?.colorPrimary};
+            overflow: hidden;
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIgAAACGBAMAAAD0nt8RAAAAD1BMVEVHcEz///////////////8T4DEaAAAABXRSTlMADAYJA8T7L0gAAALASURBVGjezVpbcoMwDCS2DxBhDgC0BwhNDoDb3v9MfaQQMLb1cqfVVz6YjbS7ks2IptnFCOD7RhcDfIafVRgGvqPVJ/IZmoLcD4YqFbuAgAIkrCCKeqYaICsGnP8WxP0bkE05F71hK4EoWvC0YHh9EwN0v93Fr9frs3aefP/PjdA9Pfo3F8xuxRk74LlaTBpLaPOATaRA0A+lBPAB6rBUNy2KVXwmDOF8YwSs3g1Ij8zYVgPi0PYjlGOppJVATmi9BgcZUJDH1PKokzIamwdGVkGDPGEeB2S+jU9lT2/4KFASip4edxgtfpxDidJiIpvmOsoTYfQEI8UPmR3GOFJuOLHGe0o97YYT8fYKNE4jSnYP7mUpH2x292SW0vKtIyQlNAeM4pEzpTQ0E3BAXOpJA4mYqZTcCx+BCRKOOg5JDE+m5AskjVECcfGzJoNRsokFanRkSgpxJlNSiAudEgmIoYPM+AVWAzKQMTzlzUAOwqCkq0FJV8FqBa9NFWzCsBrt2BLbhEEJ1KDE16DE16Ckq0FJV4GSrNc4lGS9xqEk6zUOJVmvcSgB/UAq2GSqAWJq2IQxpQsgpsZcY4h89Jpbf0xSr5kngBeuaSOv3f/9xuQ2LUnP4tanFWlZqfiMID1nHnQZry/Kv/FB3PF9giTz9foyju/vc6Spl7TQHW5IqDaAPBphKhn/hBogbqoAwpv7WRNKue2kkzI/ZoSpzPIjtTWZ1+03BkgfzRPJKdQupmjlo98v1hoVp9AyiGbFKdRSN0Wy1x56C6FLJKsuhiYzYZtleL0iu2zQtoROXQwqM3nlMmmLQWRm7BkHfSJ5mXkL6aAuJiszd5FsBc1Lkpm/ATbqYpIyS1bRcSo35U5dseLfT0rpXt3qE6GtUTjcKj4SWFNRfcPh9Kvs9bLRN7qY1B+k/HCrTeSL24saozF4MR+gwScpYNNOxQAAAABJRU5ErkJggg==);
+            background-repeat: no-repeat;
+            background-position: right;
+            border-top-left-radius: ${token?.borderRadius}px;
+            border-top-right-radius: ${token?.borderRadius}px;
+            line-height: 70px;
+        `,
+        ava: {
+            height: "40px",
+            width: "40px",
+            marginLeft: "10px",
+        },
+        top_text: {
+            color: "#fff",
+            fontSize: "12px",
+            letterSpacing: "1px",
+            lineHeight: "100%",
+            marginLeft: "8px",
+            width: "auto",
+            "div:first-of-type": {
+                fontSize: 13,
+                marginTop: 18,
+                marginBottom: 10
+            }
+        },
+        menu: {
+            listStyle: "none",
+            padding: 0,
+            margin: 0,
+            userSelect: "none",
+            "li:last-of-type": {
+                borderTop: "0.5px solid rgba(189, 189, 189, 0.2)",
+                borderRadius: "0px 0px " + token.borderRadius + "px " + token.borderRadius + "px",
+                height: "45px",
+                lineHeight: "45px",
+            }
+        },
+        menuItem: {
+            cursor: "pointer",
+            letterSpacing: "1px",
+            height: "40px",
+            lineHeight: "40px",
+            fontSize: "12px",
+            padding: "0px 15px",
+            transition: "background-color 0.3s ease",
+            color: isDarkMode ? token.colorTextSecondary : "rgba(0,0,0,0.65)",
+            display: "flex",
+            justifyContent: "space-between",
+            ":hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.03)",
+            },
+            ".anticon": {
+                fontSize: "11px",
+            },
+            "div>.anticon": {
+                fontSize: "12.5px",
+                marginRight: "7px"
+            }
+        },
+        icon: {
+            fontSize: "17px",
+            padding: "7px",
+            marginRight: "5px",
+            cursor: "pointer",
+            borderRadius: "5px",
+            transition: "background-color 0.3s ease",
+            ":hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.1)",
+            },
+            color: isDarkMode ? token.colorTextSecondary : "rgb(150,150,150)"
+        },
+    };
+});
+
 /**
  * 右侧部分组件
  * @constructor
@@ -36,131 +162,7 @@ const RightTop: React.FC = () => {
     const web = useModel("web");//站点信息
     const theme = useModel("theme");//主题信息
     const {message} = App.useApp();
-    /**
-     * 样式
-     */
-    const useStyles = createStyles(({css, token, isDarkMode}): any => {
-        return {
-            img: {
-                marginBottom: "5px",
-            },
-            nickname: {
-                marginLeft: "3px",
-                fontSize: "13px",
-                color: isDarkMode ? token.colorTextSecondary : "rgb(150,150,150)",
-                fontWeight: "bold",
-            },
-            bottomIconDark: {
-                color: isDarkMode ? token.colorTextSecondary : "rgb(150,150,150)",
-            },
-            profile: css`
-                margin-left: 10px;
-                margin-right: 20px;
 
-                .anticon {
-                    margin-left: 2px;
-                    font-size: 10px;
-                }
-            `,
-            pop: css`
-                display: initial;
-                padding: 11px 5px;
-                border-radius: 10px;
-                transition: background-color 0.3s ease;
-                cursor: pointer;
-            `,
-            box: css`
-                .ant-popover-inner {
-                    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, .15) !important;
-                    padding: 0 !important;
-                }
-
-                .ant-popover-arrow:before {
-                    background-color: ${token?.colorPrimary} !important;
-                }
-
-                .ant-popover-inner-content {
-                    width: 210px;
-                }
-            `,
-            content_top: css`
-                height: 70px;
-                width: 100%;
-                background-color: ${token?.colorPrimary};
-                overflow: hidden;
-                background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIgAAACGBAMAAAD0nt8RAAAAD1BMVEVHcEz///////////////8T4DEaAAAABXRSTlMADAYJA8T7L0gAAALASURBVGjezVpbcoMwDCS2DxBhDgC0BwhNDoDb3v9MfaQQMLb1cqfVVz6YjbS7ks2IptnFCOD7RhcDfIafVRgGvqPVJ/IZmoLcD4YqFbuAgAIkrCCKeqYaICsGnP8WxP0bkE05F71hK4EoWvC0YHh9EwN0v93Fr9frs3aefP/PjdA9Pfo3F8xuxRk74LlaTBpLaPOATaRA0A+lBPAB6rBUNy2KVXwmDOF8YwSs3g1Ij8zYVgPi0PYjlGOppJVATmi9BgcZUJDH1PKokzIamwdGVkGDPGEeB2S+jU9lT2/4KFASip4edxgtfpxDidJiIpvmOsoTYfQEI8UPmR3GOFJuOLHGe0o97YYT8fYKNE4jSnYP7mUpH2x292SW0vKtIyQlNAeM4pEzpTQ0E3BAXOpJA4mYqZTcCx+BCRKOOg5JDE+m5AskjVECcfGzJoNRsokFanRkSgpxJlNSiAudEgmIoYPM+AVWAzKQMTzlzUAOwqCkq0FJV8FqBa9NFWzCsBrt2BLbhEEJ1KDE16DE16Ckq0FJV4GSrNc4lGS9xqEk6zUOJVmvcSgB/UAq2GSqAWJq2IQxpQsgpsZcY4h89Jpbf0xSr5kngBeuaSOv3f/9xuQ2LUnP4tanFWlZqfiMID1nHnQZry/Kv/FB3PF9giTz9foyju/vc6Spl7TQHW5IqDaAPBphKhn/hBogbqoAwpv7WRNKue2kkzI/ZoSpzPIjtTWZ1+03BkgfzRPJKdQupmjlo98v1hoVp9AyiGbFKdRSN0Wy1x56C6FLJKsuhiYzYZtleL0iu2zQtoROXQwqM3nlMmmLQWRm7BkHfSJ5mXkL6aAuJiszd5FsBc1Lkpm/ATbqYpIyS1bRcSo35U5dseLfT0rpXt3qE6GtUTjcKj4SWFNRfcPh9Kvs9bLRN7qY1B+k/HCrTeSL24saozF4MR+gwScpYNNOxQAAAABJRU5ErkJggg==);
-                background-repeat: no-repeat;
-                background-position: right;
-                border-top-left-radius: ${token?.borderRadius}px;
-                border-top-right-radius: ${token?.borderRadius}px;
-                line-height: 70px;
-            `,
-            ava: {
-                height: "40px",
-                width: "40px",
-                marginLeft: "10px",
-            },
-            top_text: {
-                color: "#fff",
-                fontSize: "12px",
-                letterSpacing: "1px",
-                lineHeight: "100%",
-                marginLeft: "8px",
-                width: "auto",
-                "div:first-of-type": {
-                    fontSize: 13,
-                    marginTop: 18,
-                    marginBottom: 10
-                }
-            },
-            menu: {
-                listStyle: "none",
-                padding: 0,
-                margin: 0,
-                userSelect: "none",
-                "li:last-of-type": {
-                    borderTop: "0.5px solid rgba(189, 189, 189, 0.2)",
-                    borderRadius: "0px 0px 5px 5px",
-                    height: "45px",
-                    lineHeight: "45px",
-                }
-            },
-            menuItem: {
-                cursor: "pointer",
-                letterSpacing: "1px",
-                height: "40px",
-                lineHeight: "40px",
-                fontSize: "12px",
-                padding: "0px 15px",
-                transition: "background-color 0.3s ease",
-                color: isDarkMode ? token.colorTextSecondary : "rgba(0,0,0,0.65)",
-                display: "flex",
-                justifyContent: "space-between",
-                ":hover": {
-                    backgroundColor: "rgba(0, 0, 0, 0.03)",
-                },
-                ".anticon": {
-                    fontSize: "11px",
-                },
-                "div>.anticon": {
-                    fontSize: "12.5px",
-                    marginRight: "7px"
-                }
-            },
-            icon: {
-                fontSize: "17px",
-                padding: "7px",
-                marginRight: "5px",
-                cursor: "pointer",
-                borderRadius: "5px",
-                transition: "background-color 0.3s ease",
-                ":hover": {
-                    backgroundColor: "rgba(0, 0, 0, 0.1)",
-                },
-                color: isDarkMode ? token.colorTextSecondary : "rgb(150,150,150)"
-            },
-        };
-    });
     const {
         styles: {
             img,
@@ -176,7 +178,7 @@ const RightTop: React.FC = () => {
             menuItem,
             icon
         }
-    } = useStyles();
+    } = useRightTopStyles();
     return <>
         <Tooltip title={theme?.getModeName(theme?.mode)}>
             <Icon type={theme?.isDarkMode() ? Dark : (theme?.isAutoMode() ? Auto : Light)} className={icon}
@@ -245,9 +247,35 @@ export type slide = {
 }
 
 /**
+ * 样式信息
+ */
+const useSKLayoutStyles = createStyles((): any => {
+    return {
+        collapsedImg: {
+            fontSize: "27px",
+        },
+        unCollapsed: {
+            overflow: "hidden",
+            position: "absolute",
+            display: "inline-flex",
+            ">span": {
+                fontSize: "27px",
+            },
+            ">div": {
+                fontSize: "25px",
+                marginLeft: "5px",
+                fontWeight: "bolder",
+                float: "left",
+                lineHeight: "30px",
+                whiteSpace: "nowrap",
+            }
+        },
+    };
+});
+
+/**
  * 用户系统
  */
-
 const SKLayout: React.FC<slide> = ({...props}) => {
     /**
      * 初始化用户信息
@@ -275,33 +303,7 @@ const SKLayout: React.FC<slide> = ({...props}) => {
         initUser();
     }, []);
 
-    /**
-     * 样式信息
-     */
-    const useStyles = createStyles((): any => {
-        return {
-            collapsedImg: {
-                fontSize: "27px",
-            },
-            unCollapsed: {
-                overflow: "hidden",
-                position: "absolute",
-                display: "inline-flex",
-                ">span": {
-                    fontSize: "27px",
-                },
-                ">div": {
-                    fontSize: "25px",
-                    marginLeft: "5px",
-                    fontWeight: "bolder",
-                    float: "left",
-                    lineHeight: "30px",
-                    whiteSpace: "nowrap",
-                }
-            },
-        };
-    });
-    const {styles: {collapsedImg, unCollapsed}} = useStyles();
+    const {styles: {collapsedImg, unCollapsed}} = useSKLayoutStyles();
     return (
         <>
             <Title/>
