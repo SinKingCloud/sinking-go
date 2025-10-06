@@ -6,4 +6,5 @@ export default ({
     version: "1.0",
     basePath: '/',
     favicons: '/favicon.ico',
+    color: "rgb(0, 83, 251)"
 });

@@ -319,14 +319,14 @@ const SKLayout: React.FC<slide> = ({...props}) => {
                     menuCollapsedWidth={60}
                     menuUnCollapsedWidth={210}
                     collapsedLogo={() => {
-                        return <Icon type={Logo} style={{color: web?.info?.ui?.color || "rgb(0,81,235)"}}
+                        return <Icon type={Logo} style={{color: web?.info?.ui?.color || defaultSettings?.color}}
                                      className={collapsedImg}/>;
                     }}
                     unCollapsedLogo={() => {
                         return (
                             <div className={unCollapsed}>
-                                <Icon type={Logo} style={{color: web?.info?.ui?.color || "rgb(0,81,235)"}}/>
-                                <div style={{color: web?.info?.ui?.color || "rgb(0,81,235)"}}>
+                                <Icon type={Logo} style={{color: web?.info?.ui?.color || defaultSettings?.color}}/>
+                                <div style={{color: web?.info?.ui?.color || defaultSettings?.color}}>
                                     {web?.info?.name || Settings?.title}
                                 </div>
                             </div>)
