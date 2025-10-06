@@ -32,9 +32,9 @@ const useStyles = createStyles(({token, isDarkMode}): any => {
             },
             ".ant-menu-item-selected::after": {
                 borderRadius: token?.borderRadius ? `${token.borderRadius}px 0 0 ${token.borderRadius}px` : "0",
+                borderRightWidth: "5px !important",
                 ...(token?.borderRadius > 0 && {
                     right: "5px !important",
-                    borderRightWidth: "5px !important",
                     top: "19% !important",
                     height: "60% !important"
                 })
