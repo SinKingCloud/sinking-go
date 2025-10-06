@@ -11,9 +11,8 @@ type SettingsState = {
     mode: 'inline' | 'horizontal';
     selectKey: SettingsStateKeys;
 };
-const useStyles = createStyles(({css, responsive, isDarkMode}): any => {
+const useStyles = createStyles(({css, responsive, isDarkMode, token}): any => {
     const border = isDarkMode ? "1px solid rgb(50, 50, 50)" : "1px solid #f0f0f0"
-    const menus = isDarkMode ? "#dad9d9" : "#4b4b4b"
     return {
         main: css`
             display: flex;
@@ -41,7 +40,7 @@ const useStyles = createStyles(({css, responsive, isDarkMode}): any => {
                 position: absolute;
                 font-weight: bold;
                 font-size: 14px;
-                border-radius: 10px;
+                border-radius: ${token.borderRadius}px;
             }
 
             ${responsive.md} {
@@ -68,9 +67,7 @@ const useStyles = createStyles(({css, responsive, isDarkMode}): any => {
             line-height: 28px;
         `,
         menu: css`
-            .ant-menu-title-content {
-                color: ${menus}
-            }
+            border-inline-end: none !important;
         `
     }
 })

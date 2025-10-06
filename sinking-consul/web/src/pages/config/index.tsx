@@ -243,24 +243,21 @@ export default (): React.ReactNode => {
                 defaultPage={1}
                 defaultPageSize={20}
                 rowSelection={{
-                    rightExtra: (
-                        <>
-                            <Button type={"primary"} danger ghost onClick={() => {
-                                const selected = tableRef?.current?.getSelectedRows() || [];
-                                if (!selected.length) return message?.warning('请选择记录');
-                                onDelete(selected.map((r: any) => ({group: r.group, name: r.name})));
-                            }}>批量删除</Button>
-                            <Button type={"primary"} ghost onClick={() => {
-                                const selected = tableRef?.current?.getSelectedRows() || [];
-                                if (!selected.length) return message?.warning('请选择记录');
-                                const keys = selected.map((r: any) => ({group: r.group, name: r.name}));
-                                setEditKeys(keys);
-                                // 打开批量编辑，仅状态
-                                batchForm?.resetFields();
-                                batchModalRef.current?.show();
-                            }}>批量编辑</Button>
-                        </>
-                    )
+                    rightExtra: [
+                        <Button key="delete" type="primary" danger ghost onClick={() => {
+                            const selected = tableRef?.current?.getSelectedRows() || [];
+                            if (!selected.length) return message?.warning('请选择记录');
+                            onDelete(selected.map((r: any) => ({group: r.group, name: r.name})));
+                        }}>批量删除</Button>,
+                        <Button key="edit" type="primary" ghost onClick={() => {
+                            const selected = tableRef?.current?.getSelectedRows() || [];
+                            if (!selected.length) return message?.warning('请选择记录');
+                            const keys = selected.map((r: any) => ({group: r.group, name: r.name}));
+                            setEditKeys(keys);
+                            batchForm?.resetFields();
+                            batchModalRef.current?.show();
+                        }}>批量编辑</Button>
+                    ]
                 }}
                 request={(params, sort) => getData(params, sort, getConfigList)}
                 paginationAffix={true}

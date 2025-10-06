@@ -64,6 +64,10 @@ export default (): React.ReactNode => {
                 request={(params, sort) => {
                     return getData(params, sort, getClusterList)
                 }}
+                defaultPage={1}
+                defaultPageSize={20}
+                paginationAffix={true}
+                selectionAffix={true}
             />
         </Body>
     );

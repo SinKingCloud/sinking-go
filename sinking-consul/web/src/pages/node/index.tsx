@@ -194,20 +194,17 @@ export default (): React.ReactNode => {
                 defaultPage={1}
                 defaultPageSize={20}
                 rowSelection={{
-                    rightExtra: (
-                        <>
-                            <Button type={"primary"} danger ghost
-                                    onClick={() => {
-                                        onDelete(tableRef?.current?.getSelectedRowKeys());
-                                    }}>批量删除</Button>
-                            <Button type={"primary"} ghost
-                                    onClick={() => {
-                                        form?.resetFields();
-                                        setEditRecords(tableRef?.current?.getSelectedRowKeys());
-                                        modalRef.current?.show();
-                                    }}>批量编辑</Button>
-                        </>
-                    )
+                    rightExtra: [<Button key="delete" type={"primary"} danger ghost
+                                         onClick={() => {
+                                             onDelete(tableRef?.current?.getSelectedRowKeys());
+                                         }}>批量删除</Button>,
+                        <Button key="edit" type={"primary"} ghost
+                                onClick={() => {
+                                    form?.resetFields();
+                                    setEditRecords(tableRef?.current?.getSelectedRowKeys());
+                                    modalRef.current?.show();
+                                }}>批量编辑</Button>
+                    ]
                 }}
                 request={(params, sort) => {
                     return getData(params, sort, getNodeList)

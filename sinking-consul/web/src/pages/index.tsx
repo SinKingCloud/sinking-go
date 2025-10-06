@@ -1,18 +1,17 @@
 import React, {useEffect, useState} from 'react';
-import {Body, Title} from "@/components";
-import {Card, Row, Col, Avatar, Typography, Tag} from 'antd';
+import {Body, Icon, Title} from "@/components";
+import {Card, Row, Col, Avatar, Typography} from 'antd';
 import {
     UserOutlined,
     ClusterOutlined,
     NodeIndexOutlined,
     SettingOutlined,
-    CheckCircleOutlined
 } from '@ant-design/icons';
 import {useModel} from 'umi';
 import {getOverviewInfo} from '@/service/admin/system';
 import {createStyles} from 'antd-style';
-import Settings from "../../config/defaultSettings";
 import {historyPush} from "@/utils/route";
+import {Logo} from "@/components/icon";
 
 const useStyles: any = createStyles(({token, css}) => ({
     welcomeCard: css`
@@ -124,7 +123,7 @@ const useStyles: any = createStyles(({token, css}) => ({
             margin-bottom: 20px;
             padding: 16px;
             background: linear-gradient(135deg, ${token.colorPrimaryBg}, ${token.colorBgContainer});
-            border-radius: 12px;
+            border-radius: ${token.borderRadius}px;
             border: 1px solid ${token.colorBorderSecondary};
         }
 
@@ -158,7 +157,7 @@ const useStyles: any = createStyles(({token, css}) => ({
             padding: 12px 16px;
             margin-bottom: 8px;
             background: ${token.colorFillAlter};
-            border-radius: 8px;
+            border-radius: ${token.borderRadius}px;
             transition: all 0.2s ease;
 
             &:hover {
@@ -211,15 +210,16 @@ const useStyles: any = createStyles(({token, css}) => ({
             justify-content: center;
             margin-bottom: 20px;
             padding: 16px;
-            background: linear-gradient(135deg, ${token.colorSuccessBg}, ${token.colorBgContainer});
-            border-radius: 12px;
+            background: linear-gradient(135deg, ${token.colorPrimaryBg}, ${token.colorBgContainer});
+            border-radius: ${token.borderRadius}px;
             border: 1px solid ${token.colorBorderSecondary};
         }
 
         .system-icon {
-            height: 40px;
+            font-size: 27px;
             margin-right: 16px;
             vertical-align: top;
+            color: ${token.colorPrimary};
         }
 
         .system-title {
@@ -240,7 +240,7 @@ const useStyles: any = createStyles(({token, css}) => ({
             padding: 12px 16px;
             margin-bottom: 8px;
             background: ${token.colorFillAlter};
-            border-radius: 8px;
+            border-radius: ${token.borderRadius}px;
             transition: all 0.2s ease;
 
             &:hover {
@@ -425,8 +425,7 @@ export default (): React.ReactNode => {
                 <Col xs={24} sm={24} md={12}>
                     <Card className={styles.systemCard} title={<Title>系统信息</Title>}>
                         <div className="system-header">
-                            <img src={(Settings?.basePath || '/') + 'logo.svg'} className="system-icon"
-                                 alt={webModel?.info?.name}/>
+                            <Icon type={Logo} className="system-icon"/>
                             <Typography.Title level={4}
                                               className="system-title">{webModel?.info?.name}</Typography.Title>
                         </div>
