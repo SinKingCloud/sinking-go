@@ -26,33 +26,23 @@ export default (): React.ReactNode => {
     const {message, modal} = App.useApp();
     const {styles: {ace}} = useStyles();
 
-    // 创建与编辑表单
-    const createModalRef = useRef<ProModalRef>({} as ProModalRef);
-    const editModalRef = useRef<ProModalRef>({} as ProModalRef);
+    const formModalRef = useRef<ProModalRef>({} as ProModalRef);
     const batchModalRef = useRef<ProModalRef>({} as ProModalRef);
-    const [createForm] = Form.useForm();
-    const [editForm] = Form.useForm();
+    const [form] = Form.useForm();
     const [batchForm] = Form.useForm();
-
-    // 选中待编辑 keys（批量或单个）。格式：[{group, name}]
+    const [isEditMode, setIsEditMode] = useState(false);
     const [editKeys, setEditKeys] = useState<any[]>([]);
-    const [editBtnLoading, setEditBtnLoading] = useState(false);
+    const [formBtnLoading, setFormBtnLoading] = useState(false);
     const [batchBtnLoading, setBatchBtnLoading] = useState(false);
-    const [createBtnLoading, setCreateBtnLoading] = useState(false);
-    const [editInfoLoading, setEditInfoLoading] = useState(false);
-
-    // Ace 内容（单条编辑与创建使用）
-    const [editAceContent, setEditAceContent] = useState<string>('');
-    const [createAceContent, setCreateAceContent] = useState<string>('');
-    const [editAceMode, setEditAceMode] = useState<string>('json');
-    const [createAceMode, setCreateAceMode] = useState<string>('text');
+    const [formInfoLoading, setFormInfoLoading] = useState(false);
+    const [aceContent, setAceContent] = useState<string>('');
+    const [aceMode, setAceMode] = useState<string>('text');
 
     const mapTypeToAceMode = (t?: string) => {
         if (!t) return 'text';
         return (t || '').toLowerCase();
     }
 
-    // 删除配置（支持批量）
     const onDelete = (records: any[]) => {
         const keys = records?.map((r: any) => typeof r === 'string' ? r.split(':') : [r.group, r.name])
             .map(([group, name]: any[]) => ({group, name}));
@@ -77,31 +67,34 @@ export default (): React.ReactNode => {
         } as any)
     }
 
-    // 提交编辑（单条）
-    const onEditFinish = async (values: any) => {
-        setEditBtnLoading(true);
-        const body: any = {keys: editKeys, ...values};
-        if (values?.status !== undefined && values?.status !== null) body.status = String(values.status);
-        // 仅当有内容输入时才提交 content，避免清空原内容
-        if (editAceContent.trim() != "") {
-            body.content = editAceContent;
+    const onFormFinish = async (values: any) => {
+        setFormBtnLoading(true);
+        const body: any = isEditMode ? {keys: editKeys, ...values} : {...values};
+        if (values?.status !== undefined && values?.status !== null) {
+            body.status = String(values.status);
+        }
+        if (aceContent.trim() !== "") {
+            body.content = aceContent;
         } else {
             delete body.content;
         }
-        await updateConfig({
+        const apiCall = isEditMode ? updateConfig : createConfig;
+        const successMsg = isEditMode ? '编辑成功' : '创建成功';
+        await apiCall({
             body,
             onSuccess: (r: any) => {
-                editModalRef.current?.hide();
+                formModalRef.current?.hide();
                 tableRef.current?.refreshTableData();
-                tableRef.current?.clearSelectedRows();
-                message?.success(r?.message || '编辑成功');
+                if (isEditMode) {
+                    tableRef.current?.clearSelectedRows();
+                }
+                message?.success(r?.message || successMsg);
             },
             onFail: (r: any) => message?.error(r?.message || '请求失败'),
-            onFinally: () => setEditBtnLoading(false)
+            onFinally: () => setFormBtnLoading(false)
         });
     };
 
-    // 提交批量编辑（仅状态）
     const onBatchEditFinish = async (values: any) => {
         setBatchBtnLoading(true);
         await updateConfig({
@@ -120,28 +113,6 @@ export default (): React.ReactNode => {
         });
     };
 
-    // 提交创建
-    const onCreateFinish = async (values: any) => {
-        setCreateBtnLoading(true);
-        const body: any = {...values};
-        if (createAceContent.trim() != "") {
-            body.content = createAceContent;
-        } else {
-            delete body.content;
-        }
-        await createConfig({
-            body,
-            onSuccess: (r: any) => {
-                createModalRef.current?.hide();
-                tableRef.current?.refreshTableData();
-                message?.success(r?.message || '创建成功');
-            },
-            onFail: (r: any) => message?.error(r?.message || '请求失败'),
-            onFinally: () => setCreateBtnLoading(false)
-        });
-    }
-
-    // 表格
     const tableRef = React.useRef<any>(null);
     const columns: any[] = [
         {
@@ -215,21 +186,18 @@ export default (): React.ReactNode => {
                         {
                             key: 'edit',
                             label: <a onClick={async () => {
-                                // 设置编辑 keys
+                                setIsEditMode(true);
                                 const keys = [{group: record?.group, name: record?.name}];
                                 setEditKeys(keys);
-                                // 直接回填整条记录	only used fields will render
-                                editForm?.setFieldsValue(record);
-                                setEditAceMode(mapTypeToAceMode(record?.type));
-                                setEditInfoLoading(true);
-                                // 先展示弹窗 + loading
-                                editModalRef.current?.show();
-                                // 获取内容
+                                form?.setFieldsValue(record);
+                                setAceMode(mapTypeToAceMode(record?.type));
+                                setFormInfoLoading(true);
+                                formModalRef.current?.show();
                                 await getConfigInfo({
                                     body: {group: record?.group, name: record?.name},
-                                    onSuccess: (r: any) => setEditAceContent(r?.data?.content || ''),
+                                    onSuccess: (r: any) => setAceContent(r?.data?.content || ''),
                                     onFail: (r: any) => message?.error(r?.message || '读取配置失败'),
-                                    onFinally: () => setEditInfoLoading(false)
+                                    onFinally: () => setFormInfoLoading(false)
                                 });
                             }}>编 辑</a>
                         },
@@ -276,28 +244,26 @@ export default (): React.ReactNode => {
                 paginationAffix={true}
                 selectionAffix={true}
                 extra={<Button key="create" type="primary" onClick={() => {
-                    createForm?.resetFields();
-                    setCreateAceContent('');
-                    setCreateAceMode('text');
-                    createModalRef.current?.show();
-                }}>新 增</Button>}
-            />
+                    setIsEditMode(false);
+                    form?.resetFields();
+                    setAceContent('');
+                    setAceMode('text');
+                    formModalRef.current?.show();
+                }}>新 增</Button>}/>
 
-            {/* 单条编辑弹窗 */}
             <ProModal
-                ref={editModalRef}
-                title={<Title>编辑配置</Title>}
-                onOk={editForm?.submit}
+                ref={formModalRef}
+                title={<Title>{isEditMode ? '编辑配置' : '新增配置'}</Title>}
+                onOk={form?.submit}
                 width={800}
                 modalProps={{
-                    confirmLoading: editBtnLoading || editInfoLoading,
+                    confirmLoading: formBtnLoading || formInfoLoading,
                     forceRender: true,
-                    footer: editInfoLoading ? null : undefined,
+                    footer: formInfoLoading ? null : undefined,
                     style: {top: 30}
-                } as any}
-            >
-                <Form form={editForm} layout="vertical" onFinish={onEditFinish}>
-                    {editInfoLoading ? (
+                } as any}>
+                <Form form={form} layout="vertical" onFinish={onFormFinish}>
+                    {formInfoLoading ? (
                         <div style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -311,22 +277,41 @@ export default (): React.ReactNode => {
                         <>
                             <Row gutter={16}>
                                 <Col span={12}>
-                                    <Form.Item label="配置分组" name="group">
-                                        <Input disabled/>
+                                    <Form.Item
+                                        label="配置分组"
+                                        name="group"
+                                        rules={isEditMode ? [] : [{required: true, message: '请输入配置分组'}]}
+                                    >
+                                        <Input
+                                            disabled={isEditMode}
+                                            placeholder={isEditMode ? '' : '请输入配置分组'}
+                                        />
                                     </Form.Item>
                                 </Col>
                                 <Col span={12}>
-                                    <Form.Item label="配置名称" name="name">
-                                        <Input disabled/>
+                                    <Form.Item
+                                        label="配置名称"
+                                        name="name"
+                                        rules={isEditMode ? [] : [{required: true, message: '请输入配置名称'}]}
+                                    >
+                                        <Input
+                                            disabled={isEditMode}
+                                            placeholder={isEditMode ? '' : '请输入配置名称'}
+                                        />
                                     </Form.Item>
                                 </Col>
                             </Row>
-
                             <Row gutter={16}>
                                 <Col span={12}>
-                                    <Form.Item name="type" label="配置类型">
-                                        <Select placeholder="请选择类型" allowClear
-                                                onChange={(v) => setEditAceMode(mapTypeToAceMode(v))}>
+                                    <Form.Item
+                                        name="type"
+                                        label="配置类型"
+                                        rules={[{required: true, message: '请选择配置类型'}]}
+                                    >
+                                        <Select
+                                            placeholder="请选择类型"
+                                            onChange={(v) => setAceMode(mapTypeToAceMode(v))}
+                                        >
                                             {Object.entries(enumsData?.config?.type || {}).map(([key, value]) => (
                                                 <Select.Option key={key} value={key}>{value as any}</Select.Option>
                                             ))}
@@ -334,8 +319,14 @@ export default (): React.ReactNode => {
                                     </Form.Item>
                                 </Col>
                                 <Col span={12}>
-                                    <Form.Item name="status" label="状态">
-                                        <Select placeholder="请选择状态" allowClear>
+                                    <Form.Item
+                                        name="status"
+                                        label="状态"
+                                        rules={[{required: true, message: '请选择状态'}]}
+                                    >
+                                        <Select
+                                            placeholder="请选择状态"
+                                        >
                                             {Object.entries(enumsData?.config?.status || {}).map(([key, value]) => (
                                                 <Select.Option key={key}
                                                                value={parseInt(key)}>{value as any}</Select.Option>
@@ -344,17 +335,17 @@ export default (): React.ReactNode => {
                                     </Form.Item>
                                 </Col>
                             </Row>
-
-                            <Form.Item label="配置内容">
+                            <Form.Item label="配置内容" name={isEditMode ? undefined : "content" as any}>
                                 <AceEditor
-                                    value={editAceContent}
-                                    mode={editAceMode}
+                                    value={aceContent}
+                                    mode={aceMode}
                                     showPrintMargin={false}
                                     theme={'monokai'}
                                     width={'100%'}
                                     height={400}
                                     acePath={AcePath}
-                                    onChange={(v: string) => setEditAceContent(v)}
+                                    onChange={(v: string) => setAceContent(v)}
+                                    className={ace}
                                 />
                             </Form.Item>
                         </>
@@ -362,14 +353,12 @@ export default (): React.ReactNode => {
                 </Form>
             </ProModal>
 
-            {/* 批量编辑弹窗（仅状态） */}
             <ProModal
                 ref={batchModalRef}
                 title={<Title>编辑配置</Title>}
                 onOk={batchForm?.submit}
                 width={350}
-                modalProps={{confirmLoading: batchBtnLoading, forceRender: true} as any}
-            >
+                modalProps={{confirmLoading: batchBtnLoading, forceRender: true} as any}>
                 <Form form={batchForm} layout="vertical" onFinish={onBatchEditFinish}>
                     <Form.Item
                         name="status"
@@ -381,66 +370,6 @@ export default (): React.ReactNode => {
                                 <Select.Option key={key} value={parseInt(key)}>{value as any}</Select.Option>
                             ))}
                         </Select>
-                    </Form.Item>
-                </Form>
-            </ProModal>
-
-            {/* 创建弹窗 */}
-            <ProModal
-                ref={createModalRef}
-                title={<Title>新增配置</Title>}
-                onOk={createForm?.submit}
-                width={800}
-                modalProps={{confirmLoading: createBtnLoading, forceRender: true, style: {top: 30}} as any}
-            >
-                <Form form={createForm} layout="vertical" onFinish={onCreateFinish}>
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item name="group" label="配置分组"
-                                       rules={[{required: true, message: '请输入配置分组'}]}>
-                                <Input placeholder="请输入配置分组"/>
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item name="name" label="配置名称"
-                                       rules={[{required: true, message: '请输入配置名称'}]}>
-                                <Input placeholder="请输入配置名称"/>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item name="type" label="配置类型"
-                                       rules={[{required: true, message: '请选择配置类型'}]}>
-                                <Select placeholder="请选择类型"
-                                        onChange={(v) => setCreateAceMode(mapTypeToAceMode(v))}>
-                                    {Object.entries(enumsData?.config?.type || {}).map(([key, value]) => (
-                                        <Select.Option key={key} value={key}>{value as any}</Select.Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item name="status" label="状态" rules={[{required: true, message: '请选择状态'}]}>
-                                <Select placeholder="请选择状态">
-                                    {Object.entries(enumsData?.config?.status || {}).map(([key, value]) => (
-                                        <Select.Option key={key} value={parseInt(key)}>{value as any}</Select.Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Form.Item label="配置内容" name="content">
-                        <AceEditor
-                            value={createAceContent}
-                            mode={createAceMode}
-                            showPrintMargin={false}
-                            theme={'monokai'}
-                            width={'100%'}
-                            height={400}
-                            acePath={AcePath}
-                            onChange={(v: string) => setCreateAceContent(v)}
-                            className={ace}/>
                     </Form.Item>
                 </Form>
             </ProModal>
