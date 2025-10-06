@@ -22,7 +22,7 @@ const useStyles = createStyles(({token, isDarkMode}): any => {
             overflow: "auto",
             overflowX: "hidden",
             borderRight: "none !important",
-            fontWeight: "bolder",
+            fontWeight: "500",
             userSelect: "none",
             ":focus-visible": {
                 outline: "none !important"
