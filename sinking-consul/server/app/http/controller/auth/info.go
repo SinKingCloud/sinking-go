@@ -4,10 +4,10 @@ import (
 	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"server/app/constant"
 	"server/app/util"
-	"server/app/util/server"
+	"server/app/util/context"
 )
 
-func Info(c *server.Context) {
+func Info(c *context.Context) {
 	config := util.Conf
 	c.SuccessWithData("获取成功", sinking_web.H{
 		"title":    c.GetStringWithDefault(config.GetString(constant.WebTitle), "豁者云服务"),

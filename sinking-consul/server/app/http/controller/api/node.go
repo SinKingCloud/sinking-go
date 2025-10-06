@@ -3,14 +3,14 @@ package api
 import (
 	"server/app/model"
 	"server/app/service"
-	"server/app/util/server"
+	"server/app/util/context"
 )
 
 type ControllerNode struct {
 }
 
 // Register 注册服务
-func (ControllerNode) Register(c *server.Context) {
+func (ControllerNode) Register(c *context.Context) {
 	type Form struct {
 		Group   string `json:"group" default:"" validate:"required" label:"服务组"`
 		Name    string `json:"name" default:"" validate:"required" label:"服务名"`
@@ -26,7 +26,7 @@ func (ControllerNode) Register(c *server.Context) {
 }
 
 // Sync 同步服务
-func (ControllerNode) Sync(c *server.Context) {
+func (ControllerNode) Sync(c *context.Context) {
 	type Form struct {
 		Group        string `json:"group" default:"" validate:"required" label:"服务组"`
 		LastSyncTime int64  `json:"last_sync_time" default:"" validate:"" label:"上次同步时间"`

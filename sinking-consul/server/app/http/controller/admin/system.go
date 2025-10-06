@@ -9,12 +9,12 @@ import (
 	"server/app/service/log"
 	"server/app/service/node"
 	"server/app/util"
-	"server/app/util/server"
+	"server/app/util/context"
 )
 
 type ControllerSystem struct{}
 
-func (ControllerSystem) Overview(c *server.Context) {
+func (ControllerSystem) Overview(c *context.Context) {
 	clusterNum, _ := service.Cluster.CountAll()
 	clusterOnlineNum, _ := service.Cluster.CountByStatus(cluster.Online)
 	nodeNum, _ := service.Node.CountAll()
@@ -45,7 +45,7 @@ func (ControllerSystem) Overview(c *server.Context) {
 	})
 }
 
-func (ControllerSystem) Enum(c *server.Context) {
+func (ControllerSystem) Enum(c *context.Context) {
 	type Form struct {
 		Name string `json:"name" default:"" validate:"required" label:"枚举名称"`
 	}
@@ -61,7 +61,7 @@ func (ControllerSystem) Enum(c *server.Context) {
 	}
 }
 
-func (ControllerSystem) Config(c *server.Context) {
+func (ControllerSystem) Config(c *context.Context) {
 	type Config struct {
 		Key   string `json:"key" default:"" validate:"required,max=50" label:"配置标识"`
 		Value string `json:"value" default:"" validate:"omitempty" label:"配置内容"`

@@ -6,15 +6,15 @@ import (
 	"server/app/service"
 	"server/app/service/log"
 	"server/app/util"
+	"server/app/util/context"
 	"server/app/util/page"
-	"server/app/util/server"
 	"server/app/util/str"
 )
 
 type ControllerPerson struct {
 }
 
-func (ControllerPerson) Info(c *server.Context) {
+func (ControllerPerson) Info(c *context.Context) {
 	user := c.GetUserInfo()
 	c.SuccessWithData("获取成功", sinking_web.H{
 		"account":    util.Conf.GetString(constant.AuthAccount),
@@ -23,7 +23,7 @@ func (ControllerPerson) Info(c *server.Context) {
 	})
 }
 
-func (ControllerPerson) Password(c *server.Context) {
+func (ControllerPerson) Password(c *context.Context) {
 	type Form struct {
 		Password string `json:"password" default:"" validate:"required" label:"密码"`
 	}
@@ -42,7 +42,7 @@ func (ControllerPerson) Password(c *server.Context) {
 	}
 }
 
-func (ControllerPerson) Log(c *server.Context) {
+func (ControllerPerson) Log(c *context.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
 		OrderByField    string `json:"order_by_field" default:"id" validate:"oneof=id type ip create_time update_time" label:"排序字段"`

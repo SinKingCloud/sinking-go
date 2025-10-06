@@ -4,11 +4,11 @@ import (
 	"server/app/http/middleware"
 	"server/app/service"
 	"server/app/service/log"
-	"server/app/util/server"
+	"server/app/util/context"
 )
 
 // Logout 退出登录
-func Logout(c *server.Context) {
+func Logout(c *context.Context) {
 	middleware.CheckLogin(c)
 	if c.IsAborted() {
 		return

@@ -6,15 +6,15 @@ import (
 	"server/app/service/cluster"
 	"server/app/service/log"
 	"server/app/service/node"
+	"server/app/util/context"
 	"server/app/util/page"
-	"server/app/util/server"
 	"strconv"
 )
 
 type ControllerNode struct {
 }
 
-func (ControllerNode) List(c *server.Context) {
+func (ControllerNode) List(c *context.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
 		OrderByField    string `json:"order_by_field" default:"create_time" validate:"oneof=group name update_time create_time" label:"排序字段"`
@@ -67,7 +67,7 @@ func (ControllerNode) List(c *server.Context) {
 	}
 }
 
-func (ControllerNode) Update(c *server.Context) {
+func (ControllerNode) Update(c *context.Context) {
 	form := &cluster.NodeUpdateValidate{}
 	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
@@ -100,7 +100,7 @@ func (ControllerNode) Update(c *server.Context) {
 	c.Success("修改成功")
 }
 
-func (ControllerNode) Delete(c *server.Context) {
+func (ControllerNode) Delete(c *context.Context) {
 	type Form struct {
 		Addresses []string `json:"addresses" default:"" validate:"required,min=1,max=1000,unique" label:"节点列表"`
 	}

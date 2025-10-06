@@ -3,14 +3,14 @@ package admin
 import (
 	"server/app/service"
 	"server/app/service/log"
+	"server/app/util/context"
 	"server/app/util/page"
-	"server/app/util/server"
 )
 
 type ControllerCluster struct {
 }
 
-func (ControllerCluster) List(c *server.Context) {
+func (ControllerCluster) List(c *context.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
 		OrderByField    string `json:"order_by_field" default:"create_time" validate:"oneof=update_time create_time" label:"排序字段"`

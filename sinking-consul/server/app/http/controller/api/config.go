@@ -3,14 +3,14 @@ package api
 import (
 	"server/app/service"
 	"server/app/service/config"
-	"server/app/util/server"
+	"server/app/util/context"
 )
 
 type ControllerConfig struct {
 }
 
 // Sync 同步配置
-func (ControllerConfig) Sync(c *server.Context) {
+func (ControllerConfig) Sync(c *context.Context) {
 	type Form struct {
 		Group        string `json:"group" default:"" validate:"required" label:"服务组"`
 		LastSyncTime int64  `json:"last_sync_time" default:"" validate:"" label:"上次同步时间"`

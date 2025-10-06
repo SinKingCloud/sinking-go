@@ -3,12 +3,12 @@ package middleware
 import (
 	"server/app/constant"
 	"server/app/util"
+	"server/app/util/context"
 	"server/app/util/jwt"
-	"server/app/util/server"
 )
 
 // CheckLogin 判断登录
-func CheckLogin(c *server.Context) {
+func CheckLogin(c *context.Context) {
 	token := c.Request.Header.Get(constant.JwtTokenName)
 	if token == "" {
 		c.NotLogin("您还未登陆,请先登陆账户", nil)
@@ -37,7 +37,7 @@ func CheckLogin(c *server.Context) {
 }
 
 // CheckToken 判断token
-func CheckToken(c *server.Context) {
+func CheckToken(c *context.Context) {
 	token := c.Request.Header.Get(constant.JwtTokenName)
 	if token == "" {
 		c.NotLogin("鉴权token缺失,请检查请求", nil)

@@ -3,11 +3,11 @@ package auth
 import (
 	"server/app/service"
 	"server/app/service/log"
-	"server/app/util/server"
+	"server/app/util/context"
 )
 
 // Login 账号登录
-func Login(c *server.Context) {
+func Login(c *context.Context) {
 	type Form struct {
 		Account  string `json:"account" default:"" validate:"required" label:"账户"`
 		Password string `json:"password" default:"" validate:"required" label:"密码"`

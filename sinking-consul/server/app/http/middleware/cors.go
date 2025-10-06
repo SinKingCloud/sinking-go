@@ -2,12 +2,12 @@ package middleware
 
 import (
 	"net/http"
-	"server/app/util/server"
+	"server/app/util/context"
 	"strings"
 )
 
 // Cors 跨域
-func Cors(c *server.Context) {
+func Cors(c *context.Context) {
 	c.SetHeader("Access-Control-Allow-Origin", "*")
 	c.SetHeader("Access-Control-Allow-Headers", "*")
 	c.SetHeader("Access-Control-Allow-Methods", "*")

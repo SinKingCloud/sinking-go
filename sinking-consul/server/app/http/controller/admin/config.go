@@ -6,8 +6,8 @@ import (
 	"server/app/service/cluster"
 	"server/app/service/config"
 	"server/app/service/log"
+	"server/app/util/context"
 	"server/app/util/page"
-	"server/app/util/server"
 	"server/app/util/str"
 	"strconv"
 )
@@ -15,7 +15,7 @@ import (
 type ControllerConfig struct {
 }
 
-func (ControllerConfig) List(c *server.Context) {
+func (ControllerConfig) List(c *context.Context) {
 	pageInfo := page.ValidatePageDefault(c)
 	type Form struct {
 		OrderByField    string `json:"order_by_field" default:"create_time" validate:"oneof=group name update_time create_time" label:"排序字段"`
@@ -76,7 +76,7 @@ func (ControllerConfig) List(c *server.Context) {
 	}
 }
 
-func (ControllerConfig) Info(c *server.Context) {
+func (ControllerConfig) Info(c *context.Context) {
 	type Form struct {
 		Group string `json:"group" default:"" validate:"required" label:"配置分组"`
 		Name  string `json:"name" default:"" validate:"required" label:"配置名称"`
@@ -95,7 +95,7 @@ func (ControllerConfig) Info(c *server.Context) {
 	}
 }
 
-func (ControllerConfig) Update(c *server.Context) {
+func (ControllerConfig) Update(c *context.Context) {
 	form := &cluster.ConfigUpdateValidate{}
 	if ok, msg := c.ValidatorAll(form); !ok {
 		c.Error(msg)
@@ -135,7 +135,7 @@ func (ControllerConfig) Update(c *server.Context) {
 	c.Success("修改成功")
 }
 
-func (ControllerConfig) Create(c *server.Context) {
+func (ControllerConfig) Create(c *context.Context) {
 	type Form struct {
 		Group   string `json:"group" default:"" validate:"required" label:"配置分组"`
 		Name    string `json:"name" default:"" validate:"required" label:"配置名称"`
@@ -184,7 +184,7 @@ func (ControllerConfig) Create(c *server.Context) {
 	c.Success("创建成功")
 }
 
-func (ControllerConfig) Delete(c *server.Context) {
+func (ControllerConfig) Delete(c *context.Context) {
 	type Form struct {
 		Keys []*model.Config `json:"keys" default:"" validate:"required,min=1,max=1000" label:"配置列表"`
 	}
