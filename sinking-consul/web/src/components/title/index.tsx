@@ -20,7 +20,7 @@ const Title: React.FC<TitleProps> = ({...props}) => {
         placement = "left",
         size = "normal" as TitleSize,
         open = true,
-        width = 4,
+        width = 5,
         height = 0,
         radius = -1,
         space = 7,
@@ -39,6 +39,10 @@ const Title: React.FC<TitleProps> = ({...props}) => {
     }
 
     const useStyles = createStyles(({token}): any => {
+        const isCompact = token.controlHeight < 30;
+        const barRadius = radius < 0 ? (token?.borderRadius > 3 ? token?.borderRadius : 0) : radius;
+        const barHeight = isCompact ? getHeight(height, size) - 5 : (barRadius > 0 ? getHeight(height, size) : getHeight(height, size) - 3);
+        const barWidth = isCompact || (!isCompact && barRadius <= 0) ? width - 1 : width;
         return {
             center: {
                 display: "flex",
@@ -46,18 +50,18 @@ const Title: React.FC<TitleProps> = ({...props}) => {
                 justifyContent: "start"
             },
             leftBar: {
-                width: width,
-                height: getHeight(height, size),
-                borderTopRightRadius: radius < 0 ? token?.borderRadius : radius,
-                borderBottomRightRadius: radius < 0 ? token?.borderRadius : radius,
+                width: barWidth,
+                height: barHeight,
+                borderTopRightRadius: barRadius,
+                borderBottomRightRadius: barRadius,
                 marginRight: space,
                 backgroundColor: token?.colorPrimary,
             },
             rightBar: {
-                width: width,
-                height: getHeight(height, size),
-                borderTopLeftRadius: radius < 0 ? token?.borderRadius : radius,
-                borderBottomLeftRadius: radius < 0 ? token?.borderRadius : radius,
+                width: barWidth,
+                height: barHeight,
+                borderTopLeftRadius: barRadius,
+                borderBottomLeftRadius: barRadius,
                 marginLeft: space,
                 backgroundColor: token?.colorPrimary,
             }

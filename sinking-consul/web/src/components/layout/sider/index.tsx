@@ -22,7 +22,7 @@ const useStyles = createStyles(({token, isDarkMode}): any => {
             overflow: "auto",
             overflowX: "hidden",
             borderRight: "none !important",
-            fontWeight: "500",
+            fontWeight: "600",
             userSelect: "none",
             ":focus-visible": {
                 outline: "none !important"
@@ -31,9 +31,9 @@ const useStyles = createStyles(({token, isDarkMode}): any => {
                 width: 0
             },
             ".ant-menu-item-selected::after": {
-                borderRadius: token?.borderRadius ? `${token.borderRadius}px 0 0 ${token.borderRadius}px` : "0",
+                borderRadius: (token?.borderRadius || 0) > 3 ? `${token.borderRadius}px 0 0 ${token.borderRadius}px` : "0",
                 borderRightWidth: "5px !important",
-                ...(token?.borderRadius > 0 && {
+                ...(token?.borderRadius > 3 && {
                     right: "5px !important",
                     top: "19% !important",
                     height: "60% !important"
