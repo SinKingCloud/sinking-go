@@ -39,7 +39,7 @@ interface CaptchaData {
 /**
  * 样式配置
  */
-const useStyles: any = createStyles(({isDarkMode}: { isDarkMode: boolean }) => {
+const useStyles: any = createStyles(({isDarkMode, token}) => {
     return {
         modal: {
             ".ant-modal": {
@@ -68,7 +68,11 @@ const useStyles: any = createStyles(({isDarkMode}: { isDarkMode: boolean }) => {
                 "--go-captcha-theme-dot-color": "#cedffe !important",
                 "--go-captcha-theme-dot-bg-color": "#3e7cff !important",
                 "--go-captcha-theme-dot-border-color": "#f7f9fb !important",
-            } : {},
+            } : {
+                "--go-captcha-theme-btn-color": token?.colorPrimary + " !important",
+                "--go-captcha-theme-btn-bg-color": token?.colorPrimary + " !important",
+                "--go-captcha-theme-drag-bg-color": token?.colorPrimary + " !important",
+            },
         },
     };
 });
@@ -96,11 +100,9 @@ const Captcha = forwardRef<CaptchaRef>((_, ref): any => {
         setVisible(false);
         setData(null);
         setLoading(true);
-        // 执行关闭回调
         if (closeCallback.current) {
             closeCallback.current();
         }
-        // 清理回调引用
         successCallback.current = null;
         closeCallback.current = null;
     };

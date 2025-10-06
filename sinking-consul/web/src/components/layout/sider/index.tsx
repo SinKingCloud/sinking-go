@@ -31,11 +31,13 @@ const useStyles = createStyles(({token, isDarkMode}): any => {
                 width: 0
             },
             ".ant-menu-item-selected::after": {
-                top: "19% !important",
-                right: "5px !important",
-                height: "60% !important",
-                borderRightWidth: "5px !important",
-                borderRadius: "10px 0 0 10px",
+                borderRadius: token?.borderRadius ? `${token.borderRadius}px 0 0 ${token.borderRadius}px` : "0",
+                ...(token?.borderRadius > 0 && {
+                    right: "5px !important",
+                    borderRightWidth: "5px !important",
+                    top: "19% !important",
+                    height: "60% !important"
+                })
             },
             ".ant-menu-item,.ant-menu-submenu-title": {
                 transition: "border-color 0.3s,background 0.3s !important"
