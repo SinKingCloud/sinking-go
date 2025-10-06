@@ -227,7 +227,10 @@ const AceEditor: React.FC<AceEditorProps> = ({
         const el = stableContainer.current as HTMLDivElement;
         el.style.overflow = 'hidden';
         if (containerStyle) {
-            try { Object.assign(el.style, containerStyle); } catch {}
+            try {
+                Object.assign(el.style, containerStyle);
+            } catch {
+            }
         }
     }, [containerStyle]);
 
@@ -384,7 +387,7 @@ const AceEditor: React.FC<AceEditorProps> = ({
                     }
 
                     if (markers.length > 0) {
-                        const Range = window.ace.require('ace/range').Range;
+                        const Range = window.ace.require('ace/range').Range as any;
                         markers.forEach(marker => {
                             const range = new Range(marker.startRow, marker.startCol, marker.endRow, marker.endCol);
                             editor.session.addMarker(range, marker.className, marker.type);
@@ -446,7 +449,10 @@ const AceEditor: React.FC<AceEditorProps> = ({
         // 移除旧命令
         if (commandNamesRef.current.length) {
             commandNamesRef.current.forEach((name) => {
-                try { editor.commands.removeCommand(name); } catch {}
+                try {
+                    editor.commands.removeCommand(name);
+                } catch {
+                }
             });
             commandNamesRef.current = [];
         }
@@ -457,7 +463,8 @@ const AceEditor: React.FC<AceEditorProps> = ({
                 try {
                     editor.commands.addCommand(cmd);
                     commandNamesRef.current.push(cmd.name);
-                } catch {}
+                } catch {
+                }
             });
         }
     }, [commands]);
@@ -468,7 +475,8 @@ const AceEditor: React.FC<AceEditorProps> = ({
         const editor = editorRef.current;
         try {
             editor.session.setAnnotations(Array.isArray(annotations) ? annotations : []);
-        } catch {}
+        } catch {
+        }
     }, [annotations]);
 
     // 同步标记（markers）
@@ -479,7 +487,10 @@ const AceEditor: React.FC<AceEditorProps> = ({
         // 清理旧的标记
         if (markerIdsRef.current.length) {
             markerIdsRef.current.forEach((id) => {
-                try { session.removeMarker(id); } catch {}
+                try {
+                    session.removeMarker(id);
+                } catch {
+                }
             });
             markerIdsRef.current = [];
         }
@@ -487,7 +498,7 @@ const AceEditor: React.FC<AceEditorProps> = ({
         if (Array.isArray(markers) && markers.length > 0) {
             try {
                 const aceAny = (window as any).ace;
-                const RangeCtor = aceAny?.require?.('ace/range')?.Range;
+                const RangeCtor = aceAny?.require?.('ace/range')?.Range as any;
                 if (RangeCtor) {
                     markers.forEach((m) => {
                         const range = new RangeCtor(m.startRow, m.startCol, m.endRow, m.endCol);
@@ -495,7 +506,8 @@ const AceEditor: React.FC<AceEditorProps> = ({
                         markerIdsRef.current.push(id);
                     });
                 }
-            } catch {}
+            } catch {
+            }
         }
     }, [markers]);
 
@@ -561,7 +573,7 @@ const AceEditor: React.FC<AceEditorProps> = ({
     return (
         <div className={className} style={style} ref={outerContainerRef}>
             {isAcePresent ? (
-                <div ref={containerRef} style={containerBaseStyle as any} />
+                <div ref={containerRef} style={containerBaseStyle as any}/>
             ) : (
                 <Script
                     src={coreScript}
@@ -569,10 +581,12 @@ const AceEditor: React.FC<AceEditorProps> = ({
                     timeout={10000}
                     retryCount={2}
                     cache={true}
-                    onLoad={useCallback(() => { setAceLoaded(true); setHasScriptLoaded(true); }, [])}
-                    loading={hasScriptLoaded ? null : loadingContent}
-                >
-                    <div ref={containerRef} style={containerBaseStyle as any} />
+                    onLoad={useCallback(() => {
+                        setAceLoaded(true);
+                        setHasScriptLoaded(true);
+                    }, [])}
+                    loading={hasScriptLoaded ? null : loadingContent}>
+                    <div ref={containerRef} style={containerBaseStyle as any}/>
                 </Script>
             )}
         </div>

@@ -1,17 +1,30 @@
 import React, {useRef, useState} from 'react';
-import {Body, ProTable, Title, ProModal, AceEditor} from '@/components';
+import {Body, ProTable, Title, ProModal} from '@/components';
 import {getData} from "@/utils/page";
 import {useEnums} from "@/utils/enum";
 import {App, Button, Dropdown, Form, Input, Select, Spin, Row, Col} from 'antd';
 import {ProModalRef} from "@/components/pro-modal";
 import {createConfig, deleteConfig, getConfigInfo, getConfigList, updateConfig} from "@/service/admin/config";
 import defaultSettings from "../../../config/defaultSettings";
+import AceEditor from "@/pages/components/ace-editor";
+import {createStyles} from "antd-style";
 
 const AcePath = defaultSettings?.basePath + "ace/" || "/ace/";
+
+const useStyles = createStyles(({token}): any => {
+    return {
+        ace: {
+            ".ace_editor": {
+                borderRadius: token.borderRadius + "px !important",
+            }
+        },
+    };
+});
 
 export default (): React.ReactNode => {
     const [enumsData] = useEnums(["config"]);
     const {message, modal} = App.useApp();
+    const {styles: {ace}} = useStyles();
 
     // 创建与编辑表单
     const createModalRef = useRef<ProModalRef>({} as ProModalRef);
@@ -336,6 +349,7 @@ export default (): React.ReactNode => {
                                 <AceEditor
                                     value={editAceContent}
                                     mode={editAceMode}
+                                    showPrintMargin={false}
                                     theme={'monokai'}
                                     width={'100%'}
                                     height={400}
@@ -420,12 +434,13 @@ export default (): React.ReactNode => {
                         <AceEditor
                             value={createAceContent}
                             mode={createAceMode}
+                            showPrintMargin={false}
                             theme={'monokai'}
                             width={'100%'}
                             height={400}
                             acePath={AcePath}
                             onChange={(v: string) => setCreateAceContent(v)}
-                        />
+                            className={ace}/>
                     </Form.Item>
                 </Form>
             </ProModal>
