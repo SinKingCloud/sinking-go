@@ -317,7 +317,7 @@ export default (): React.ReactNode => {
                           extra={<a onClick={() => {
                               historyPush("cluster")
                           }}><ClusterOutlined/>
-                          </a>}>
+                          </a>} variant={"borderless"}>
                         <div className="stat-content">
                             <div className="stat-number">{overviewData?.cluster?.total || 0}</div>
                             <div className="stat-label">集群总数</div>
@@ -343,7 +343,7 @@ export default (): React.ReactNode => {
                     <Card className={styles.statCard} title={<Title>节点状态</Title>}
                           extra={<a onClick={() => {
                               historyPush("node")
-                          }}><NodeIndexOutlined/></a>}>
+                          }}><NodeIndexOutlined/></a>} variant={"borderless"}>
                         <div className="stat-content">
                             <div className="stat-number">{overviewData?.node?.total || 0}</div>
                             <div className="stat-label">节点总数</div>
@@ -369,7 +369,7 @@ export default (): React.ReactNode => {
                     <Card className={styles.statCard} title={<Title>配置状态</Title>}
                           extra={<a onClick={() => {
                               historyPush("config")
-                          }}><SettingOutlined/></a>}>
+                          }}><SettingOutlined/></a>} variant={"borderless"}>
                         <div className="stat-content">
                             <div className="stat-number">{overviewData?.config?.total || 0}</div>
                             <div className="stat-label">配置总数</div>
@@ -393,7 +393,7 @@ export default (): React.ReactNode => {
 
                 {/* 用户信息卡片 */}
                 <Col xs={24} sm={24} md={12}>
-                    <Card className={styles.userCard} title={<Title>账户信息</Title>}>
+                    <Card className={styles.userCard} title={<Title>账户信息</Title>} variant={"borderless"}>
                         <div className="user-header">
                             <Avatar size={64} icon={<UserOutlined/>} className="user-avatar"/>
                             <div className="user-info">
@@ -423,7 +423,7 @@ export default (): React.ReactNode => {
 
                 {/* 系统信息卡片 */}
                 <Col xs={24} sm={24} md={12}>
-                    <Card className={styles.systemCard} title={<Title>系统信息</Title>}>
+                    <Card className={styles.systemCard} title={<Title>系统信息</Title>} variant={"borderless"}>
                         <div className="system-header">
                             <Icon type={Logo} className="system-icon"/>
                             <Typography.Title level={4}
