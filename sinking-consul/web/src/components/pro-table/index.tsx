@@ -417,7 +417,8 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
         return transformedValues;
     }
     const onFinish = (values: any) => {
-        setParams(formatValues(values));
+        setPage(1);
+        setParams({...params, ...formatValues(values)});
     }
     const onReset = () => {
         if ((params && Object.keys(params).length > 0) || page > 1) {
