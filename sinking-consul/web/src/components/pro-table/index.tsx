@@ -418,7 +418,7 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
     }
     const onFinish = (values: any) => {
         setPage(1);
-        setParams({...params, ...formatValues(values)});
+        setParams(formatValues(values));
     }
     const onReset = () => {
         if ((params && Object.keys(params).length > 0) || page > 1) {
@@ -507,17 +507,22 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
                     return <Input placeholder={placeholder} {...props} />;
             }
         };
+        let hide = false;
         columns.forEach((column: ProColumns, index) => {
             if (column?.hideInSearch === true) {
                 return true;
             }
-            sumAll++;
-            if (skip > 0 && collapsed && sum >= skip) {
-                return false;
+            if (!hide) {
+                sumAll++;
             }
-            sum++;
+            if (skip > 0 && collapsed && sum >= skip) {
+                hide = true
+            }
+            if (!hide) {
+                sum++;
+            }
             const {formItemProps = {}} = column;
-            elements.push(<Col span={span} key={column?.dataIndex + index}
+            elements.push(<Col span={span} style={{display: hide ? "none" : "block"}} key={column?.dataIndex + index}
                                className={search?.layout && search?.layout != "vertical" ? " " + styles.formItemLabel : ""}>
                 <Form.Item
                     className={styles.formItem}
