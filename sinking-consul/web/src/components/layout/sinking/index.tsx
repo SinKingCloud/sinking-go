@@ -45,38 +45,41 @@ const useLayoutStyles = createStyles(({isDarkMode, token, css, responsive}): any
         drawMenu: {
             padding: "0px !important",
         },
-        body: {
-            transition: "margin-left 0.3s !important",
-            backgroundColor: isDarkMode ? "black" : "transparent",
-        },
+        body: css`
+            transition: margin-left 0.3s !important;
+            background-color: ${isDarkMode ? "black" : "transparent"};
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        `,
         sticky: {
             position: "sticky",
             top: 0,
             left: 0,
         },
-        header: {
-            padding: 0,
-            height: "55px",
-            lineHeight: "55px",
-            width: "100%",
-            zIndex: 3,
-            boxShadow: "0 2px 8px 0 " + (isDarkMode ? "rgba(0, 0, 0, 0.25)" : "rgba(29, 35, 41, 0.05)"),
-            userSelect: "none",
-            background: token?.colorBgContainer + " !important",
-            ".ant-menu-item-icon": {
-                color: isDarkMode ? "rgb(255,255,255,0.85)" : ""
-            }
-        },
-        horizontalContent: css`
-            min-height: calc(100vh - 125px);
+        header: css`
+            padding: 0;
+            height: 55px;
+            line-height: 55px;
             width: 100%;
-            height: 100%;
+            z-index: 3;
+            box-shadow: 0 2px 8px 0 ${isDarkMode ? "rgba(0, 0, 0, 0.25)" : "rgba(29, 35, 41, 0.05)"};
+            user-select: none;
+            background: ${token?.colorBgContainer} !important;
+            flex-shrink: 0;
+
+            .ant-menu-item-icon {
+                color: ${isDarkMode ? "rgb(255,255,255,0.85)" : ""};
+            }
         `,
-        inlineContent: {
-            minHeight: "calc(100vh - 125px)",
-            width: "100% !important",
-            height: "100%",
-        },
+        horizontalContent: css`
+            width: 100%;
+            flex: 1 0 auto;
+        `,
+        inlineContent: css`
+            width: 100%;
+            flex: 1 0 auto;
+        `,
         flowContent: css`
             .ant-layout-body {
                 width: 80%;
@@ -90,9 +93,10 @@ const useLayoutStyles = createStyles(({isDarkMode, token, css, responsive}): any
                 }
             }
         `,
-        footer: {
-            textAlign: 'center',
-        },
+        footer: css`
+            text-align: center;
+            flex-shrink: 0;
+        `,
         flow: {
             display: "flex",
             justifyContent: "space-between",
@@ -108,6 +112,11 @@ const useLayoutStyles = createStyles(({isDarkMode, token, css, responsive}): any
         darkColor: {
             backgroundColor: "#001529 !important"
         },
+        layoutNormal: css`
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        `,
     };
 });
 
@@ -115,8 +124,8 @@ export type LayoutProps = {
     ref?: React.Ref<SinKingRef>,
     loading?: boolean,
     breadCrumb?: boolean,
-    menuCollapsedWidth?: Number,
-    menuUnCollapsedWidth?: Number,
+    menuCollapsedWidth?: number,
+    menuUnCollapsedWidth?: number,
     menus?: any,
     onMenuClick?: (item: any) => void,
     onMenuBtnClick?: (state: boolean) => void,
@@ -138,7 +147,7 @@ export type LayoutProps = {
 };
 
 /**
- * 验证码组件
+ * 布局组件引用接口
  */
 export interface SinKingRef {
     collapsedMenu?: () => void;//菜单折叠
@@ -191,13 +200,14 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
             flow,
             logo,
             darkColor,
-            flowContent
+            flowContent,
+            layoutNormal
         }
     } = useLayoutStyles();
     const {mobile, md} = useResponsive();
     const menuBtnOnClick = () => {
         let status: boolean;
-        if ((layout == 'inline' && mobile) || (layout == 'horizontal' && !md)) {
+        if ((layout === 'inline' && mobile) || (layout === 'horizontal' && !md)) {
             if (collapsed) {
                 setCollapsed(false);
             }
@@ -230,13 +240,12 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
         }
     }));
 
-
     /**
      * 获取菜单主题颜色
      */
     const getColor = () => {
-        const mode = systemTheme?.isDarkMode ? "light" : (menuTheme == "dark" ? menuTheme : "light");
-        return !systemTheme?.isDarkMode && mode == "dark" ? ' ' + darkColor : '';
+        const mode = systemTheme?.isDarkMode ? "light" : (menuTheme === "dark" ? menuTheme : "light");
+        return !systemTheme?.isDarkMode && mode === "dark" ? ' ' + darkColor : '';
     }
 
     /**
@@ -253,9 +262,9 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
      * @param mode 布局模式
      */
     const getSider = (mode: string) => {
-        mode = mode == "horizontal" ? mode : "inline";
-        menuTheme = menuTheme == "dark" ? menuTheme : "light";
-        return <Sider layout={mode} theme={menuTheme} collapsed={collapsed}
+        const layoutMode = mode === "horizontal" ? mode : "inline";
+        const theme = menuTheme === "dark" ? menuTheme : "light";
+        return <Sider layout={layoutMode} theme={theme} collapsed={collapsed}
                       onLogoClick={onLogoClick}
                       collapsedLogo={collapsedLogo}
                       unCollapsedLogo={unCollapsedLogo}
@@ -293,21 +302,20 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
      * 左右模式
      */
     const LayoutNormal = <Layout className={container}>
+        {mobile && drawer}
         <Layout.Sider className={sider} trigger={null} collapsible collapsed={collapsed}
                       width={menuUnCollapsedWidth} collapsedWidth={menuCollapsedWidth}
                       hidden={mobile}>
-            {(mobile && drawer)
-                ||
-                getSider(layout)}
+            {getSider(layout)}
         </Layout.Sider>
         <Layout className={body}>
-            <Layout.Header hidden={headerHidden} className={header + " " + (headerFixed ? sticky : "")}>
+            {!headerHidden && <Layout.Header className={`${header}${headerFixed ? ' ' + sticky : ''}`}>
                 <Header left={<div><Button type="text" size={"large"}
                                            icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
                                            onClick={menuBtnOnClick} className={menuBtn}/>{headerLeft}</div>}
                         right={headerRight}/>
-            </Layout.Header>
-            <Layout.Content className={inlineContent + (flowLayout ? " " + flowContent : "")}>
+            </Layout.Header>}
+            <Layout.Content className={`${inlineContent}${flowLayout ? ' ' + flowContent : ''}`}>
                 <BreadCrumb enabled={breadCrumb}/>
                 {getOutlet()}
             </Layout.Content>
@@ -320,15 +328,15 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
     /**
      * 上下模式
      */
-    const LayoutFlow = <Layout>
-        <Layout.Header className={header + " " + (headerFixed ? sticky : "")}>
+    const LayoutFlow = <Layout className={layoutNormal}>
+        <Layout.Header className={`${header}${headerFixed ? ' ' + sticky : ''}`}>
             {!md && <Header left={<div>
                 <Button type="text" size={"large"} icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
                         onClick={menuBtnOnClick} className={menuBtn}/>
                 {headerLeft}
             </div>} right={headerRight}/>}
             {(!md && drawer) ||
-                <div className={flow + getColor()}>
+                <div className={`${flow}${getColor()}`}>
                     <div className={logo}>
                         {unCollapsedLogo?.(!systemTheme?.isDarkMode)}
                     </div>
@@ -337,7 +345,7 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
                 </div>
             }
         </Layout.Header>
-        <Layout.Content className={horizontalContent + (flowLayout ? " " + flowContent : "")}>
+        <Layout.Content className={`${horizontalContent}${flowLayout ? ' ' + flowContent : ''}`}>
             <BreadCrumb enabled={breadCrumb}/>
             {getOutlet()}
         </Layout.Content>
@@ -349,10 +357,9 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
     return (
         <ConfigProvider locale={zhCN}>
             <App>
-                {(loading && <Loading/>) || (layout != "horizontal" ? LayoutNormal : LayoutFlow)}
+                {(loading && <Loading/>) || (layout !== "horizontal" ? LayoutNormal : LayoutFlow)}
             </App>
         </ConfigProvider>
     );
-
 });
 export default SinKing;
