@@ -1,7 +1,7 @@
 import React from "react";
 import {createStyles} from "antd-style";
 
-const useStyles = createStyles(({responsive, css}): any => {
+const useStyles = createStyles(({css}): any => {
     return {
         box: {
             display: "flex",
@@ -21,7 +21,7 @@ export type HeaderProps = {
     left?: any;//左侧
 };
 
-const Header: React.FC<HeaderProps> = (props) => {
+const Header: React.FC<HeaderProps> = React.memo((props) => {
     const {styles: {box, right, left}} = useStyles();
     return <div className={box}>
         {props?.left && <div className={left}>
@@ -31,6 +31,6 @@ const Header: React.FC<HeaderProps> = (props) => {
             {props.right}
         </div>}
     </div>
-}
+});
 
 export default Header;

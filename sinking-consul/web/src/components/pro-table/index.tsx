@@ -316,11 +316,12 @@ const useContainerResponsive = (containerRef: React.RefObject<HTMLDivElement | n
     return responsive;
 };
 
-const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
+const ProTableComponent = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
     const {styles} = useStyles();
 
     const containerRef = useRef<HTMLDivElement>(null);
     const device = useContainerResponsive(containerRef);
+    const requestRef = useRef<any>(null);
     const {
         title = undefined, // 表格标题
         extra = undefined, // 表格额外内容
@@ -340,13 +341,19 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
         paginationAffix = false, // 是否固定底部分页栏
     } = props;
 
-    /**
-     * 搜索表单配置
-     */
     const [form] = Form.useForm();
-    const formatValues = (values: any) => {
+    const [collapsed, setCollapsed] = useState(true);
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [params, setParams] = useState({});
+    const [sort, setSort] = useState({});
+    const [page, setPage] = useState(defaultPage);
+    const [pageSize, setPageSize] = useState(defaultPageSize);
+    const [total, setTotal] = useState(0);
+
+    const formatValues = useCallback((values: any) => {
         const transformedValues: any = {...values};
-        Object.keys(transformedValues).map((key) => {
+        Object.keys(transformedValues).forEach((key) => {
             if (!transformedValues[key]) {
                 delete transformedValues[key]
             }
@@ -415,20 +422,22 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
             }
         });
         return transformedValues;
-    }
-    const onFinish = (values: any) => {
+    }, [columns]);
+
+    const onFinish = useCallback((values: any) => {
         setPage(1);
         setParams(formatValues(values));
-    }
-    const onReset = () => {
+    }, [formatValues]);
+
+    const onReset = useCallback(() => {
         if ((params && Object.keys(params).length > 0) || page > 1) {
             form?.resetFields();
             setPage(1);
             setParams({});
         }
-    }
-    const [collapsed, setCollapsed] = useState(true);
-    const getSearchFormItem = () => {
+    }, [params, page, form]);
+
+    const getSearchFormItem = useMemo(() => {
         let elements: any[] = [];
         let sum = 0;
         let sumAll = 0;
@@ -461,7 +470,6 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
                     </Select>
                 );
             }
-            // 根据 valueType 渲染不同组件
             switch (valueType) {
                 case 'date':
                     return <DatePicker style={{width: '100%'}} placeholder={placeholder} {...props} />;
@@ -598,25 +606,11 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
         return <Row gutter={[20, 20]}>
             {elements}
         </Row>;
-    }
+    }, [columns, collapsed, device, loading, search, styles, form]);
 
-    /**
-     * 表格设置
-     */
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [params, setParams] = useState({});
-    const [sort, setSort] = useState({});
-    const [page, setPage] = useState(defaultPage);
-    const [pageSize, setPageSize] = useState(defaultPageSize);
-    const [total, setTotal] = useState(0);
-    const getTableColumns = () => {
-        let list: any[] = [];
-
-        // 渲染表格单元格内容
+    const getTableColumns = useMemo(() => {
         const renderTableCell = (text: any, record: any, column: ProColumns) => {
             const {valueType, valueEnum, copyable, props = {}} = column;
-            // 处理枚举值
             if (valueEnum && text !== undefined && text !== null) {
                 const enumItem = valueEnum[text];
                 if (enumItem) {
@@ -635,7 +629,6 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
                     return label;
                 }
             }
-            // 根据 valueType 渲染不同的内容
             let content: React.ReactNode;
             switch (valueType) {
                 case 'date':
@@ -665,7 +658,6 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
                 default:
                     content = text || '-';
             }
-            // 处理可复制
             if (copyable && text) {
                 return <Typography.Text copyable>
                     {content}
@@ -673,18 +665,15 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
             }
             return content;
         };
+        const list: any[] = [];
         columns.forEach((column: ProColumns) => {
-            if (column?.hideInTable === true) {
-                return true;
-            }
-            // 创建新的列配置
+            if (column?.hideInTable === true) return true;
             const newColumn: ProColumns = {
                 ...column,
                 render: column.render || ((text: any, record: any) => {
                     return renderTableCell(text, record, column);
                 })
             };
-            // 如果有 tip，添加到 title
             if (column.tip && typeof column.title === 'string') {
                 const originalTitle = column.title;
                 newColumn.title = () => (
@@ -699,8 +688,36 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
             list.push(newColumn);
         });
         return list;
-    }
-    const getTableExtra = () => {
+    }, [columns]);
+
+    requestRef.current = request;
+
+    const requestData = useCallback(() => {
+        const currentRequest = requestRef.current;
+        if (!currentRequest) {
+            setLoading(false);
+            return;
+        }
+        setLoading(true);
+        const param: any = {...params};
+        param.current = page;
+        param.pageSize = pageSize;
+        const sorter = {...sort};
+        currentRequest(param, sorter).then((res: any) => {
+            if (res?.success) {
+                setData(res?.data || []);
+                setTotal(res?.total || 0);
+            }
+        }).finally(() => {
+            setLoading(false);
+        });
+    }, [params, page, pageSize, sort]);
+
+    useEffect(() => {
+        requestData();
+    }, [requestData]);
+
+    const getTableExtra = useMemo(() => {
         if (!extraRefreshBtn && !extra) {
             return false;
         }
@@ -712,66 +729,71 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
                     opacity: "0.7",
                 }} variant="link"
                         icon={<RedoOutlined rotate={260}/>}
-                        onClick={() => {
-                            requestData()
-                        }}/>}
+                        onClick={requestData}/>}
         </Space>
-    }
-    const requestData = () => {
-        if (!request) {
-            setLoading(false);
-            return;
-        }
-        setLoading(true);
-        const param: any = {...params};
-        param.current = page;
-        param.pageSize = pageSize;
-        const sorter = {...sort};
-        request?.(param, sorter).then((res: any) => {
-            if (res?.success) {
-                setData(res?.data || []);
-                setTotal(res?.total || 0);
-            }
-        }).finally(() => {
-            setLoading(false);
-        });
-    }
-    useEffect(() => {
-        requestData();
-    }, [params, page, pageSize, sort]);
+    }, [extraRefreshBtn, extra, requestData]);
 
-    /**
-     * 多选设置
-     */
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
-    // 构建最终的多选配置
-    const getRowSelection = (): any => {
+
+    const clearSelectedRow = useCallback(() => {
+        setSelectedRowKeys([]);
+        setSelectedRows([]);
+        if (rowSelection && typeof rowSelection === 'object' && rowSelection.onChange) {
+            rowSelection.onChange([], []);
+        }
+    }, [rowSelection]);
+
+    const invertSelectedRow = useCallback(() => {
+        const allKeys = data.map(item => item[rowKey]);
+        const newSelectedKeys = allKeys.filter(key => !selectedRowKeys.includes(key));
+        setSelectedRowKeys(newSelectedKeys);
+        const newSelectedRows = data.filter(item => newSelectedKeys.includes(item[rowKey]));
+        setSelectedRows(newSelectedRows);
+        if (rowSelection && typeof rowSelection === 'object' && rowSelection.onChange) {
+            rowSelection.onChange(newSelectedKeys, newSelectedRows);
+        }
+    }, [data, rowKey, selectedRowKeys, rowSelection]);
+
+    const allSelectedRow = useCallback(() => {
+        const allKeys = data.map(item => item[rowKey]);
+        setSelectedRowKeys(allKeys);
+        setSelectedRows(data);
+        if (rowSelection && typeof rowSelection === 'object' && rowSelection.onChange) {
+            rowSelection.onChange(allKeys, data);
+        }
+    }, [data, rowKey, rowSelection]);
+
+    const handleSelectChange = useCallback((newSelectedRowKeys: React.Key[], newSelectedRows: any[]) => {
+        setSelectedRowKeys(newSelectedRowKeys);
+        setSelectedRows(newSelectedRows);
+        if (rowSelection && typeof rowSelection === 'object' && rowSelection?.onChange) {
+            rowSelection?.onChange(newSelectedRowKeys, newSelectedRows);
+        }
+    }, [rowSelection]);
+
+    const handleSelect = useCallback((record: any, selected: boolean, selectedRows: any[]) => {
+        if (rowSelection && typeof rowSelection === 'object' && rowSelection?.onSelect) {
+            rowSelection?.onSelect(record, selected, selectedRows);
+        }
+    }, [rowSelection]);
+
+    const handleSelectAll = useCallback((selected: boolean, selectedRows: any[], changeRows: any[]) => {
+        if (rowSelection && typeof rowSelection === 'object' && rowSelection?.onSelectAll) {
+            rowSelection?.onSelectAll(selected, selectedRows, changeRows);
+        }
+    }, [rowSelection]);
+
+    const handleSelectInvert = useCallback((selectedRowKeys: React.Key[]) => {
+        if (rowSelection && typeof rowSelection === 'object' && rowSelection?.onSelectInvert) {
+            rowSelection?.onSelectInvert(selectedRowKeys);
+        }
+    }, [rowSelection]);
+
+    const getRowSelection = useMemo((): any => {
         if (rowSelection === false) {
             return undefined;
         }
-        const handleSelectChange = (newSelectedRowKeys: React.Key[], newSelectedRows: any[]) => {
-            setSelectedRowKeys(newSelectedRowKeys);
-            setSelectedRows(newSelectedRows);
-            if (rowSelection && typeof rowSelection === 'object' && rowSelection?.onChange) {
-                rowSelection?.onChange(newSelectedRowKeys, newSelectedRows);
-            }
-        };
-        const handleSelect = (record: any, selected: boolean, selectedRows: any[]) => {
-            if (rowSelection && typeof rowSelection === 'object' && rowSelection?.onSelect) {
-                rowSelection?.onSelect(record, selected, selectedRows);
-            }
-        };
-        const handleSelectAll = (selected: boolean, selectedRows: any[], changeRows: any[]) => {
-            if (rowSelection && typeof rowSelection === 'object' && rowSelection?.onSelectAll) {
-                rowSelection?.onSelectAll(selected, selectedRows, changeRows);
-            }
-        };
-        const handleSelectInvert = (selectedRowKeys: React.Key[]) => {
-            if (rowSelection && typeof rowSelection === 'object' && rowSelection?.onSelectInvert) {
-                rowSelection?.onSelectInvert(selectedRowKeys);
-            }
-        };
         const select = {
             selectedRowKeys: rowSelection?.selectedRowKeys || selectedRowKeys,
             onChange: handleSelectChange,
@@ -803,40 +825,16 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
                 ]
             }, ...rowSelection, ...select
         }
-    };
-    const setSelectedRowKey = (keys: React.Key[]) => {
+    }, [rowSelection, selectedRowKeys, handleSelectChange, handleSelect, handleSelectAll, handleSelectInvert, allSelectedRow, invertSelectedRow, clearSelectedRow]);
+
+    const setSelectedRowKey = useCallback((keys: React.Key[]) => {
         setSelectedRowKeys(keys);
         const rows = data.filter(item => keys.includes(item[rowKey]));
         setSelectedRows(rows);
         if (rowSelection && typeof rowSelection === 'object' && rowSelection.onChange) {
             rowSelection.onChange(keys, rows);
         }
-    }
-    const clearSelectedRow = () => {
-        setSelectedRowKeys([]);
-        setSelectedRows([]);
-        if (rowSelection && typeof rowSelection === 'object' && rowSelection.onChange) {
-            rowSelection.onChange([], []);
-        }
-    }
-    const invertSelectedRow = () => {
-        const allKeys = data.map(item => item[rowKey]);
-        const newSelectedKeys = allKeys.filter(key => !selectedRowKeys.includes(key));
-        setSelectedRowKeys(newSelectedKeys);
-        const newSelectedRows = data.filter(item => newSelectedKeys.includes(item[rowKey]));
-        setSelectedRows(newSelectedRows);
-        if (rowSelection && typeof rowSelection === 'object' && rowSelection.onChange) {
-            rowSelection.onChange(newSelectedKeys, newSelectedRows);
-        }
-    }
-    const allSelectedRow = () => {
-        const allKeys = data.map(item => item[rowKey]);
-        setSelectedRowKeys(allKeys);
-        setSelectedRows(data);
-        if (rowSelection && typeof rowSelection === 'object' && rowSelection.onChange) {
-            rowSelection.onChange(allKeys, data);
-        }
-    }
+    }, [data, rowKey, rowSelection]);
     /**
      * 方法挂载
      */
@@ -857,9 +855,8 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
         allSelectedRow: allSelectedRow
     }));
 
-    // 渲染多选操作栏
     const [selectionBarAffix, setSelectionBarAffix] = useState(false);
-    const renderSelectionBar = () => {
+    const renderSelectionBar = useCallback(() => {
         if ((selectedRowKeys?.length || 0) <= 0) return null;
         const content = (
             <Card
@@ -886,11 +883,10 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
                 <Affix offsetTop={5} onChange={(affixed) => setSelectionBarAffix(affixed || false)}>{content}</Affix>
             ) : content}
         </Col>;
-    };
+    }, [selectedRowKeys, selectedRows, rowSelection, selectionAffix, selectionBarAffix, styles, clearSelectedRow]);
 
-    // 渲染分页栏
     const [pageAffix, setPageAffix] = useState(false);
-    const renderPagination = () => {
+    const renderPagination = useCallback(() => {
         if (pageHidden || pageInTable || total <= 0) return null;
         const content = (
             <Card
@@ -923,7 +919,7 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
         return paginationAffix ? (
             <Affix offsetBottom={5} onChange={(affixed) => setPageAffix(affixed || false)}>{content}</Affix>
         ) : content;
-    };
+    }, [pageHidden, pageInTable, total, page, pageSize, paginationProps, device, pageAffix, paginationAffix, styles]);
 
     return (
         <Row gutter={[15, 15]} ref={containerRef}>
@@ -931,21 +927,21 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
                 <Card variant={"borderless"}>
                     <Form layout={search?.layout || "vertical"} form={form} onReset={onReset}
                           onFinish={onFinish}>
-                        {getSearchFormItem()}
+                        {getSearchFormItem}
                     </Form>
                 </Card>
             </Col>
 
             {renderSelectionBar()}
             <Col span={24}>
-                <Card title={title} extra={getTableExtra()} className={styles.tableCard} variant={"borderless"}>
+                <Card title={title} extra={getTableExtra} className={styles.tableCard} variant={"borderless"}>
                     <Table
                         rowKey={rowKey}
                         className={styles.table}
                         style={{overflowX: "auto", whiteSpace: "nowrap"}}
                         scroll={{x: true}}
                         {...tableProps}
-                        rowSelection={getRowSelection()}
+                        rowSelection={getRowSelection}
                         pagination={!pageHidden && pageInTable ? {
                             ...{
                                 pageSizeOptions: [10, 20, 50, 100],
@@ -969,10 +965,10 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
                             } as any
                         } : false}
                         size={"small"}
-                        columns={getTableColumns() as any}
+                        columns={getTableColumns as any}
                         dataSource={data}
                         loading={loading}
-                        onChange={(_, filters, sorter: any) => {
+                        onChange={useCallback((_: any, filters: any, sorter: any) => {
                             if (Object.keys(filters).length > 0) {
                                 setParams({...params, ...filters});
                             }
@@ -981,7 +977,7 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
                                 temp[sorter?.field] = sorter?.order;
                                 setSort(temp);
                             }
-                        }}/>
+                        }, [params])}/>
                 </Card>
             </Col>
             {!pageHidden && !pageInTable && total > 0 && <Col span={24}>
@@ -991,4 +987,4 @@ const ProTable = forwardRef<ProTableRef, ProTableProps>((props, ref): any => {
     );
 });
 
-export default ProTable;
+export default React.memo(ProTableComponent);

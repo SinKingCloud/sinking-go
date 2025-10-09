@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Breadcrumb } from "antd";
-import { useLocation, useSelectedRoutes } from "umi";
-import { getAllMenuItems, getFirstMenuWithoutChildren, getParentList, historyPush } from "@/utils/route";
-import { createStyles } from "antd-style";
+import React, {useMemo} from "react";
+import {Breadcrumb} from "antd";
+import {useLocation, useSelectedRoutes} from "umi";
+import {getAllMenuItems, getFirstMenuWithoutChildren, getParentList, historyPush} from "@/utils/route";
+import {createStyles} from "antd-style";
 
-const useBreadCrumbStyles = createStyles(({ token }) => {
+const useBreadCrumbStyles = createStyles(({token}) => {
     return {
         bread: {
             backgroundColor: token?.colorBgContainer,
@@ -30,67 +30,60 @@ export type BreadCrumbProps = {
  * @param props
  * @constructor
  */
-const BreadCrumb: React.FC<BreadCrumbProps> = (props) => {
-    const { 
-        style, 
-        className, 
-        enabled = true, 
-        homeTitle = "首页" 
-    } = props;
-    
+const BreadCrumb: React.FC<BreadCrumbProps> = React.memo((props) => {
     const {
-        styles: { bread, breadStyle }
-    } = useBreadCrumbStyles();
-    
-    const [breadCrumbData, setBreadCrumb] = useState<any>([]);
+        style,
+        className,
+        enabled = true,
+        homeTitle = "首页"
+    } = props;
+
+    const {styles: {bread, breadStyle}} = useBreadCrumbStyles();
     const location = useLocation();
     const match = useSelectedRoutes();
 
-    const initBreadCrumb = () => {
+    const breadCrumbData = useMemo(() => {
+        if (!enabled) return [];
+
         const items = getParentList(getAllMenuItems(false), match?.at(-1)?.route?.name);
-        let temp = [{
+        const temp = [{
             title: homeTitle,
             onClick: () => {
                 historyPush(getFirstMenuWithoutChildren(getAllMenuItems(location?.pathname))?.name || "");
             },
             className: breadStyle,
         }];
-        const onClick = (x: any) => {
+
+        const handleItemClick = (x: any) => {
             if (x?.children && x?.children?.length > 0) {
                 historyPush(getFirstMenuWithoutChildren(x?.children)?.name || "");
             } else {
                 historyPush(x?.name);
             }
-        }
-        items.map((x) => {
+        };
+
+        items.forEach((x) => {
             temp.push({
                 title: x?.label,
-                onClick: () => {
-                    onClick(x);
-                },
+                onClick: () => handleItemClick(x),
                 className: breadStyle,
             });
         });
-        setBreadCrumb(temp);
-    }
 
-    useEffect(() => {
-        if (enabled) {
-            initBreadCrumb();
-        }
-    }, [enabled, location?.pathname]);
+        return temp;
+    }, [enabled, location?.pathname, homeTitle, breadStyle]);
 
     if (!enabled || match?.at(-1)?.route?.hideBreadCrumb || breadCrumbData?.length === 0) {
         return null;
     }
 
     return (
-        <Breadcrumb 
+        <Breadcrumb
             className={`${bread} ${className || ''}`}
             style={style}
             items={breadCrumbData}
         />
     );
-}
+});
 
-export default BreadCrumb
+export default BreadCrumb;

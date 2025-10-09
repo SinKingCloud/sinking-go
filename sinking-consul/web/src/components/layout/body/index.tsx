@@ -37,7 +37,7 @@ export type BodyProps = {
  * @param props
  * @constructor
  */
-const Body: React.FC<BodyProps> = (props) => {
+const Body: React.FC<BodyProps> = React.memo((props) => {
     const {
         children,
         loading,
@@ -55,16 +55,21 @@ const Body: React.FC<BodyProps> = (props) => {
      */
     const content = <ConfigProvider locale={zhCN}>
         <App>
-            {(loading && <Spin spinning={true} size="large" className={load}></Spin>) ||
+            {loading ? (
+                <Spin spinning={true} size="large" className={load}></Spin>
+            ) : (
                 <Layout style={style}>
                     <div className={"ant-layout-body " + (className ? className : body)}>
                         <Animation animate={animation ? Animate.FadeUp : Animate.None}>
-                            {(space && <Space direction="vertical" size="middle" className={gutter}>
-                                {children}
-                            </Space>) || children}
+                            {space ? (
+                                <Space direction="vertical" size="middle" className={gutter}>
+                                    {children}
+                                </Space>
+                            ) : children}
                         </Animation>
                     </div>
-                </Layout>}
+                </Layout>
+            )}
         </App>
     </ConfigProvider>;
 
@@ -74,6 +79,6 @@ const Body: React.FC<BodyProps> = (props) => {
     return <Theme theme={themes} mode={mode}>
         {content}
     </Theme>;
-}
+});
 
-export default Body
+export default Body;

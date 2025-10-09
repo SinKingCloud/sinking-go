@@ -108,9 +108,10 @@ const Login: React.FC = () => {
                                 message?.error("请输入正确的密码");
                                 return;
                             }
-                            setIsLoading(true);
+
                             captcha?.current?.Show?.(
                                 async (res) => {
+                                    setIsLoading(true);
                                     await login({
                                         body: {
                                             account: values.account,
@@ -131,9 +132,6 @@ const Login: React.FC = () => {
                                             setIsLoading(false);
                                         }
                                     });
-                                },
-                                () => {
-                                    setIsLoading(false);
                                 }
                             );
                         }}>

@@ -1,5 +1,5 @@
 // noinspection TypeScriptValidateTypes
-import React, {forwardRef, useImperativeHandle, useState, useMemo} from "react";
+import React, {forwardRef, useImperativeHandle, useState, useMemo, useCallback} from "react";
 import {Modal, ModalProps} from "antd";
 
 /**
@@ -28,7 +28,7 @@ export interface ProModalRef {
 
 const ProModal = forwardRef<ProModalRef, ProModalProps>((props, ref): any => {
     const {
-        modalProps = {} as ModalProps & any & undefined,
+        modalProps = {},
         title,
         onOk,
         onCancel,
@@ -40,9 +40,35 @@ const ProModal = forwardRef<ProModalRef, ProModalProps>((props, ref): any => {
         children,
     } = props;
 
-    const isControlled = useMemo(() => modalProps.open !== undefined, [modalProps.open]);// 是否受控
-    const [internalOpen, setInternalOpen] = useState<boolean>(false);// 内部状态管理模态框的打开与关闭
-    const open = isControlled ? modalProps.open : internalOpen;// 是否打开模态框
+    const isControlled = useMemo(() => (modalProps as any)?.open !== undefined, [(modalProps as any)?.open]);
+    const [internalOpen, setInternalOpen] = useState<boolean>(false);
+    const open = isControlled ? (modalProps as any)?.open : internalOpen;
+
+    /**
+     * 处理确认按钮点击事件
+     */
+    const handleOk = useCallback(async () => {
+        await onOk?.();
+    }, [onOk]);
+
+    /**
+     * 处理取消按钮点击事件
+     */
+    const handleCancel = useCallback(() => {
+        if (onCancel) {
+            onCancel();
+        } else if (!isControlled) {
+            setInternalOpen(false);
+            afterOpenChange?.(false);
+        }
+    }, [onCancel, isControlled, afterOpenChange]);
+
+    /**
+     * 处理模态框关闭后的事件
+     */
+    const handleAfterClose = useCallback(() => {
+        afterClose?.();
+    }, [afterClose]);
 
     /**
      * 暴露给父组件的方法
@@ -60,35 +86,7 @@ const ProModal = forwardRef<ProModalRef, ProModalProps>((props, ref): any => {
             }
             afterOpenChange?.(false);
         }
-    }));
-
-    /**
-     * 处理确认按钮点击事件
-     */
-    const handleOk = async () => {
-        await onOk?.();
-    };
-
-    /**
-     * 处理取消按钮点击事件
-     */
-    const handleCancel = () => {
-        if (onCancel) {
-            onCancel();
-        } else {
-            if (!isControlled) {
-                setInternalOpen(false);
-                afterOpenChange?.(false);
-            }
-        }
-    };
-
-    /**
-     * 处理模态框关闭后的事件
-     */
-    const handleAfterClose = () => {
-        afterClose?.();
-    };
+    }), [isControlled, afterOpenChange]);
 
     return (
         <Modal
@@ -101,13 +99,11 @@ const ProModal = forwardRef<ProModalRef, ProModalProps>((props, ref): any => {
             okType={okType}
             width={width}
             maskClosable={false}
-            {...modalProps}
+            {...(modalProps || {})}
         >
             {children}
         </Modal>
     );
 });
-
-ProModal.displayName = "ProModal";
 
 export default ProModal;

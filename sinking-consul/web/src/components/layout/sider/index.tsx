@@ -1,5 +1,5 @@
 import {useLocation, history, useSelectedRoutes} from 'umi';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useMemo, useCallback} from 'react';
 import {ConfigProvider, Menu, Layout} from 'antd';
 import {createStyles, useResponsive, useTheme} from "antd-style";
 import {Icon} from "@/components";
@@ -32,7 +32,7 @@ const useStyles = createStyles(({token, isDarkMode}): any => {
             },
             ".ant-menu-item-selected::after": {
                 borderRadius: (token?.borderRadius || 0) > 3 ? `${token.borderRadius}px 0 0 ${token.borderRadius}px` : "0",
-                borderRightWidth: "5px !important",
+                borderRightWidth: "4px !important",
                 ...(token?.borderRadius > 3 && {
                     right: "5px !important",
                     top: "19% !important",
@@ -116,7 +116,7 @@ export type SiderProps = {
     theme?: string;//主题
 };
 
-const Sider: React.FC<SiderProps> = (props) => {
+const Sider: React.FC<SiderProps> = React.memo((props) => {
     const {
         collapsed,
         onMenuClick,
@@ -134,24 +134,21 @@ const Sider: React.FC<SiderProps> = (props) => {
     const systemTheme = useTheme();
     const {styles: {left, content, menu, menuTop, menuBottom, menu2, darkColor, darkBorderTop}} = useStyles();
     const [selectedKeys, setSelectedKeys] = useState<any>([]);
+    const [stateOpenKeys, setStateOpenKeys] = useState<any>([]);
     const location = useLocation();
     const match = useSelectedRoutes();
-    const initSelectMenu = () => {
-        setSelectedKeys([location?.pathname]);
-        let temp = []
-        for (let i = 0; i < match?.length; i++) {
-            temp.push(match[i]?.pathname);
-        }
-        setStateOpenKeys(temp);
-    }
+    const token = useTheme();
 
     useEffect(() => {
-        initSelectMenu();
-    }, [location]);
+        setSelectedKeys([location?.pathname]);
+        const temp = match?.map((m: any) => m?.pathname) || [];
+        setStateOpenKeys(temp);
+    }, [location?.pathname]);
+
     /**
      * 只展开一个子集
      */
-    const getLevelKeys = (items1: any) => {
+    const levelKeys = useMemo(() => {
         const key: Record<string, number> = {};
         const func = (items2: any, level = 1) => {
             items2.forEach((item: any) => {
@@ -163,12 +160,11 @@ const Sider: React.FC<SiderProps> = (props) => {
                 }
             });
         };
-        func(items1);
+        func(menus);
         return key;
-    };
-    const levelKeys = getLevelKeys(menus);
-    const [stateOpenKeys, setStateOpenKeys] = useState<any>([]);
-    const onOpenChange = (openKeys: any[]) => {
+    }, [menus]);
+
+    const onOpenChange = useCallback((openKeys: any[]) => {
         const currentOpenKey = openKeys.find((key) => stateOpenKeys.indexOf(key) === -1);
         if (currentOpenKey !== undefined) {
             const repeatIndex = openKeys.filter((key) => key !== currentOpenKey).findIndex((key) => levelKeys[key] === levelKeys[currentOpenKey]);
@@ -178,97 +174,94 @@ const Sider: React.FC<SiderProps> = (props) => {
         } else {
             setStateOpenKeys(openKeys);
         }
-    }
-    const token = useTheme();
+    }, [stateOpenKeys, levelKeys]);
+
     /**
      * 获取菜单主题
      */
-    const getTheme = () => {
-        if (token?.isDarkMode) {
-            return "light";
+    const menuTheme = useMemo(() => {
+        if (token?.isDarkMode) return "light";
+        return theme === "dark" ? theme : "light";
+    }, [token?.isDarkMode, theme]);
+
+    const getColor = useMemo(() => {
+        return !token?.isDarkMode && menuTheme === "dark" ? ' ' + darkColor : '';
+    }, [token?.isDarkMode, menuTheme, darkColor]);
+
+    const getBorderColor = useMemo(() => {
+        return !token?.isDarkMode && menuTheme === "dark" ? ' ' + darkBorderTop : '';
+    }, [token?.isDarkMode, menuTheme, darkBorderTop]);
+    const menuConfig = useMemo(() => ({
+        components: {
+            Menu: {
+                itemSelectedColor: token?.colorPrimaryText || "",
+                itemColor: token?.colorTextSecondary || "",
+                itemHoverColor: token?.colorTextSecondary || "",
+                fontSize: 13,
+                itemMarginBlock: 0,
+                itemMarginInline: 0,
+                itemBorderRadius: 0,
+                subMenuItemBorderRadius: 0,
+                activeBarWidth: 4,
+                itemHeight: 45,
+                subMenuItemBg: "rgba(255, 255, 255, 0)",
+            }
         }
-        return theme == "dark" ? theme : "light";
-    }
-    const getColor = () => {
-        return !token?.isDarkMode && getTheme() == "dark" ? ' ' + darkColor : '';
-    }
-    const getBorderColor = () => {
-        return !token?.isDarkMode && getTheme() == "dark" ? ' ' + darkBorderTop : '';
-    }
+    }), [token?.colorPrimaryText, token?.colorTextSecondary]);
+
+    const handleMenuClick = useCallback((item: any) => {
+        history.push(item?.key);
+        setSelectedKeys([item?.key]);
+        onMenuClick?.(item);
+    }, [onMenuClick]);
+
+    const handleLogoClick = useCallback(() => {
+        onLogoClick?.();
+    }, [onLogoClick]);
+
     return (
         <>
-            {(layout == "inline" &&
-                <Layout className={left + getColor()}>
-                    <Layout.Header className={menuTop + getColor()}
-                                   onClick={() => {
-                                       onLogoClick?.();
-                                   }}>
-                        {(mobile || (!mobile && !collapsed)) &&
-                            unCollapsedLogo?.(!systemTheme?.isDarkMode)
-                        }
-                        {!mobile && collapsed &&
-                            collapsedLogo?.(systemTheme?.isDarkMode)
-                        }
+            {layout === "inline" ? (
+                <Layout className={left + getColor}>
+                    <Layout.Header className={menuTop + getColor} onClick={handleLogoClick}>
+                        {(mobile || (!mobile && !collapsed)) && unCollapsedLogo?.(!systemTheme?.isDarkMode)}
+                        {!mobile && collapsed && collapsedLogo?.(systemTheme?.isDarkMode)}
                     </Layout.Header>
-                    <Layout.Content className={content + getColor()}>
-                        <ConfigProvider theme={{
-                            components: {
-                                Menu: {
-                                    itemSelectedColor: token?.colorPrimaryText || "",
-                                    itemColor: token?.colorTextSecondary || "",
-                                    itemHoverColor: token?.colorTextSecondary || "",
-                                    fontSize: 13,
-                                    itemMarginBlock: 0,
-                                    itemMarginInline: 0,
-                                    itemBorderRadius: 0,
-                                    subMenuItemBorderRadius: 0,
-                                    activeBarWidth: 4,
-                                    itemHeight: 45,
-                                    subMenuItemBg: "rgba(255, 255, 255, 0)",
-                                }
-                            }
-                        }}>
-                            <Menu selectedKeys={selectedKeys}
-                                  theme={getTheme()}
-                                  mode={"inline"}
-                                  items={menus} className={menu}
-                                  openKeys={!collapsed ? stateOpenKeys : undefined}
-                                  onOpenChange={onOpenChange}
-                                  onClick={(item: any) => {
-                                      history.push(item?.key);
-                                      setSelectedKeys([item?.key]);
-                                      onMenuClick?.(item);
-                                  }}/>
+                    <Layout.Content className={content + getColor}>
+                        <ConfigProvider theme={menuConfig}>
+                            <Menu
+                                selectedKeys={selectedKeys}
+                                theme={menuTheme}
+                                mode="inline"
+                                items={menus}
+                                className={menu}
+                                openKeys={!collapsed ? stateOpenKeys : undefined}
+                                onOpenChange={onOpenChange}
+                                onClick={handleMenuClick}
+                            />
                         </ConfigProvider>
                     </Layout.Content>
-                    {(menuBottomBtnIcon || menuBottomBtnText) &&
-                        <Layout.Footer className={menuBottom + getColor() + getBorderColor()}
-                                       onClick={onMenuBottomBtnClick}>
+                    {(menuBottomBtnIcon || menuBottomBtnText) && (
+                        <Layout.Footer className={menuBottom + getColor + getBorderColor} onClick={onMenuBottomBtnClick}>
                             {menuBottomBtnIcon && <Icon type={menuBottomBtnIcon}/>}
                             {(mobile || (!mobile && !collapsed)) && menuBottomBtnText}
-                        </Layout.Footer>}
-                </Layout>) || <ConfigProvider theme={{
-                components: {
-                    Menu: {
-                        itemSelectedColor: token?.colorPrimaryText,
-                        itemColor: token?.colorTextSecondary,
-                        itemHoverColor: token?.colorTextSecondary,
-                        fontSize: 13,
-                        itemMarginBlock: 0,
-                        itemMarginInline: 0,
-                        itemBorderRadius: 0,
-                        subMenuItemBorderRadius: 0,
-                        activeBarWidth: 4,
-                        itemHeight: 45,
-                        subMenuItemBg: "rgba(255, 255, 255, 0)",
-                    } as any
-                }
-            }}><Menu theme={getTheme()} mode={"horizontal"} selectedKeys={selectedKeys}
-                     items={menus} className={menu2} onClick={(item: any) => {
-                history.push(item?.key);
-            }}/></ConfigProvider>}
+                        </Layout.Footer>
+                    )}
+                </Layout>
+            ) : (
+                <ConfigProvider theme={menuConfig}>
+                    <Menu
+                        theme={menuTheme}
+                        mode="horizontal"
+                        selectedKeys={selectedKeys}
+                        items={menus}
+                        className={menu2}
+                        onClick={handleMenuClick}
+                    />
+                </ConfigProvider>
+            )}
         </>
-    )
-}
+    );
+});
 
-export default Sider
+export default Sider;
