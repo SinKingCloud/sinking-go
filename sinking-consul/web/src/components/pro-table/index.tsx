@@ -70,6 +70,7 @@ export type ProTableProps = {
     defaultPage?: number;//默认分页
     defaultPageSize?: number;//默认分页容量
     request?: (params: any, sort: any) => Promise<any>; // 请求函数
+    virtual?: boolean; // 是否启用虚拟滚动（大数据量时推荐开启）
     // 多选配置
     rowSelection?: {
         selectedRowKeys?: React.Key[]; // 选中的行
@@ -339,6 +340,7 @@ const ProTableComponent = forwardRef<ProTableRef, ProTableProps>((props, ref): a
         rowSelection = false as any, // 多选配置
         selectionAffix = false, // 是否固定多选操作栏
         paginationAffix = false, // 是否固定底部分页栏
+        virtual = false, // 是否启用虚拟滚动
     } = props;
 
     const [form] = Form.useForm();
@@ -608,68 +610,71 @@ const ProTableComponent = forwardRef<ProTableRef, ProTableProps>((props, ref): a
         </Row>;
     }, [columns, collapsed, device, loading, search, styles, form]);
 
-    const getTableColumns = useMemo(() => {
-        const renderTableCell = (text: any, record: any, column: ProColumns) => {
-            const {valueType, valueEnum, copyable, props = {}} = column;
-            if (valueEnum && text !== undefined && text !== null) {
-                const enumItem = valueEnum[text];
-                if (enumItem) {
-                    const {text: label, color} = enumItem;
-                    if (color) {
-                        const colorMap: Record<string, string> = {
-                            success: 'success',
-                            warning: 'warning',
-                            error: 'error',
-                            default: 'default',
-                            processing: 'processing'
-                        };
-                        return <Tag color={colorMap[color] || color || "default"}
-                                    bordered={false} {...props}>{label}</Tag>;
-                    }
-                    return label;
+    // 使用 useCallback 缓存 renderTableCell 函数
+    const renderTableCell = useCallback((text: any, record: any, column: ProColumns) => {
+        const {valueType, valueEnum, copyable, props = {}} = column;
+        if (valueEnum && text !== undefined && text !== null) {
+            const enumItem = valueEnum[text];
+            if (enumItem) {
+                const {text: label, color} = enumItem;
+                if (color) {
+                    const colorMap: Record<string, string> = {
+                        success: 'success',
+                        warning: 'warning',
+                        error: 'error',
+                        default: 'default',
+                        processing: 'processing'
+                    };
+                    return <Tag color={colorMap[color] || color || "default"}
+                                bordered={false} {...props}>{label}</Tag>;
                 }
+                return label;
             }
-            let content: React.ReactNode;
-            switch (valueType) {
-                case 'date':
-                    content = text ? dayjs(text).format('YYYY-MM-DD') : '-';
-                    break;
-                case 'dateTime':
-                    content = text ? dayjs(text).format('YYYY-MM-DD HH:mm:ss') : '-';
-                    break;
-                case 'time':
-                    content = text ? dayjs(text).format('HH:mm:ss') : '-';
-                    break;
-                case 'percent':
-                    content = <Progress percent={Number(text) || 0} size="small" {...props} />;
-                    break;
-                case 'progress':
-                    content = <Progress percent={Number(text) || 0} size="small" {...props} />;
-                    break;
-                case 'rate':
-                    content = <Rate disabled value={Number(text) || 0} {...props} />;
-                    break;
-                case 'switch':
-                    content = <Switch checked={!!text} disabled {...props} />;
-                    break;
-                case 'digit':
-                    content = typeof text === 'number' ? text.toLocaleString() : text;
-                    break;
-                default:
-                    content = text || '-';
-            }
-            if (copyable && text) {
-                return <Typography.Text copyable>
-                    {content}
-                </Typography.Text>;
-            }
-            return content;
-        };
+        }
+        let content: React.ReactNode;
+        switch (valueType) {
+            case 'date':
+                content = text ? dayjs(text).format('YYYY-MM-DD') : '-';
+                break;
+            case 'dateTime':
+                content = text ? dayjs(text).format('YYYY-MM-DD HH:mm:ss') : '-';
+                break;
+            case 'time':
+                content = text ? dayjs(text).format('HH:mm:ss') : '-';
+                break;
+            case 'percent':
+                content = <Progress percent={Number(text) || 0} size="small" {...props} />;
+                break;
+            case 'progress':
+                content = <Progress percent={Number(text) || 0} size="small" {...props} />;
+                break;
+            case 'rate':
+                content = <Rate disabled value={Number(text) || 0} {...props} />;
+                break;
+            case 'switch':
+                content = <Switch checked={!!text} disabled {...props} />;
+                break;
+            case 'digit':
+                content = typeof text === 'number' ? text.toLocaleString() : text;
+                break;
+            default:
+                content = text || '-';
+        }
+        if (copyable && text) {
+            return <Typography.Text copyable>
+                {content}
+            </Typography.Text>;
+        }
+        return content;
+    }, []);
+
+    const getTableColumns = useMemo(() => {
         const list: any[] = [];
         columns.forEach((column: ProColumns) => {
             if (column?.hideInTable === true) return true;
             const newColumn: ProColumns = {
                 ...column,
+                // 使用稳定的 render 函数引用
                 render: column.render || ((text: any, record: any) => {
                     return renderTableCell(text, record, column);
                 })
@@ -688,7 +693,7 @@ const ProTableComponent = forwardRef<ProTableRef, ProTableProps>((props, ref): a
             list.push(newColumn);
         });
         return list;
-    }, [columns]);
+    }, [columns, renderTableCell]);
 
     requestRef.current = request;
 
@@ -939,7 +944,8 @@ const ProTableComponent = forwardRef<ProTableRef, ProTableProps>((props, ref): a
                         rowKey={rowKey}
                         className={styles.table}
                         style={{overflowX: "auto", whiteSpace: "nowrap"}}
-                        scroll={{x: true}}
+                        scroll={{x: true, y: virtual ? 500 : undefined}}
+                        virtual={virtual}
                         {...tableProps}
                         rowSelection={getRowSelection}
                         pagination={!pageHidden && pageInTable ? {
@@ -970,14 +976,14 @@ const ProTableComponent = forwardRef<ProTableRef, ProTableProps>((props, ref): a
                         loading={loading}
                         onChange={useCallback((_: any, filters: any, sorter: any) => {
                             if (Object.keys(filters).length > 0) {
-                                setParams({...params, ...filters});
+                                setParams(prev => ({...prev, ...filters}));
                             }
                             if (Object.keys(sorter).length > 0 && sorter?.field) {
                                 let temp: any = {};
                                 temp[sorter?.field] = sorter?.order;
                                 setSort(temp);
                             }
-                        }, [params])}/>
+                        }, [])}/>
                 </Card>
             </Col>
             {!pageHidden && !pageInTable && total > 0 && <Col span={24}>
@@ -987,4 +993,4 @@ const ProTableComponent = forwardRef<ProTableRef, ProTableProps>((props, ref): a
     );
 });
 
-export default React.memo(ProTableComponent);
+export default ProTableComponent;
