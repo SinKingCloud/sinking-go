@@ -17,6 +17,8 @@ const Title = () => {
     useEffect(() => {
         initWeb();
     }, [web?.info?.name, location]);
+
+    return undefined;
 };
 
 export default Title;
