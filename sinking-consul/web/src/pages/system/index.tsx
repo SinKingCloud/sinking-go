@@ -39,7 +39,7 @@ const useStyles = createStyles(({css, responsive, isDarkMode, token}): any => {
             .ant-menu-item {
                 position: absolute;
                 font-weight: bold;
-                font-size: 14px;
+                font-size: ${token.fontSize}px;
                 border-radius: ${token.borderRadius}px;
             }
 
@@ -63,7 +63,7 @@ const useStyles = createStyles(({css, responsive, isDarkMode, token}): any => {
         title: css`
             margin-bottom: 20px;
             font-weight: bolder;
-            font-size: 25px;
+            font-size: ${token.fontSizeHeading4}px;
             line-height: 28px;
         `,
         menu: css`
