@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {API} from "@/../typings";
-import { getAccountInfo} from "@/service/admin/person";
+import {getAccountInfo} from "@/service/admin/person";
 
 export default () => {
     const [web, setWeb] = useState<API.UserInfo>();//网站用户
@@ -18,12 +18,12 @@ export default () => {
     /**
      * 刷新网站用户信息
      */
-    const refreshWebUser = (callback: () => void = undefined) => {
+    const refreshWebUser = (callback: (d: any) => void = undefined) => {
         getWebUser().then((d) => {
             if (d) {
                 setWeb(d);
-                callback?.();
             }
+            callback?.(d);
         });
     }
 
