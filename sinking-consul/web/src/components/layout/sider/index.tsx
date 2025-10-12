@@ -9,7 +9,7 @@ const useStyles = createStyles(({token, isDarkMode}): any => {
         left: {
             position: "relative",
             background: token?.colorBgContainer,
-            height: "100vh",
+            height: "100%",
             display: "flex",
             flexDirection: "column",
         },
