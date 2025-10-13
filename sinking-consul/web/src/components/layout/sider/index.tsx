@@ -68,6 +68,7 @@ const useStyles = createStyles(({token, isDarkMode}): any => {
             height: "50px",
             lineHeight: "50px !important",
             borderTop: "0.5px solid " + token?.colorBorder + " !important",
+            borderBottom: "0.5px solid " + token?.colorBorder + " !important",
             fontWeight: "bolder",
             fontSize: 14,
             color: isDarkMode ? "rgb(255,255,255,0.65)" : "rgba(122,122,122)",
@@ -132,7 +133,7 @@ const Sider: React.FC<SiderProps> = React.memo((props) => {
     } = props;
     const {mobile} = useResponsive();
     const systemTheme = useTheme();
-    const {styles: {left, content, menu, menuTop, menuBottom, menu2, darkColor, darkBorderTop}} = useStyles();
+    const {styles: {left, content, menu, menuTop, menuBottom, menu2, darkColor, darkBorderTop}, cx} = useStyles();
     const [selectedKeys, setSelectedKeys] = useState<any>([]);
     const [stateOpenKeys, setStateOpenKeys] = useState<any>([]);
     const location = useLocation();
@@ -222,12 +223,12 @@ const Sider: React.FC<SiderProps> = React.memo((props) => {
     return (
         <>
             {layout === "inline" ? (
-                <Layout className={left + getColor}>
-                    <Layout.Header className={menuTop + getColor} onClick={handleLogoClick}>
+                <Layout className={cx(left, getColor)}>
+                    <Layout.Header className={cx(menuTop, getColor)} onClick={handleLogoClick}>
                         {(mobile || (!mobile && !collapsed)) && unCollapsedLogo?.(!systemTheme?.isDarkMode)}
                         {!mobile && collapsed && collapsedLogo?.(systemTheme?.isDarkMode)}
                     </Layout.Header>
-                    <Layout.Content className={content + getColor}>
+                    <Layout.Content className={cx(content, getColor)}>
                         <ConfigProvider theme={menuConfig}>
                             <Menu
                                 selectedKeys={selectedKeys}
@@ -242,7 +243,8 @@ const Sider: React.FC<SiderProps> = React.memo((props) => {
                         </ConfigProvider>
                     </Layout.Content>
                     {(menuBottomBtnIcon || menuBottomBtnText) && (
-                        <Layout.Footer className={menuBottom + getColor + getBorderColor} onClick={onMenuBottomBtnClick}>
+                        <Layout.Footer className={cx(menuBottom, getColor, getBorderColor)}
+                                       onClick={onMenuBottomBtnClick}>
                             {menuBottomBtnIcon && <Icon type={menuBottomBtnIcon}/>}
                             {(mobile || (!mobile && !collapsed)) && menuBottomBtnText}
                         </Layout.Footer>

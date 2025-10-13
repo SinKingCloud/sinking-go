@@ -26,5 +26,5 @@ export {
     ProTable,
     ProModal,
     Breadcrumb,
-    Script
+    Script,
 }

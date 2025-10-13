@@ -202,7 +202,8 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
             darkColor,
             flowContent,
             layoutNormal
-        }
+        },
+        cx
     } = useLayoutStyles();
     const {mobile, md} = useResponsive();
     const menuBtnOnClick = () => {
@@ -309,13 +310,13 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
             {getSider(layout)}
         </Layout.Sider>
         <Layout className={body}>
-            {!headerHidden && <Layout.Header className={`${header}${headerFixed ? ' ' + sticky : ''}`}>
+            {!headerHidden && <Layout.Header className={cx(header, headerFixed && sticky)}>
                 <Header left={<div><Button type="text" size={"large"}
                                            icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
                                            onClick={menuBtnOnClick} className={menuBtn}/>{headerLeft}</div>}
                         right={headerRight}/>
             </Layout.Header>}
-            <Layout.Content className={`${inlineContent}${flowLayout ? ' ' + flowContent : ''}`}>
+            <Layout.Content className={cx(inlineContent, flowLayout && flowContent)}>
                 <BreadCrumb enabled={breadCrumb}/>
                 {getOutlet()}
             </Layout.Content>
@@ -329,14 +330,14 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
      * 上下模式
      */
     const LayoutFlow = <Layout className={layoutNormal}>
-        <Layout.Header className={`${header}${headerFixed ? ' ' + sticky : ''}`}>
+        <Layout.Header className={cx(header, headerFixed && sticky)}>
             {!md && <Header left={<div>
                 <Button type="text" size={"large"} icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
                         onClick={menuBtnOnClick} className={menuBtn}/>
                 {headerLeft}
             </div>} right={headerRight}/>}
             {(!md && drawer) ||
-                <div className={`${flow}${getColor()}`}>
+                <div className={cx(flow, getColor())}>
                     <div className={logo}>
                         {unCollapsedLogo?.(!systemTheme?.isDarkMode)}
                     </div>
@@ -345,7 +346,7 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
                 </div>
             }
         </Layout.Header>
-        <Layout.Content className={`${horizontalContent}${flowLayout ? ' ' + flowContent : ''}`}>
+        <Layout.Content className={cx(horizontalContent, flowLayout && flowContent)}>
             <BreadCrumb enabled={breadCrumb}/>
             {getOutlet()}
         </Layout.Content>

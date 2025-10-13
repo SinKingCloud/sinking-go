@@ -81,6 +81,7 @@ const Login: React.FC = () => {
     /**
      * 获取当前用户信息
      */
+    const user = useModel("user");
     const web = useModel("web");
 
     return (
@@ -108,7 +109,6 @@ const Login: React.FC = () => {
                                 message?.error("请输入正确的密码");
                                 return;
                             }
-
                             captcha?.current?.Show?.(
                                 async (res) => {
                                     setIsLoading(true);
@@ -122,8 +122,10 @@ const Login: React.FC = () => {
                                         },
                                         onSuccess: (r: any) => {
                                             setLoginToken(r?.data);
-                                            message?.success(r?.message);
-                                            historyPush("/");
+                                            user?.refreshWebUser(() => {
+                                                message?.success(r?.message);
+                                                historyPush("/");
+                                            });
                                         },
                                         onFail: (r: any) => {
                                             message?.error(r?.message || "登录失败")

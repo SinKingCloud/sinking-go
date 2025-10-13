@@ -1,9 +1,7 @@
 import {extend} from 'umi-request';
 import defaultSettings from "@/../config/defaultSettings"
-import {deleteHeader, getHeaders} from "@/utils/auth";
 import {API} from "../../typings";
 import {Modal} from "@/components";
-import {historyPush} from "@/utils/route";
 
 /**
  * request对象
@@ -40,21 +38,6 @@ function errorHandle(): void {
         } as any);
     }
 }
-
-/**
- * 中间件
- * @param ctx context
- * @param next 执行函数
- */
-const check = async (ctx: any, next: any) => {
-    ctx.req.options.headers = getHeaders();
-    await next();
-    if (ctx.res.code == 403 || ctx.res.code == 503) {
-        historyPush("login");//登陆页面;
-        deleteHeader()
-    }
-}
-request.use(check);
 
 
 /**

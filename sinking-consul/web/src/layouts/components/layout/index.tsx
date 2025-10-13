@@ -212,17 +212,14 @@ const RightTop: React.FC = () => {
                              message?.loading({content: '正在退出登录', duration: 600000, key: "outLogin"});
                              await logout({
                                  onSuccess: (r) => {
-                                     if (r?.code == 200) {
-                                         message?.success(r?.message || "退出登录成功")
-                                         deleteHeader()
-                                         message?.destroy("outLogin")
-                                         historyPush("login");
-                                     }
+                                     message?.success(r?.message || "退出登录成功")
+                                     deleteHeader()
+                                     user?.setWeb(undefined);
+                                     message?.destroy("outLogin")
+                                     historyPush("login");
                                  },
                                  onFail: (r) => {
-                                     if (r?.code == 500) {
-                                         message?.error(r?.message || "退出登录失败")
-                                     }
+                                     message?.error(r?.message || "退出登录失败")
                                  }
                              })
                          }}>
@@ -286,28 +283,12 @@ const SKLayout: React.FC<slide> = ({...props}) => {
      */
     const user = useModel("user");
     const web = useModel("web");
-    const [loading, setLoading] = useState(true);
-    const initUser = () => {
-        setLoading(true);
-        if (getLoginToken() == "") {
-            historyPush("login");
-            return;
-        }
-        user?.getWebUser()?.then((u: any) => {
-            user?.setWeb(u);
-        })?.finally(() => {
-            setLoading(false);
-        });
-    };
-    useEffect(() => {
-        initUser();
-    }, []);
 
     const {styles: {collapsedImg, unCollapsed}} = useSKLayoutStyles();
     return (
         <>
             <Title/>
-            <Layout loading={loading}
+            <Layout loading={!user?.web}
                     waterMark={web?.info?.ui?.watermark ? [web?.info?.name, user?.web?.account] : ""}
                     menus={menu}
                     layout={web?.info?.ui?.layout != "left" ? "horizontal" : "inline"}
@@ -316,7 +297,7 @@ const SKLayout: React.FC<slide> = ({...props}) => {
                     footer={<>©{new Date().getFullYear()} All Right
                         Revered {web?.info?.name || Settings?.title}</>}
                     headerHidden={false}
-                    headerFixed={false}
+                    headerFixed={true}
                     headerRight={<RightTop/>}
                     menuCollapsedWidth={60}
                     menuUnCollapsedWidth={210}

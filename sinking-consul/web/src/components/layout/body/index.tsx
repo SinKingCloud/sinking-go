@@ -48,7 +48,7 @@ const Body: React.FC<BodyProps> = React.memo((props) => {
         mode = undefined,
         animation = true,
     } = props;
-    const {styles: {body, load, gutter}} = useStyles();
+    const {styles: {body, load, gutter}, cx} = useStyles();
 
     /**
      * 内容
@@ -59,7 +59,7 @@ const Body: React.FC<BodyProps> = React.memo((props) => {
                 <Spin spinning={true} size="large" className={load}></Spin>
             ) : (
                 <Layout style={style}>
-                    <div className={"ant-layout-body " + (className ? className : body)}>
+                    <div className={cx("ant-layout-body", className || body)}>
                         <Animation animate={animation ? Animate.FadeUp : Animate.None}>
                             {space ? (
                                 <Space direction="vertical" size="middle" className={gutter}>
