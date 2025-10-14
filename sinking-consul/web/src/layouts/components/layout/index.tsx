@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
 import {Layout, Icon} from "@/components";
 import {useModel} from "umi";
-import {deleteHeader, getLoginToken} from "@/utils/auth";
+import {deleteHeader} from "@/utils/auth";
 import {historyPush} from "@/utils/route";
 import {App, Avatar, Col, Popover, Row, Tooltip} from "antd";
 import {createStyles} from "antd-style";
