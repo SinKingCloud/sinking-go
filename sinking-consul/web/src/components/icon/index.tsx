@@ -9,7 +9,7 @@ import defaultSettings from '../../../config/defaultSettings';
 /**
  * ICONFONT地址
  */
-const ICONFONT_URL = '//at.alicdn.com/t/c/font_5039718_a026bszsrgd.js';
+const ICONFONT_URL = '//at.alicdn.com/t/c/font_5013902_1i6dqszic9d.js';
 
 /**
  * iconfont组件

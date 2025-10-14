@@ -8,6 +8,7 @@ import {Theme} from "@/components";
 import Title from "./components/title";
 import {deleteHeader, getHeaders} from "@/utils/auth";
 import request from "@/utils/request";
+import {useTheme} from "@/components/theme";
 
 /**
  * 中间件
@@ -37,7 +38,7 @@ const useStyles = createStyles((): any => {
     };
 });
 
-export default () => {
+const ProLayout = () => {
     const web = useModel("web");
     const user = useModel("user");
     const routes = useSelectedRoutes();
@@ -53,20 +54,41 @@ export default () => {
         });
     }, []);
 
-    const getDom = () => {
-        if (loading || !web?.info || !web?.info?.ui) {
-            return <Spin spinning={true} size="large" className={load}/>;
+    const theme = useTheme();
+    useEffect(() => {
+        if (web?.info?.ui) {
+            if (web.info.ui.color) {
+                theme?.setColor(web.info.ui.color);
+            }
+            if (web.info.ui.radius >= 0) {
+                theme?.setRadius(web.info.ui.radius <= 15 ? web.info.ui.radius : 0);
+            }
+            if (web.info.ui.compact) {
+                theme?.setCompactTheme();
+            } else {
+                theme?.setDefaultTheme();
+            }
         }
-        if (routes?.pop()?.route?.auth === false) {
-            return <Theme>
-                <Title/>
-                <App>
-                    <Outlet/>
-                </App>
-            </Theme>;
-        }
-        return <Layout menu={menu}/>;
-    }
+    }, [web?.info?.ui]);
 
-    return getDom();
+    if (loading || !web?.info || !web?.info?.ui) {
+        return <Spin spinning={true} size="large" className={load}/>;
+    }
+    if (routes?.pop()?.route?.auth === false) {
+        return <Theme>
+            <Title/>
+            <App>
+                <Outlet/>
+            </App>
+        </Theme>;
+    }
+    return <Layout menu={menu}/>;
+}
+
+export default () => {
+    return (
+        <Theme>
+            <ProLayout/>
+        </Theme>
+    );
 }

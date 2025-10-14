@@ -11,6 +11,7 @@ import {logout} from "@/service/auth/login";
 import request from "@/utils/request";
 import Title from "../title";
 import defaultSettings from "@/../config/defaultSettings";
+import {useTheme} from "@/components/theme";
 
 /**
  * 中间件
@@ -160,7 +161,7 @@ const RightTop: React.FC = () => {
      */
     const user = useModel("user");//用户信息
     const web = useModel("web");//站点信息
-    const theme = useModel("theme");//主题信息
+    const theme = useTheme();//主题信息
     const {message} = App.useApp();
 
     const {
@@ -180,7 +181,7 @@ const RightTop: React.FC = () => {
         }
     } = useRightTopStyles();
     return <>
-        <Tooltip title={theme?.getModeName(theme?.mode)}>
+        <Tooltip title={theme?.getModeName(theme?.mode as any)}>
             <Icon type={theme?.isDarkMode() ? Dark : (theme?.isAutoMode() ? Auto : Light)} className={icon}
                   onClick={() => {
                       theme?.toggle?.();

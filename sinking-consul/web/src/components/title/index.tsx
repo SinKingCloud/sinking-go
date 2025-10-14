@@ -1,5 +1,6 @@
 import React from 'react';
 import {createStyles} from "antd-style";
+import {useTheme} from "@/components/theme";
 
 export type TitlePlacement = 'left' | 'right';
 export type TitleSize = 'small' | 'normal' | 'larger';
@@ -26,6 +27,8 @@ const Title: React.FC<TitleProps> = ({...props}) => {
         space = 7,
     } = props;
 
+    const theme = useTheme();
+
     const getHeight = (h: number, s: TitleSize) => {
         if (h > 0) {
             return h;
@@ -39,7 +42,7 @@ const Title: React.FC<TitleProps> = ({...props}) => {
     }
 
     const useStyles = createStyles(({token}): any => {
-        const isCompact = token.controlHeight < 30;
+        const isCompact = theme?.isCompactTheme() || false;
         const barRadius = radius < 0 ? (token?.borderRadius > 3 ? token?.borderRadius : 0) : radius;
         const barHeight = isCompact ? getHeight(height, size) - 5 : (barRadius > 0 ? getHeight(height, size) : getHeight(height, size) - 3);
         const barWidth = isCompact || (!isCompact && barRadius <= 0) ? width - 1 : width;

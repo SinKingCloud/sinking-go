@@ -1,6 +1,7 @@
 // noinspection TypeScriptValidateTypes
-import React, {forwardRef, useImperativeHandle, useState, useMemo, useCallback} from "react";
+import React, {forwardRef, useImperativeHandle, useState} from "react";
 import {Modal, ModalProps} from "antd";
+import {useTheme} from "@/components/theme";
 
 /**
  * ProModal的属性类型
@@ -40,35 +41,43 @@ const ProModal = forwardRef<ProModalRef, ProModalProps>((props, ref): any => {
         children,
     } = props;
 
-    const isControlled = useMemo(() => (modalProps as any)?.open !== undefined, [(modalProps as any)?.open]);
+    const theme = useTheme();
     const [internalOpen, setInternalOpen] = useState<boolean>(false);
+
+    // 判断是否为受控模式
+    const isControlled = (modalProps as any)?.open !== undefined;
     const open = isControlled ? (modalProps as any)?.open : internalOpen;
+
+    // 根据紧凑模式调整宽度（紧凑模式下减少 20% 宽度）
+    const adjustedWidth = theme?.isCompactTheme?.()
+        ? (typeof width === 'number' ? Math.floor(width * 0.87) : width)
+        : width;
 
     /**
      * 处理确认按钮点击事件
      */
-    const handleOk = useCallback(async () => {
+    const handleOk = async () => {
         await onOk?.();
-    }, [onOk]);
+    };
 
     /**
      * 处理取消按钮点击事件
      */
-    const handleCancel = useCallback(() => {
+    const handleCancel = () => {
         if (onCancel) {
             onCancel();
         } else if (!isControlled) {
             setInternalOpen(false);
             afterOpenChange?.(false);
         }
-    }, [onCancel, isControlled, afterOpenChange]);
+    };
 
     /**
      * 处理模态框关闭后的事件
      */
-    const handleAfterClose = useCallback(() => {
+    const handleAfterClose = () => {
         afterClose?.();
-    }, [afterClose]);
+    };
 
     /**
      * 暴露给父组件的方法
@@ -86,7 +95,7 @@ const ProModal = forwardRef<ProModalRef, ProModalProps>((props, ref): any => {
             }
             afterOpenChange?.(false);
         }
-    }), [isControlled, afterOpenChange]);
+    }));
 
     return (
         <Modal
@@ -97,9 +106,9 @@ const ProModal = forwardRef<ProModalRef, ProModalProps>((props, ref): any => {
             afterClose={handleAfterClose}
             okText={okText}
             okType={okType}
-            width={width}
+            width={adjustedWidth}
             maskClosable={false}
-            {...(modalProps || {})}
+            {...modalProps}
         >
             {children}
         </Modal>
