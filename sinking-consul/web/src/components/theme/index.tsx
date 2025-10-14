@@ -19,8 +19,7 @@ const Theme: React.FC<ThemeProps> = ({...props}) => {
                        onAppearanceChange={(appearance) => {
                            props?.onAppearanceChange?.(appearance);
                            systemTheme?.setAppearance?.(appearance);
-                       }}
-        >
+                       }}>
             {props?.children}
         </ThemeProvider>
     );
