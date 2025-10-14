@@ -6,12 +6,21 @@ import * as AntdIcons from '@ant-design/icons';
 import {createStyles} from 'antd-style';
 import defaultSettings from '../../../config/defaultSettings';
 
+/**
+ * ICONFONT地址
+ */
 const ICONFONT_URL = '//at.alicdn.com/t/c/font_5039718_a026bszsrgd.js';
 
+/**
+ * iconfont组件
+ */
 const IconfontIcon = createFromIconfontCN({
     scriptUrl: ICONFONT_URL,
 });
 
+/**
+ * 样式
+ */
 const useStyles: any = createStyles(() => ({
     iconWrapper: {
         display: 'inline-flex',
@@ -20,6 +29,9 @@ const useStyles: any = createStyles(() => ({
     }
 }));
 
+/**
+ * 参数类型
+ */
 interface IconProps extends React.HTMLAttributes<HTMLSpanElement> {
     type: string;
     ref?: any;
@@ -28,7 +40,10 @@ interface IconProps extends React.HTMLAttributes<HTMLSpanElement> {
     onClick?: any;
 }
 
-const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
+/**
+ * icon组件
+ */
+export const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     ({type, className, style, onClick, ...rest}, ref) => {
         const {styles, cx} = useStyles();
         const AntdIconComponent: any = (AntdIcons as any)[type];
@@ -52,21 +67,27 @@ const Icon = React.forwardRef<HTMLSpanElement, IconProps>(
     }
 );
 
-// 获取所有 Antd 图标名称
+/**
+ * 获取所有 Antd 图标名称
+ */
 export const getAntdIconNames = (): string[] => {
     return Object.keys(AntdIcons).filter(key => {
-        const component = (AntdIcons as any)[key];
-        return typeof component === 'function' &&
-            !key.startsWith('create') &&
+        return !key.startsWith('create') &&
             !key.startsWith('set') &&
             !key.startsWith('get') &&
             key !== 'default';
     });
 };
 
-// 获取所有 Iconfont 图标名称
+/**
+ * 获取所有 Iconfont 图标名称
+ */
 let iconfontCache: string[] | null = null;
 
+/**
+ * 地址转换
+ * @param url
+ */
 const normalizeUrl = (url: string): string => {
     if (url.startsWith('//')) {
         return `https:${url}`;
@@ -79,9 +100,11 @@ const normalizeUrl = (url: string): string => {
     return basePath ? `${basePath}/${srcPath}` : `/${srcPath}`;
 };
 
+/**
+ * 获取所有iconfont图标name
+ */
 export const getIconfontIconNames = async (): Promise<string[]> => {
     if (iconfontCache) return iconfontCache;
-
     try {
         const response = await fetch(normalizeUrl(ICONFONT_URL));
         const scriptText = await response.text();
@@ -93,7 +116,9 @@ export const getIconfontIconNames = async (): Promise<string[]> => {
     }
 };
 
-// 获取所有图标名称（Antd + Iconfont）
+/**
+ * 获取所有图标名称（Antd + Iconfont）
+ */
 export const getAllIconNames = async (): Promise<string[]> => {
     const [antdIcons, iconfontIcons] = await Promise.all([
         Promise.resolve(getAntdIconNames()),
@@ -101,7 +126,6 @@ export const getAllIconNames = async (): Promise<string[]> => {
     ]);
     return [...antdIcons, ...iconfontIcons];
 };
-export {Icon};
 
 /**
  * 图标数据
