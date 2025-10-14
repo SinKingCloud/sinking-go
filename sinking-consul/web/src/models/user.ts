@@ -18,7 +18,7 @@ export default () => {
     /**
      * 刷新网站用户信息
      */
-    const refreshWebUser = (callback: (d: any) => void = undefined) => {
+    const refreshWebUser = (callback: (d: any) => void) => {
         getWebUser().then((d) => {
             if (d) {
                 setWeb(d);
