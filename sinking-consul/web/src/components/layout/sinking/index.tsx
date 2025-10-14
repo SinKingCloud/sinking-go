@@ -127,6 +127,7 @@ export type LayoutProps = {
     menuCollapsedWidth?: number,
     menuUnCollapsedWidth?: number,
     menus?: any,
+    menuClassNames?: any,
     onMenuClick?: (item: any) => void,
     onMenuBtnClick?: (state: boolean) => void,
     footer?: any,
@@ -137,7 +138,7 @@ export type LayoutProps = {
     onLogoClick?: () => void,
     collapsedLogo?: (isLight: boolean) => any,
     unCollapsedLogo?: (isLight: boolean) => any,
-    menuBottomBtnIcon?: string,
+    menuBottomBtnIcon?: any,
     menuBottomBtnText?: any,
     onMenuBottomBtnClick?: () => void,
     layout?: string,
@@ -160,6 +161,7 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
         loading = false,
         breadCrumb = true,
         menus,
+        menuClassNames,
         onMenuClick,
         onMenuBtnClick,
         onLogoClick,
@@ -265,7 +267,7 @@ const SinKing: React.FC<LayoutProps> = forwardRef<SinKingRef>((props: any, ref):
     const getSider = (mode: string) => {
         const layoutMode = mode === "horizontal" ? mode : "inline";
         const theme = menuTheme === "dark" ? menuTheme : "light";
-        return <Sider layout={layoutMode} theme={theme} collapsed={collapsed}
+        return <Sider classNames={menuClassNames} layout={layoutMode} theme={theme} collapsed={collapsed}
                       onLogoClick={onLogoClick}
                       collapsedLogo={collapsedLogo}
                       unCollapsedLogo={unCollapsedLogo}

@@ -42,9 +42,6 @@ const useStyles = createStyles(({token, isDarkMode}): any => {
             ".ant-menu-item,.ant-menu-submenu-title": {
                 transition: "border-color 0.3s,background 0.3s !important"
             },
-            ".ant-menu-item-icon": {
-                color: isDarkMode ? "rgb(255,255,255,0.85)" : ""
-            },
         },
         menuTop: {
             zIndex: 2,
@@ -106,6 +103,7 @@ const useStyles = createStyles(({token, isDarkMode}): any => {
 export type SiderProps = {
     collapsed?: boolean;//菜单展开状态
     menus?: any;//菜单列表
+    classNames?: any;//菜单样式
     onMenuClick?: (item: any) => void;//点击菜单回调
     onLogoClick?: () => void;//点击logo回调
     collapsedLogo?: (isLight: boolean | undefined) => any;//折叠时logo
@@ -128,6 +126,7 @@ const Sider: React.FC<SiderProps> = React.memo((props) => {
         menuBottomBtnIcon = null,
         menuBottomBtnText = null,
         onMenuBottomBtnClick,
+        classNames,
         layout = "inline",
         theme = "light"
     } = props;
@@ -235,7 +234,7 @@ const Sider: React.FC<SiderProps> = React.memo((props) => {
                                 theme={menuTheme}
                                 mode="inline"
                                 items={menus}
-                                className={menu}
+                                className={cx(menu, classNames)}
                                 openKeys={!collapsed ? stateOpenKeys : undefined}
                                 onOpenChange={onOpenChange}
                                 onClick={handleMenuClick}
@@ -245,7 +244,8 @@ const Sider: React.FC<SiderProps> = React.memo((props) => {
                     {(menuBottomBtnIcon || menuBottomBtnText) && (
                         <Layout.Footer className={cx(menuBottom, getColor, getBorderColor)}
                                        onClick={onMenuBottomBtnClick}>
-                            {menuBottomBtnIcon && <Icon type={menuBottomBtnIcon}/>}
+                            {menuBottomBtnIcon && (typeof menuBottomBtnIcon === "string" ?
+                                <Icon type={menuBottomBtnIcon}/> : menuBottomBtnIcon)}
                             {(mobile || (!mobile && !collapsed)) && menuBottomBtnText}
                         </Layout.Footer>
                     )}
@@ -257,7 +257,7 @@ const Sider: React.FC<SiderProps> = React.memo((props) => {
                         mode="horizontal"
                         selectedKeys={selectedKeys}
                         items={menus}
-                        className={menu2}
+                        className={cx(menu2, classNames)}
                         onClick={handleMenuClick}
                     />
                 </ConfigProvider>
