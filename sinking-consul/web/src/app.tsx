@@ -1,5 +1,4 @@
 import {App} from "antd";
-import {Antd} from "@/components";
 import React from "react";
 
 /**
@@ -9,7 +8,6 @@ import React from "react";
 export function rootContainer(container: React.ReactElement) {
     return (
         <App>
-            <Antd/>
             {container}
         </App>
     )

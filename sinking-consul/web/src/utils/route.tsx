@@ -1,6 +1,6 @@
 import {history} from 'umi';
 import route from '../../config/routes'
-import {Icon} from "@/components"
+import {Icon} from "sinking-antd"
 import React from "react"
 
 /**

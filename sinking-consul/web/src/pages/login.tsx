@@ -1,15 +1,14 @@
 import {LockOutlined, UserOutlined} from '@ant-design/icons';
 import {App, Button, Form, Input} from 'antd';
 import React, {useRef, useState} from 'react';
-import {Body, Icon} from '@/components';
+import {Body, Icon} from 'sinking-antd';
 import {useModel} from "umi";
 import {login} from "@/service/auth/login";
 import {setLoginToken} from "@/utils/auth";
-import Captcha, {CaptchaRef} from "@/pages/components/captcha";
+import Captcha, {CaptchaRef} from "@/components/captcha";
 import {createStyles} from "antd-style";
 import Settings from "@/../config/defaultSettings";
 import {historyPush} from "@/utils/route";
-import {Logo} from "@/components/icon";
 
 const useStyles = createStyles(({css, responsive, token}): any => {
     return {
@@ -91,7 +90,7 @@ const Login: React.FC = () => {
                 <div className={content}>
                     <div className={top}>
                         <div className={header}>
-                            <Icon type={Logo}
+                            <Icon type={"icon-logo"}
                                   className={logo}/>
                             <span>{web?.info?.name || Settings?.title}</span>
                         </div>

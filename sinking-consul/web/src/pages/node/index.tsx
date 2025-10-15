@@ -1,11 +1,10 @@
 import React, {useRef, useState} from 'react';
-import {Body, ProTable, Title, ProModal} from '@/components';
+import {Body, ProTable, Title, ProModal, ProModalRef} from 'sinking-antd';
 import {getData} from "@/utils/page";
 import {useEnums} from "@/utils/enum";
 import {deleteNode, getNodeList, updateNode} from "@/service/admin/node";
 import {ago} from "@/utils/time";
 import {Button, Select, Form, App, Dropdown} from 'antd';
-import {ProModalRef} from "@/components/pro-modal";
 
 export default (): React.ReactNode => {
     const [enumsData] = useEnums(["node"]);

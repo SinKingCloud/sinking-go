@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Body, Icon, Title} from "@/components";
+import {Body, Icon, Title} from "sinking-antd";
 import {Card, Row, Col, Avatar, Typography} from 'antd';
 import {
     UserOutlined,
@@ -11,7 +11,6 @@ import {useModel} from 'umi';
 import {getOverviewInfo} from '@/service/admin/system';
 import {createStyles} from 'antd-style';
 import {historyPush} from "@/utils/route";
-import {Logo} from "@/components/icon";
 
 const useStyles: any = createStyles(({token, css}) => ({
     welcomeCard: css`
@@ -425,7 +424,7 @@ export default (): React.ReactNode => {
                 <Col xs={24} sm={24} md={12}>
                     <Card className={styles.systemCard} title={<Title>系统信息</Title>} variant={"borderless"}>
                         <div className="system-header">
-                            <Icon type={Logo} className="system-icon"/>
+                            <Icon type={"icon-logo"} className="system-icon"/>
                             <Typography.Title level={4}
                                               className="system-title">{webModel?.info?.name}</Typography.Title>
                         </div>

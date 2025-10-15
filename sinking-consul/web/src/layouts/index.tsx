@@ -1,14 +1,16 @@
 import React, {useEffect, useState} from "react";
-import {App, Spin} from "antd";
+import {Outlet, useLocation, history, useSelectedRoutes} from "umi";
+import {App, ConfigProvider, Spin} from "antd";
 import {getAllMenuItems, historyPush} from "@/utils/route";
 import {Layout} from "@/layouts/components";
-import {Outlet, useModel, useSelectedRoutes} from "umi";
-import {createStyles} from "antd-style";
-import {Theme} from "@/components";
+import {useModel} from "umi";
 import Title from "./components/title";
 import {deleteHeader, getHeaders} from "@/utils/auth";
 import request from "@/utils/request";
-import {useTheme} from "@/components/theme";
+import defaultSettings from "../../config/defaultSettings";
+import {setIconfontUrl, Theme, useTheme} from "sinking-antd";
+import {createStyles} from "antd-style";
+import zhCN from 'antd/locale/zh_CN';
 
 /**
  * 中间件
@@ -46,6 +48,14 @@ const ProLayout = () => {
 
     const [menu, setMenu] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // 初始化 iconfont 地址
+    useEffect(() => {
+        if (defaultSettings?.iconfontUrl) {
+            setIconfontUrl(defaultSettings.iconfontUrl);
+        }
+    }, []);
+
     useEffect(() => {
         setMenu(getAllMenuItems(true));
         setLoading(true)
@@ -75,20 +85,22 @@ const ProLayout = () => {
         return <Spin spinning={true} size="large" className={load}/>;
     }
     if (routes?.pop()?.route?.auth === false) {
-        return <Theme>
+        return <>
             <Title/>
             <App>
                 <Outlet/>
             </App>
-        </Theme>;
+        </>;
     }
     return <Layout menu={menu}/>;
 }
 
 export default () => {
     return (
-        <Theme>
-            <ProLayout/>
-        </Theme>
+        <ConfigProvider locale={zhCN}>
+            <Theme>
+                <ProLayout/>
+            </Theme>
+        </ConfigProvider>
     );
 }

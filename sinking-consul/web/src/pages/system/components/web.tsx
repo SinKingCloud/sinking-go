@@ -1,5 +1,5 @@
 import React from 'react';
-import {useSystemConfig} from "../hooks/useSystemConfig";
+import {useSystemConfig} from "@/pages/system/hooks";
 import BaseForm from "./common/BaseForm";
 import FormField from "./common/FormField";
 

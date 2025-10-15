@@ -1,7 +1,7 @@
 import {extend} from 'umi-request';
 import defaultSettings from "@/../config/defaultSettings"
 import {API} from "../../typings";
-import {Modal} from "@/components";
+import {Modal} from "sinking-antd";
 
 /**
  * request对象

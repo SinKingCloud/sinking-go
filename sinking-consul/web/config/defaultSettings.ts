@@ -8,4 +8,5 @@ export default ({
     favicons: '/favicon.ico',
     color: "rgb(0, 83, 251)",
     radius: 0,
+    iconfontUrl: "//at.alicdn.com/t/c/font_5013902_1i6dqszic9d.js",
 });

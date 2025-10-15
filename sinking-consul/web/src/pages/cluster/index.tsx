@@ -1,5 +1,5 @@
 import React from 'react';
-import {Body, ProTable, Title} from '@/components';
+import {Body, ProTable, Title} from 'sinking-antd';
 import {getData} from "@/utils/page";
 import {useEnums} from "@/utils/enum";
 import {getClusterList} from "@/service/admin/cluster";

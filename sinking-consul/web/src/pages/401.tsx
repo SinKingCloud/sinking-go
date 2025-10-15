@@ -1,10 +1,10 @@
 import React from "react";
-import {Body} from "@/components";
+import {Body} from "sinking-antd";
 import {Button, Result} from "antd";
 import {createStyles} from "antd-style";
 import {historyPush} from "@/utils/route";
 
-const useStyles = createStyles(({token}): any => {
+const useStyles = createStyles((): any => {
     return {
         body: {
             width: "100%",

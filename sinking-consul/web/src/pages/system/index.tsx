@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Card, Menu} from 'antd';
 import UiView from "./components/ui";
-import {Body, Title} from "@/components";
+import {Body, Title} from "sinking-antd";
 import {createStyles} from "antd-style";
 import WebView from "@/pages/system/components/web";
 import PasswordView from "@/pages/system/components/password";

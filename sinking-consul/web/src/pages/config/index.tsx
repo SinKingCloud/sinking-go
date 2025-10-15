@@ -1,12 +1,11 @@
 import React, {useRef, useState} from 'react';
-import {Body, ProTable, Title, ProModal} from '@/components';
+import {Body, ProTable, Title, ProModal, ProModalRef} from 'sinking-antd';
 import {getData} from "@/utils/page";
 import {useEnums} from "@/utils/enum";
 import {App, Button, Dropdown, Form, Input, Select, Spin, Row, Col} from 'antd';
-import {ProModalRef} from "@/components/pro-modal";
 import {createConfig, deleteConfig, getConfigInfo, getConfigList, updateConfig} from "@/service/admin/config";
 import defaultSettings from "../../../config/defaultSettings";
-import AceEditor from "@/pages/components/ace-editor";
+import AceEditor from "@/components/ace-editor";
 import {createStyles} from "antd-style";
 
 const AcePath = defaultSettings?.basePath + "ace/" || "/ace/";

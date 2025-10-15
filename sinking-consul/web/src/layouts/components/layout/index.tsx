@@ -1,17 +1,15 @@
-import React from "react";
-import {Layout, Icon} from "@/components";
-import {useModel} from "umi";
+import React, {useMemo} from "react";
+import {Layout, Icon, useTheme} from "sinking-antd";
+import {useModel, useSelectedRoutes, useLocation, history, Outlet} from "umi";
 import {deleteHeader} from "@/utils/auth";
-import {historyPush} from "@/utils/route";
+import {getAllMenuItems, getFirstMenuWithoutChildren, getParentList, historyPush} from "@/utils/route";
 import {App, Avatar, Col, Popover, Row, Tooltip} from "antd";
 import {createStyles} from "antd-style";
 import Settings from "@/../config/defaultSettings";
-import {Auto, Bottom, Dark, Exit, Light, Log, Logo, Right, Set} from "@/components/icon";
 import {logout} from "@/service/auth/login";
 import request from "@/utils/request";
 import Title from "../title";
 import defaultSettings from "@/../config/defaultSettings";
-import {useTheme} from "@/components/theme";
 
 /**
  * 中间件
@@ -182,7 +180,8 @@ const RightTop: React.FC = () => {
     } = useRightTopStyles();
     return <>
         <Tooltip title={theme?.getModeName(theme?.mode as any)}>
-            <Icon type={theme?.isDarkMode() ? Dark : (theme?.isAutoMode() ? Auto : Light)} className={icon}
+            <Icon type={theme?.isDarkMode() ? "icon-dark" : (theme?.isAutoMode() ? "icon-auto" : "icon-light")}
+                  className={icon}
                   onClick={() => {
                       theme?.toggle?.();
                   }}/>
@@ -202,12 +201,12 @@ const RightTop: React.FC = () => {
                      </Row>
                      <ul className={menu}>
                          <li className={menuItem} onClick={() => historyPush("system")}>
-                             <div><Icon type={Set} style={{fontSize: 14}}/>系统管理</div>
-                             <Icon type={Right}></Icon>
+                             <div><Icon type={"icon-set"} style={{fontSize: 14}}/>系统管理</div>
+                             <Icon type={"icon-right"}></Icon>
                          </li>
                          <li className={menuItem} onClick={() => historyPush("log")}>
-                             <div><Icon type={Log} style={{fontSize: 14}}/>操作日志</div>
-                             <Icon type={Right}></Icon>
+                             <div><Icon type={"icon-log"} style={{fontSize: 14}}/>操作日志</div>
+                             <Icon type={"icon-right"}></Icon>
                          </li>
                          <li className={menuItem} onClick={async () => {
                              message?.loading({content: '正在退出登录', duration: 600000, key: "outLogin"});
@@ -224,8 +223,8 @@ const RightTop: React.FC = () => {
                                  }
                              })
                          }}>
-                             <div><Icon type={Exit} style={{fontSize: 14}}/>退出登录</div>
-                             <Icon type={Right}></Icon>
+                             <div><Icon type={"icon-exit"} style={{fontSize: 14}}/>退出登录</div>
+                             <Icon type={"icon-right"}></Icon>
                          </li>
                      </ul>
                  </>}>
@@ -234,7 +233,7 @@ const RightTop: React.FC = () => {
                     {(user?.web?.account?.slice(0, 1)?.toUpperCase() || "未登录")}
                 </Avatar>
                 <span className={nickname}>{user?.web?.account || "未登录"}</span>
-                <Icon className={web?.info?.ui?.theme == "dark" ? bottomIconDark : ""} type={Bottom}/>
+                <Icon className={web?.info?.ui?.theme == "dark" ? bottomIconDark : ""} type={"icon-bottom"}/>
             </div>
         </Popover>
     </>
@@ -284,12 +283,50 @@ const SKLayout: React.FC<slide> = ({...props}) => {
      */
     const user = useModel("user");
     const web = useModel("web");
-
+    const location = useLocation();
+    const match = useSelectedRoutes();
     const {styles: {collapsedImg, unCollapsed}} = useSKLayoutStyles();
+
+    /**
+     * 计算面包屑数据
+     */
+    const breadCrumbItems = useMemo(() => {
+        if (!location?.pathname) return [];
+
+        const items = getParentList(getAllMenuItems(false), match?.at(-1)?.route?.name);
+        const temp = [{
+            title: "首页",
+            onClick: () => {
+                historyPush(getFirstMenuWithoutChildren(getAllMenuItems(location?.pathname))?.name || "");
+            },
+        }];
+
+        const handleItemClick = (x: any) => {
+            if (x?.children && x?.children?.length > 0) {
+                historyPush(getFirstMenuWithoutChildren(x?.children)?.name || "");
+            } else {
+                historyPush(x?.name);
+            }
+        };
+
+        items.forEach((x) => {
+            temp.push({
+                title: x?.label,
+                onClick: () => handleItemClick(x),
+            });
+        });
+
+        return temp;
+    }, [location?.pathname, match]);
     return (
         <>
             <Title/>
             <Layout loading={!user?.web}
+                    pathname={location?.pathname}
+                    matchedRoutes={match || []}
+                    onNavigate={(path) => history.push(path)}
+                    breadCrumbItems={breadCrumbItems}
+                    hideBreadCrumb={match?.at(-1)?.route?.hideBreadCrumb}
                     waterMark={web?.info?.ui?.watermark ? [web?.info?.name, user?.web?.account] : ""}
                     menus={menu}
                     layout={web?.info?.ui?.layout != "left" ? "horizontal" : "inline"}
@@ -303,18 +340,21 @@ const SKLayout: React.FC<slide> = ({...props}) => {
                     menuCollapsedWidth={60}
                     menuUnCollapsedWidth={210}
                     collapsedLogo={() => {
-                        return <Icon type={Logo} style={{color: web?.info?.ui?.color || defaultSettings?.color}}
+                        return <Icon type={"icon-logo"} style={{color: web?.info?.ui?.color || defaultSettings?.color}}
                                      className={collapsedImg}/>;
                     }}
                     unCollapsedLogo={() => {
                         return (
                             <div className={unCollapsed}>
-                                <Icon type={Logo} style={{color: web?.info?.ui?.color || defaultSettings?.color}}/>
+                                <Icon type={"icon-logo"}
+                                      style={{color: web?.info?.ui?.color || defaultSettings?.color}}/>
                                 <div style={{color: web?.info?.ui?.color || defaultSettings?.color}}>
                                     {web?.info?.name || Settings?.title}
                                 </div>
                             </div>)
-                    }}/>
+                    }}>
+                <Outlet/>
+            </Layout>
         </>
     );
 }
