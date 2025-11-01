@@ -37,20 +37,33 @@ func (s *Rpc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
+	// 定义响应结构
+	var resp struct {
+		Code    int             `json:"code"`
+		Message string          `json:"message"`
+		Data    json.RawMessage `json:"data,omitempty"`
+	}
+
 	// 验证token
 	if r.Header.Get(TokenName) != s.client.token {
-		_ = json.NewEncoder(w).Encode(map[string]interface{}{"code": ResponseFail, "message": "认证失败"})
+		resp.Code = ResponseFail
+		resp.Message = "认证失败"
+		_ = json.NewEncoder(w).Encode(resp)
 		return
 	}
 	// 只接受POST请求
 	if r.Method != http.MethodPost {
-		_ = json.NewEncoder(w).Encode(map[string]interface{}{"code": ResponseFail, "message": "只支持POST请求"})
+		resp.Code = ResponseFail
+		resp.Message = "只支持POST请求"
+		_ = json.NewEncoder(w).Encode(resp)
 		return
 	}
 	// 读取请求体
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		_ = json.NewEncoder(w).Encode(map[string]interface{}{"code": ResponseFail, "message": "读取请求失败: " + err.Error()})
+		resp.Code = ResponseFail
+		resp.Message = "读取请求失败: " + err.Error()
+		_ = json.NewEncoder(w).Encode(resp)
 		return
 	}
 	defer r.Body.Close()
@@ -59,13 +72,17 @@ func (s *Rpc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Action string          `json:"action"`
 		Params json.RawMessage `json:"params"`
 	}
-	if err := json.Unmarshal(body, &req); err != nil {
-		_ = json.NewEncoder(w).Encode(map[string]interface{}{"code": ResponseFail, "message": "解析请求失败: " + err.Error()})
+	if err = json.Unmarshal(body, &req); err != nil {
+		resp.Code = ResponseFail
+		resp.Message = "解析请求失败: " + err.Error()
+		_ = json.NewEncoder(w).Encode(resp)
 		return
 	}
-	// 验证服务名不能为空
+	// 验证方法名不能为空
 	if req.Action == "" {
-		_ = json.NewEncoder(w).Encode(map[string]interface{}{"code": ResponseFail, "message": "方法名不能为空"})
+		resp.Code = ResponseFail
+		resp.Message = "方法名不能为空"
+		_ = json.NewEncoder(w).Encode(resp)
 		return
 	}
 	// 查找处理器
@@ -73,22 +90,25 @@ func (s *Rpc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handler, exists := s.handlers[req.Action]
 	s.mu.RUnlock()
 	if !exists {
-		_ = json.NewEncoder(w).Encode(map[string]interface{}{"code": ResponseFail, "message": "方法不存在: " + req.Action})
+		resp.Code = ResponseFail
+		resp.Message = "方法不存在: " + req.Action
+		_ = json.NewEncoder(w).Encode(resp)
 		return
 	}
 	// 调用处理器
 	result, err := handler(req.Params)
 	if err != nil {
-		_ = json.NewEncoder(w).Encode(map[string]interface{}{"code": ResponseFail, "message": err.Error()})
+		resp.Code = ResponseFail
+		resp.Message = err.Error()
+		_ = json.NewEncoder(w).Encode(resp)
 		return
 	}
 	// 发送成功响应
 	dataBytes, _ := json.Marshal(result)
-	_ = json.NewEncoder(w).Encode(map[string]interface{}{
-		"code":    ResponseSuccess,
-		"message": "success",
-		"data":    json.RawMessage(dataBytes),
-	})
+	resp.Code = int(ResponseSuccess)
+	resp.Message = "success"
+	resp.Data = dataBytes
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 // Call 调用远程RPC服务
