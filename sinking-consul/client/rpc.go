@@ -26,10 +26,10 @@ func NewRpc(client *Client) *Rpc {
 }
 
 // Register 注册RPC服务
-func (s *Rpc) Register(service string, handler RpcHandlerFunc) {
+func (s *Rpc) Register(action string, handler RpcHandlerFunc) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.handlers[service] = handler
+	s.handlers[action] = handler
 }
 
 // ServeHTTP 实现http.Handler接口，处理RPC请求
@@ -56,24 +56,24 @@ func (s *Rpc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	// 解析请求
 	var req struct {
-		Service string          `json:"service"`
-		Params  json.RawMessage `json:"params"`
+		Action string          `json:"action"`
+		Params json.RawMessage `json:"params"`
 	}
 	if err := json.Unmarshal(body, &req); err != nil {
 		_ = json.NewEncoder(w).Encode(map[string]interface{}{"code": ResponseFail, "message": "解析请求失败: " + err.Error()})
 		return
 	}
 	// 验证服务名不能为空
-	if req.Service == "" {
-		_ = json.NewEncoder(w).Encode(map[string]interface{}{"code": ResponseFail, "message": "服务名不能为空"})
+	if req.Action == "" {
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{"code": ResponseFail, "message": "方法名不能为空"})
 		return
 	}
 	// 查找处理器
 	s.mu.RLock()
-	handler, exists := s.handlers[req.Service]
+	handler, exists := s.handlers[req.Action]
 	s.mu.RUnlock()
 	if !exists {
-		_ = json.NewEncoder(w).Encode(map[string]interface{}{"code": ResponseFail, "message": "服务不存在: " + req.Service})
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{"code": ResponseFail, "message": "方法不存在: " + req.Action})
 		return
 	}
 	// 调用处理器
@@ -96,7 +96,7 @@ func (s *Rpc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // params: 请求参数
 // result: 返回结果（必须是指针）
 // options: 可选参数 [loadBalance, hashKey]
-func (s *Rpc) Call(serviceName string, params interface{}, result interface{}, options ...interface{}) error {
+func (s *Rpc) Call(serviceName string, action string, params interface{}, result interface{}, options ...interface{}) error {
 	// 解析可选参数
 	loadBalance := Poll
 	hashKey := ""
@@ -130,7 +130,7 @@ func (s *Rpc) Call(serviceName string, params interface{}, result interface{}, o
 		address = "http://" + address
 	}
 	// 序列化请求
-	reqData, err := json.Marshal(map[string]interface{}{"service": serviceName, "params": params})
+	reqData, err := json.Marshal(map[string]interface{}{"action": action, "params": params})
 	if err != nil {
 		return errors.New("序列化请求失败: " + err.Error())
 	}

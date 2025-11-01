@@ -192,9 +192,9 @@ func (c *Client) GetAllConfigs() ([]*ConfigParser, error) {
 	return parsers, nil
 }
 
-// Register 注册RPC服务
-func (c *Client) Register(service string, handler RpcHandlerFunc) {
-	c.rpc.Register(service, handler)
+// RpcRegister 注册RPC方法
+func (c *Client) RpcRegister(action string, handler RpcHandlerFunc) {
+	c.rpc.Register(action, handler)
 }
 
 // RpcHandle 获取RPC HTTP处理器
@@ -203,6 +203,6 @@ func (c *Client) RpcHandle() http.Handler {
 }
 
 // RpcCall 调用远程RPC服务
-func (c *Client) RpcCall(serviceName string, params interface{}, result interface{}, options ...interface{}) error {
-	return c.rpc.Call(serviceName, params, result, options...)
+func (c *Client) RpcCall(serviceName string, action string, params interface{}, result interface{}, options ...interface{}) error {
+	return c.rpc.Call(serviceName, action, params, result, options...)
 }

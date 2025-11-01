@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/json"
 	"testing"
 )
 
@@ -13,5 +14,11 @@ func Test(t *testing.T) {
 	_, _ = cli.GetService("服务名", Poll)            //获取服务节点-轮询模式
 	_, _ = cli.GetService("服务名", Rand)            //获取服务节点-随机模式
 	_, _ = cli.GetService("服务名", Hash, "user123") //获取服务节点-哈希模式，根据指定的键获取节点
-	_ = cli.Close()                               //断开集群
+	//rpc相关操作
+	cli.RpcRegister("方法名", func(params json.RawMessage) (interface{}, error) {
+		return map[string]string{"响应参数1": "响应值1"}, nil
+	}) //注册
+	_ = cli.RpcCall("服务名", "方法名", map[string]interface{}{"参数1": "值1"}, nil) //调用远程RPC服务
+	cli.RpcHandle().ServeHTTP(nil, nil)                                     //获取RPC HTTP处理器
+	_ = cli.Close()                                                         //断开集群
 }
