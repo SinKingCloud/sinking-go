@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"hash/fnv"
+	"net/http"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -32,6 +33,8 @@ type Client struct {
 	configLastSyncTime int64
 	// 轮询计数器
 	pollCounter uint64
+	// RPC服务器
+	rpc *Rpc
 }
 
 // NewClient 实例化client
@@ -39,7 +42,7 @@ type Client struct {
 // token 请求密钥
 func NewClient(address []string, group string, name string, addr string, token string) *Client {
 	ctx, cancel := context.WithCancel(context.Background())
-	return &Client{
+	c := &Client{
 		address: address,
 		group:   group,
 		name:    name,
@@ -51,6 +54,8 @@ func NewClient(address []string, group string, name string, addr string, token s
 		configs: make(map[string]*Config),
 		parsers: make(map[string]*ConfigParser),
 	}
+	c.rpc = NewRpc(c)
+	return c
 }
 
 // Connect 自动注册
@@ -90,7 +95,6 @@ func (c *Client) Close() error {
 	c.nodesMu.Lock()
 	c.nodes = make(map[string][]*Node)
 	c.nodesMu.Unlock()
-
 	c.configsMu.Lock()
 	c.configs = make(map[string]*Config)
 	c.parsers = make(map[string]*ConfigParser)
@@ -123,7 +127,7 @@ func (c *Client) GetService(name string, types Type, options ...string) (*Node, 
 			return nil, errors.New("Hash模式需要提供hashKey")
 		}
 		h := fnv.New32a()
-		h.Write([]byte(options[0]))
+		_, _ = h.Write([]byte(options[0]))
 		index := int(h.Sum32()) % num
 		return serviceNodes[index], nil
 	default:
@@ -135,12 +139,18 @@ func (c *Client) GetService(name string, types Type, options ...string) (*Node, 
 func (c *Client) GetAllService() ([]*Node, error) {
 	c.nodesMu.RLock()
 	defer c.nodesMu.RUnlock()
-	var allNodes []*Node
+	// 预先计算总节点数，避免多次扩容
+	totalCount := 0
+	for _, serviceNodes := range c.nodes {
+		totalCount += len(serviceNodes)
+	}
+	if totalCount == 0 {
+		return nil, errors.New("没有可用的服务节点")
+	}
+	// 预分配足够容量的切片
+	allNodes := make([]*Node, 0, totalCount)
 	for _, serviceNodes := range c.nodes {
 		allNodes = append(allNodes, serviceNodes...)
-	}
-	if len(allNodes) == 0 {
-		return nil, errors.New("没有可用的服务节点")
 	}
 	return allNodes, nil
 }
@@ -180,4 +190,19 @@ func (c *Client) GetAllConfigs() ([]*ConfigParser, error) {
 		parsers = append(parsers, parser)
 	}
 	return parsers, nil
+}
+
+// Register 注册RPC服务
+func (c *Client) Register(service string, handler RpcHandlerFunc) {
+	c.rpc.Register(service, handler)
+}
+
+// RpcHandle 获取RPC HTTP处理器
+func (c *Client) RpcHandle() http.Handler {
+	return c.rpc
+}
+
+// RpcCall 调用远程RPC服务
+func (c *Client) RpcCall(serviceName string, params interface{}, result interface{}, options ...interface{}) error {
+	return c.rpc.Call(serviceName, params, result, options...)
 }
