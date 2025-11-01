@@ -17,8 +17,9 @@ func Test(t *testing.T) {
 	//rpc相关操作
 	cli.RpcRegister("方法名", func(params json.RawMessage) (interface{}, error) {
 		return map[string]string{"响应参数1": "响应值1"}, nil
-	}) //注册
+	}) //注册方法
+	cli.RpcHandle().ServeHTTP(nil, nil)                                     //获取RPC HTTP处理器 后续挂载在http上即可使用
 	_ = cli.RpcCall("服务名", "方法名", map[string]interface{}{"参数1": "值1"}, nil) //调用远程RPC服务
-	cli.RpcHandle().ServeHTTP(nil, nil)                                     //获取RPC HTTP处理器
-	_ = cli.Close()                                                         //断开集群
+
+	_ = cli.Close() //断开集群
 }
