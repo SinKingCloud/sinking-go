@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"errors"
+	"hash/fnv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -100,7 +101,8 @@ func (c *Client) Close() error {
 // GetService 获取服务节点
 // name 服务名称
 // types 获取方式
-func (c *Client) GetService(name string, types Type) (*Node, error) {
+// options 可选参数，当types为Hash时，options[0]应为hashKey
+func (c *Client) GetService(name string, types Type, options ...string) (*Node, error) {
 	c.nodesMu.RLock()
 	defer c.nodesMu.RUnlock()
 	serviceNodes, exists := c.nodes[name]
@@ -115,6 +117,14 @@ func (c *Client) GetService(name string, types Type) (*Node, error) {
 		return serviceNodes[index], nil
 	case Rand: // 随机
 		index := int(time.Now().UnixNano()) % num
+		return serviceNodes[index], nil
+	case Hash: // 哈希
+		if len(options) == 0 || options[0] == "" {
+			return nil, errors.New("Hash模式需要提供hashKey")
+		}
+		h := fnv.New32a()
+		h.Write([]byte(options[0]))
+		index := int(h.Sum32()) % num
 		return serviceNodes[index], nil
 	default:
 		return serviceNodes[0], nil
