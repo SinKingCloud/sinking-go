@@ -34,7 +34,7 @@ func (s *Rpc) Register(action string, handler RpcHandlerFunc) {
 
 // ServeHTTP 实现http.Handler接口，处理RPC请求
 func (s *Rpc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json;charset=utf-8;")
 	w.WriteHeader(http.StatusOK)
 
 	// 定义响应结构
