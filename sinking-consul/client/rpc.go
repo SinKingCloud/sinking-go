@@ -41,7 +41,7 @@ func (s *Rpc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var resp struct {
 		Code    int             `json:"code"`
 		Message string          `json:"message"`
-		Data    json.RawMessage `json:"data,omitempty"`
+		Data    json.RawMessage `json:"data"`
 	}
 
 	// 验证token
