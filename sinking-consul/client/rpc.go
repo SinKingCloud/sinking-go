@@ -120,12 +120,13 @@ func (s *Rpc) Call(serviceName string, action string, params interface{}, result
 	// 解析可选参数
 	loadBalance := Poll
 	hashKey := ""
-	if len(options) > 0 {
+	n := len(options)
+	if n > 0 {
 		if lb, ok := options[0].(Type); ok {
 			loadBalance = lb
 		}
 	}
-	if len(options) > 1 {
+	if n > 1 {
 		if hk, ok := options[1].(string); ok {
 			hashKey = hk
 		}
