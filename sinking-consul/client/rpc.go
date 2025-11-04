@@ -117,18 +117,27 @@ func (s *Rpc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // result: 返回结果（必须是指针）
 // options: 可选参数 [loadBalance, hashKey]
 func (s *Rpc) Call(serviceName string, action string, params interface{}, result interface{}, options ...interface{}) error {
-	// 解析可选参数
 	loadBalance := Poll
 	hashKey := ""
+	path := ""
+	idx := 0
 	n := len(options)
-	if n > 0 {
-		if lb, ok := options[0].(Type); ok {
-			loadBalance = lb
+	if idx < n {
+		if p, ok := options[idx].(string); ok {
+			path = p
+			idx++
 		}
 	}
-	if n > 1 {
-		if hk, ok := options[1].(string); ok {
+	if idx < n {
+		if lb, ok := options[idx].(Type); ok {
+			loadBalance = lb
+			idx++
+		}
+	}
+	if idx < n {
+		if hk, ok := options[idx].(string); ok {
 			hashKey = hk
+			idx++
 		}
 	}
 	// 获取服务节点
@@ -146,7 +155,7 @@ func (s *Rpc) Call(serviceName string, action string, params interface{}, result
 		return err
 	}
 	// 构建URL（注册中心的地址已包含完整路径）
-	address := node.Address
+	address := node.Address + "/" + path
 	if !strings.HasPrefix(address, "http://") && !strings.HasPrefix(address, "https://") {
 		address = "http://" + address
 	}
