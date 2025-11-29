@@ -41,33 +41,29 @@ const useRightTopStyles = createStyles(({css, token, isDarkMode}): any => {
         bottomIconDark: {
             color: isDarkMode ? token.colorTextSecondary : "rgb(150,150,150)",
         },
-        profile: css`
+        pop: css`
             margin-left: 10px;
             margin-right: 20px;
+            display: initial;
+            padding: 11px 5px;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
 
             .anticon {
                 margin-left: 2px;
                 font-size: 10px;
             }
         `,
-        pop: css`
-            display: initial;
-            padding: 11px 5px;
-            transition: background-color 0.3s ease;
-            cursor: pointer;
-        `,
         box: css`
-            .ant-popover-inner {
-                box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.15) !important;
+            .ant-popover-container {
                 padding: 0 !important;
+                box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.15) !important;
+                width: 210px;
             }
 
             .ant-popover-arrow:before {
                 background-color: ${token?.colorPrimary} !important;
-            }
-
-            .ant-popover-inner-content {
-                width: 210px;
             }
         `,
         content_top: css`
@@ -167,7 +163,6 @@ const RightTop: React.FC = () => {
             img,
             nickname,
             bottomIconDark,
-            profile,
             pop,
             content_top,
             ava,
@@ -186,7 +181,7 @@ const RightTop: React.FC = () => {
                       theme?.toggle?.();
                   }}/>
         </Tooltip>
-        <Popover className={profile} rootClassName={box} autoAdjustOverflow={false}
+        <Popover rootClassName={box} autoAdjustOverflow={false}
                  placement="bottomRight"
                  content={<>
                      <Row className={content_top}>

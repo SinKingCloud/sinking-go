@@ -30,11 +30,6 @@ function errorHandle(): void {
             okText: "刷新",
             onOk: clear,
             onCancel: clear,
-            styles: {
-                mask: {
-                    WebkitBackdropFilter: "blur(10px)",
-                },
-            },
         } as any);
     }
 }

@@ -45,7 +45,7 @@ const useStyles: any = createStyles(({isDarkMode, token}) => {
             ".ant-modal": {
                 width: "326px !important",
             },
-            ".ant-modal-content": {
+            ".ant-modal-container": {
                 padding: "0 !important",
                 backgroundColor: "transparent !important",
                 boxShadow: "none !important",

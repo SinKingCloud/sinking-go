@@ -20,4 +20,5 @@ export default defineConfig({
     },
     hash: true,
     exportStatic: {},
+    esbuildMinifyIIFE: true,
 } as any);

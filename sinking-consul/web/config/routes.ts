@@ -80,8 +80,8 @@ export default [
      * 403
      */
     {
-        path: '401',
-        component: '@/pages/401.tsx',
+        path: '403',
+        component: '@/pages/403.tsx',
         name: "notAllowed",
         title: "无权限",
         auth: false,
