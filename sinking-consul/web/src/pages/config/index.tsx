@@ -1,5 +1,5 @@
 import React, {useRef, useState} from 'react';
-import {Body, ProTable, Title, ProModal, ProModalRef} from 'sinking-antd';
+import {Body, ProTable, Title, ProModal, ProModalRef, ProTableRef} from 'sinking-antd';
 import {getData} from "@/utils/page";
 import {useEnums} from "@/utils/enum";
 import {App, Button, Dropdown, Form, Input, Select, Spin, Row, Col} from 'antd';
@@ -112,7 +112,7 @@ export default (): React.ReactNode => {
         });
     };
 
-    const tableRef = React.useRef<any>(null);
+    const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const columns: any[] = [
         {
             title: '配置分组',

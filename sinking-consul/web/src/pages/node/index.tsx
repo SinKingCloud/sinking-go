@@ -1,5 +1,5 @@
 import React, {useRef, useState} from 'react';
-import {Body, ProTable, Title, ProModal, ProModalRef} from 'sinking-antd';
+import {Body, ProTable, Title, ProModal, ProModalRef, ProTableRef} from 'sinking-antd';
 import {getData} from "@/utils/page";
 import {useEnums} from "@/utils/enum";
 import {deleteNode, getNodeList, updateNode} from "@/service/admin/node";
@@ -69,7 +69,7 @@ export default (): React.ReactNode => {
     /**
      * 表格
      */
-    const tableRef = React.useRef<any>(null);
+    const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const columns: any[] = [
         {
             title: '服务分组',
@@ -195,12 +195,12 @@ export default (): React.ReactNode => {
                 rowSelection={{
                     rightExtra: [<Button key="delete" type={"primary"} danger ghost
                                          onClick={() => {
-                                             onDelete(tableRef?.current?.getSelectedRowKeys());
+                                             onDelete(tableRef?.current?.getSelectedRowKeys() as any);
                                          }}>批量删除</Button>,
                         <Button key="edit" type={"primary"} ghost
                                 onClick={() => {
                                     form?.resetFields();
-                                    setEditRecords(tableRef?.current?.getSelectedRowKeys());
+                                    setEditRecords(tableRef?.current?.getSelectedRowKeys() as any);
                                     modalRef.current?.show();
                                 }}>批量编辑</Button>
                     ]

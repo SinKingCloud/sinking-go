@@ -13,7 +13,6 @@ const color = {
 }
 
 export default (): React.ReactNode => {
-
     const [enumsData, loading] = useEnums(["log"]);
 
     const columns: any[] = [

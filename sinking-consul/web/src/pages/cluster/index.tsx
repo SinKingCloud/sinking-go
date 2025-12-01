@@ -6,7 +6,6 @@ import {getClusterList} from "@/service/admin/cluster";
 import {ago} from "@/utils/time";
 
 export default (): React.ReactNode => {
-
     const [enumsData] = useEnums(["cluster"]);
 
     const columns: any[] = [
