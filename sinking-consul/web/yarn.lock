@@ -8477,10 +8477,10 @@ single-spa@^5.9.2:
   resolved "https://registry.npmmirror.com/single-spa/-/single-spa-5.9.5.tgz#f47b3c91b009ebc3b224dd1086ef2b2dac524373"
   integrity sha512-9SQdmsyz4HSP+3gs6PJzhkaMEg+6zTlu9oxIghnwUX3eq+ajq4ft5egl0iyR55LAmO/UwvU8NgIWs/ZyQMa6dw==
 
-sinking-antd@^1.0.4:
-  version "1.0.4"
-  resolved "https://registry.npmmirror.com/sinking-antd/-/sinking-antd-1.0.4.tgz#0fc9c3c179da2d041067660848132785e7d7cc05"
-  integrity sha512-go2FkGuyCWBgVMdgzMrWErsEE51XwiO7HrGtHK0eQ0mMXlpSS2nI6UGrjBVKgIlni1CxFAoHD17DWDTWsvpsPw==
+sinking-antd@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.npmmirror.com/sinking-antd/-/sinking-antd-1.0.5.tgz#1dc6b3238dd04d4a42a62bf2464153da1afbf9aa"
+  integrity sha512-ccZGLfRWTdC0aYSiN5i652vuzC1hQ/ZGt7+Otn+1AQvaU9F6k8N8ZdFRMCFSInT5ZW3lDWq3Xzl6dyj4MHuuwg==
   dependencies:
     "@ant-design/icons" "^6.1.0"
     antd "^6.0.0"
