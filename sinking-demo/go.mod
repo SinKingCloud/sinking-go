@@ -3,8 +3,9 @@ module sinking-demo
 go 1.11
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250330150011-1690c6225578
-	github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20250330150011-1690c6225578
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20251210092505-e7ad146c8491
+	github.com/SinKingCloud/sinking-go/sinking-websocket v0.0.0-20251210092505-e7ad146c8491
+	github.com/gorilla/websocket v1.5.3 // indirect
 )
 
 replace (
