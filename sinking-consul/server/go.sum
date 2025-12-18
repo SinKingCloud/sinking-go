@@ -2,6 +2,8 @@ github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250924082909-c1cfae01b34
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20250924082909-c1cfae01b348/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20251210092505-e7ad146c8491 h1:6LQk2khUohBgpdbS1oZhi8Dwlv+n3rsHwfuarJg/yuE=
 github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20251210092505-e7ad146c8491/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20251218052350-de511030ad32 h1:Q+fu7AF2LwPXVlxP3PEgDxnhA1frJrlm4KaU3XiQ9/o=
+github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20251218052350-de511030ad32/go.mod h1:MHwT4vycY3UTpk3Zp8DSab1tw66kIHBlEinNm72hyjU=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868 h1:uFrPOl1VBt/Abfl2z+A/DFc+AwmFLxEHR1+Yq6cXvww=
 github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868/go.mod h1:srphKZ1i+yGXxl/LpBS7ZIECTjCTPzZzAMtJWoG3sLo=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

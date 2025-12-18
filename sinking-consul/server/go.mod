@@ -3,7 +3,7 @@ module server
 go 1.24.0
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20251210092505-e7ad146c8491
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20251218052350-de511030ad32
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
 	github.com/glebarez/sqlite v1.11.0
 	github.com/go-playground/locales v0.14.1
