@@ -8,8 +8,10 @@ const useStyles = createStyles((): any => {
     return {
         body: {
             width: "100%",
-            margin: "0 auto",
-            lineHeight: "80vh"
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "80vh",
         },
     };
 });

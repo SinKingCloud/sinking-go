@@ -1,13 +1,14 @@
 package route
 
 import (
-	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"server/app/http/controller/admin"
 	"server/app/http/controller/api"
 	"server/app/http/controller/auth"
 	"server/app/http/middleware"
 	"server/app/util/context"
 	"server/public"
+
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
 // loadApp 加载app路由

@@ -33,9 +33,11 @@ request.use(check);
 const useStyles = createStyles((): any => {
     return {
         load: {
-            margin: "0 auto",
             width: "100%",
-            lineHeight: "80vh",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "80vh",
         },
     };
 });
