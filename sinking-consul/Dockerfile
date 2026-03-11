@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 golang:1.24 AS builder
+FROM --platform=linux/amd64 golang:1.25 AS builder
 
 # 设置工作目录
 WORKDIR /app

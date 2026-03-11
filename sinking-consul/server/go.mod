@@ -3,7 +3,7 @@ module server
 go 1.25.0
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260307053429-e11eb18c9e72
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260311074548-4051076c992a
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
 	github.com/glebarez/sqlite v1.11.0
 	github.com/go-playground/locales v0.14.1
@@ -14,7 +14,7 @@ require (
 	github.com/sevlyar/go-daemon v0.1.6
 	github.com/spf13/viper v1.21.0
 	github.com/wenlng/go-captcha-assets v1.0.7
-	github.com/wenlng/go-captcha/v2 v2.0.4
+	github.com/wenlng/go-captcha/v2 v2.0.5
 	golang.org/x/crypto v0.48.0
 	golang.org/x/text v0.34.0
 	gorm.io/gorm v1.31.1
@@ -44,11 +44,10 @@ require (
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/exp v0.0.0-20260218203240-3dfff04db8fa // indirect
 	golang.org/x/image v0.36.0 // indirect
-	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
-	modernc.org/libc v1.69.0 // indirect
+	modernc.org/libc v1.70.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 	modernc.org/sqlite v1.46.1 // indirect
