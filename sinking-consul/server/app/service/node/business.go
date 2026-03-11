@@ -70,6 +70,10 @@ func (s *Service) Set(group string, key string, value *Node) {
 	if _, ok := nodePool[group]; !ok {
 		nodePool[group] = make(map[string]*Node)
 	}
+	temp := nodePool[group][key]
+	if temp != nil && (temp.Status != value.Status || temp.OnlineStatus != value.OnlineStatus) {
+		s.SetOperateTime(group)
+	}
 	nodePool[group][key] = value
 }
 
