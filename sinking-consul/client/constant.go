@@ -24,9 +24,10 @@ const (
 type ResponseCode int
 
 const (
-	ResponseSuccess ResponseCode = 200 //请求成功
-	ResponseFail                 = 500 //请求失败
-	ResponseError                = 400 //请求错误
+	ResponseSuccess  ResponseCode = 200 //请求成功
+	ResponseFail                  = 500 //请求失败
+	ResponseError                 = 400 //请求错误
+	ResponseNotAllow              = 401 //无权限
 )
 
 // RpcHandlerFunc RPC处理函数

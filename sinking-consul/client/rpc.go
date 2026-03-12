@@ -43,17 +43,18 @@ func (s *Rpc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Message string          `json:"message"`
 		Data    json.RawMessage `json:"data"`
 	}
+	resp.Data = json.RawMessage("{}") // 默认空对象
 
 	// 验证token
 	if r.Header.Get(TokenName) != s.client.token {
-		resp.Code = ResponseFail
+		resp.Code = ResponseNotAllow
 		resp.Message = "认证失败"
 		_ = json.NewEncoder(w).Encode(resp)
 		return
 	}
 	// 只接受POST请求
 	if r.Method != http.MethodPost {
-		resp.Code = ResponseFail
+		resp.Code = ResponseNotAllow
 		resp.Message = "只支持POST请求"
 		_ = json.NewEncoder(w).Encode(resp)
 		return
