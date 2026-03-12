@@ -21,11 +21,11 @@ func (s *Service) UpdateByAddresses(addresses []string, data map[string]interfac
 	list, err := s.SelectInAddress(addresses)
 	if err == nil {
 		s.Sets(list)
-		g := make(map[string]int64)
+		var g []string
 		for _, v := range list {
-			g[v.Group] = 1
+			g = append(g, v.Group)
 		}
-		for group := range g {
+		for _, group := range g {
 			s.SetOperateTime(group)
 		}
 	}
