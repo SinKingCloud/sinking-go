@@ -76,7 +76,7 @@ func (c *Client) register() error {
 }
 
 // getNodeList 获取节点信息
-func (c *Client) getNodeList(lastSyncTime int64) ([]*Node, error) {
+func (c *Client) getNodeList(lastSyncTime int64) (int64, []*Node, error) {
 	addr := c.getAddr(false)
 	body := map[string]interface{}{
 		"group":          c.group,
@@ -87,21 +87,25 @@ func (c *Client) getNodeList(lastSyncTime int64) ([]*Node, error) {
 		c.getAddr(true)
 	}
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	if code != ResponseSuccess {
-		return nil, errors.New(message)
+		return 0, nil, errors.New(message)
 	}
-	var list []*Node
-	err = json.Unmarshal(data, &list)
+	type Info struct {
+		LastOperateTime int64   `json:"last_operate_time"`
+		List            []*Node `json:"list"`
+	}
+	var info *Info
+	err = json.Unmarshal(data, &info)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
-	return list, nil
+	return info.LastOperateTime, info.List, nil
 }
 
 // getConfigList 获取配置信息
-func (c *Client) getConfigList(lastSyncTime int64) ([]*Config, error) {
+func (c *Client) getConfigList(lastSyncTime int64) (int64, []*Config, error) {
 	addr := c.getAddr(false)
 	body := map[string]interface{}{
 		"group":          c.group,
@@ -112,17 +116,21 @@ func (c *Client) getConfigList(lastSyncTime int64) ([]*Config, error) {
 		c.getAddr(true)
 	}
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	if code != ResponseSuccess {
-		return nil, errors.New(message)
+		return 0, nil, errors.New(message)
 	}
-	var list []*Config
-	err = json.Unmarshal(data, &list)
+	type Info struct {
+		LastOperateTime int64     `json:"last_operate_time"`
+		List            []*Config `json:"list"`
+	}
+	var info *Info
+	err = json.Unmarshal(data, &info)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
-	return list, nil
+	return info.LastOperateTime, info.List, nil
 }
 
 // request 向集群节点发送请求

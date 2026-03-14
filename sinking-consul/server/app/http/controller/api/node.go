@@ -4,6 +4,8 @@ import (
 	"server/app/model"
 	"server/app/service"
 	"server/app/util/context"
+
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
 type ControllerNode struct {
@@ -37,9 +39,12 @@ func (ControllerNode) Sync(c *context.Context) {
 		return
 	}
 	var list []*model.Node
-	lastSyncTime := service.Node.GetOperateTime(form.Group)
-	if form.LastSyncTime <= 0 || lastSyncTime >= form.LastSyncTime {
+	lastOperateTime := service.Node.GetOperateTime(form.Group)
+	if form.LastSyncTime <= 0 || form.LastSyncTime <= lastOperateTime {
 		list = service.Node.GetAllOnlineNodes(form.Group)
 	}
-	c.SuccessWithData("获取成功", list)
+	c.SuccessWithData("获取成功", sinking_web.H{
+		"last_operate_time": lastOperateTime,
+		"list":              list,
+	})
 }

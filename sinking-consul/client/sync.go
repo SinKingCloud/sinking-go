@@ -38,8 +38,8 @@ func (c *Client) syncNodeTask() {
 
 // doSyncNodes 执行节点同步
 func (c *Client) doSyncNodes() {
-	lastSyncTime := atomic.LoadInt64(&c.nodeLastSyncTime)
-	nodes, err := c.getNodeList(lastSyncTime)
+	localLastOperateTime := atomic.LoadInt64(&c.nodeLastOperateTime)
+	lastOperateTime, nodes, err := c.getNodeList(localLastOperateTime)
 	if err == nil && nodes != nil && len(nodes) > 0 {
 		newNodes := make(map[string][]*Node)
 		for _, node := range nodes {
@@ -51,7 +51,7 @@ func (c *Client) doSyncNodes() {
 		c.nodesMu.Lock()
 		c.nodes = newNodes
 		c.nodesMu.Unlock()
-		atomic.StoreInt64(&c.nodeLastSyncTime, time.Now().Unix())
+		atomic.StoreInt64(&c.nodeLastOperateTime, lastOperateTime)
 	}
 }
 
@@ -72,8 +72,8 @@ func (c *Client) syncConfigTask() {
 
 // doSyncConfigs 执行配置同步
 func (c *Client) doSyncConfigs() {
-	lastSyncTime := atomic.LoadInt64(&c.configLastSyncTime)
-	configs, err := c.getConfigList(lastSyncTime)
+	localLastOperateTime := atomic.LoadInt64(&c.configLastOperateTime)
+	lastOperateTime, configs, err := c.getConfigList(localLastOperateTime)
 	if err == nil && configs != nil {
 		type updateAction struct {
 			config         *Config
@@ -134,6 +134,6 @@ func (c *Client) doSyncConfigs() {
 			}
 		}
 		c.configsMu.Unlock()
-		atomic.StoreInt64(&c.configLastSyncTime, time.Now().Unix())
+		atomic.StoreInt64(&c.configLastOperateTime, lastOperateTime)
 	}
 }

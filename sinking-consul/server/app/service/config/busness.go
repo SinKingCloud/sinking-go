@@ -67,6 +67,10 @@ func (s *Service) Set(group string, key string, value *Config) {
 	if _, ok := configPool[group]; !ok {
 		configPool[group] = make(map[string]*Config)
 	}
+	temp := configPool[group][key]
+	if temp == nil || temp.Status != value.Status || temp.Hash != value.Hash {
+		s.SetOperateTime(group)
+	}
 	configPool[group][key] = value
 }
 
@@ -74,17 +78,25 @@ func (s *Service) Set(group string, key string, value *Config) {
 func (s *Service) Sets(list []*Config) {
 	configLock.Lock()
 	defer configLock.Unlock()
+	g := make(map[string]int64)
 	for _, v := range list {
 		if _, ok := configPool[v.Group]; !ok {
 			configPool[v.Group] = make(map[string]*Config)
 		}
 		if value, exists := configPool[v.Group][v.Name]; exists {
 			if time.Time(value.UpdateTime).Unix() < time.Time(v.UpdateTime).Unix() {
+				if v.Status != value.Status || v.Hash != value.Hash {
+					g[v.Group] = 1
+				}
 				configPool[v.Group][v.Name] = v
 			}
 		} else {
+			g[v.Group] = 1
 			configPool[v.Group][v.Name] = v
 		}
+	}
+	for group := range g {
+		s.SetOperateTime(group)
 	}
 }
 
@@ -92,7 +104,7 @@ func (s *Service) Sets(list []*Config) {
 func (s *Service) SetOperateTime(group string) {
 	configLock.Lock()
 	defer configLock.Unlock()
-	configLastOperateTime[group] = time.Now().Unix()
+	configLastOperateTime[group] = time.Now().UnixMilli()
 }
 
 // GetOperateTime 获取上次操作时间
@@ -126,7 +138,7 @@ func (s *Service) CheckIsChange(list []*Config) bool {
 	return change
 }
 
-// Delete 删除集群节点信息
+// Delete 删除配置信息
 func (s *Service) Delete(group string, key string) {
 	configLock.Lock()
 	defer configLock.Unlock()

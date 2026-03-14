@@ -29,8 +29,8 @@ type Client struct {
 	configs   map[string]*Config       // 配置缓存 key: name, value: *Config
 	parsers   map[string]*ConfigParser // 配置解析器缓存
 	// 同步时间戳
-	nodeLastSyncTime   int64
-	configLastSyncTime int64
+	nodeLastOperateTime   int64
+	configLastOperateTime int64
 	// 轮询计数器
 	pollCounter uint64
 	// RPC服务器

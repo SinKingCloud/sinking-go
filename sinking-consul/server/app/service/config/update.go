@@ -21,11 +21,11 @@ func (s *Service) UpdateByGroupAndName(keys []*model.Config, data map[string]int
 		list, err2 := s.SelectInGroupAndName(keys)
 		if err2 == nil {
 			s.Sets(list)
-			var g []string
+			g := make(map[string]int64)
 			for _, v := range list {
-				g = append(g, v.Group)
+				g[v.Group] = 1
 			}
-			for _, group := range g {
+			for group := range g {
 				s.SetOperateTime(group)
 			}
 		}

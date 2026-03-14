@@ -4,6 +4,8 @@ import (
 	"server/app/service"
 	"server/app/service/config"
 	"server/app/util/context"
+
+	sinking_web "github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
 type ControllerConfig struct {
@@ -21,9 +23,12 @@ func (ControllerConfig) Sync(c *context.Context) {
 		return
 	}
 	var list []*config.Config
-	lastSyncTime := service.Config.GetOperateTime(form.Group)
-	if form.LastSyncTime <= 0 || lastSyncTime > form.LastSyncTime {
+	lastOperateTime := service.Config.GetOperateTime(form.Group)
+	if form.LastSyncTime <= 0 || form.LastSyncTime <= lastOperateTime {
 		list = service.Config.GetAllConfigs(form.Group, true, true)
 	}
-	c.SuccessWithData("获取成功", list)
+	c.SuccessWithData("获取成功", sinking_web.H{
+		"last_operate_time": lastOperateTime,
+		"list":              list,
+	})
 }
