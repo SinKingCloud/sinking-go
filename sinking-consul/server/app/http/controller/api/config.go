@@ -24,7 +24,7 @@ func (ControllerConfig) Sync(c *context.Context) {
 	}
 	var list []*config.Config
 	lastOperateTime := service.Config.GetOperateTime(form.Group)
-	if form.LastSyncTime <= 0 || form.LastSyncTime < lastOperateTime {
+	if form.LastSyncTime <= 0 || form.LastSyncTime != lastOperateTime {
 		list = service.Config.GetAllConfigs(form.Group, true, true)
 	}
 	c.SuccessWithData("获取成功", sinking_web.H{

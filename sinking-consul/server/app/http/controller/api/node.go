@@ -40,7 +40,7 @@ func (ControllerNode) Sync(c *context.Context) {
 	}
 	var list []*model.Node
 	lastOperateTime := service.Node.GetOperateTime(form.Group)
-	if form.LastSyncTime <= 0 || form.LastSyncTime < lastOperateTime {
+	if form.LastSyncTime <= 0 || form.LastSyncTime != lastOperateTime {
 		list = service.Node.GetAllOnlineNodes(form.Group)
 	}
 	c.SuccessWithData("获取成功", sinking_web.H{
