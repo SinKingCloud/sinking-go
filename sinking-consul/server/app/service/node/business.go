@@ -71,7 +71,7 @@ func (s *Service) Set(group string, key string, value *Node) {
 		nodePool[group] = make(map[string]*Node)
 	}
 	temp := nodePool[group][key]
-	if temp == nil || (temp.Status != value.Status || temp.OnlineStatus != value.OnlineStatus) {
+	if temp == nil || temp.Status != value.Status || temp.OnlineStatus != value.OnlineStatus {
 		s.SetOperateTime(group)
 	}
 	nodePool[group][key] = value
@@ -105,7 +105,7 @@ func (s *Service) Sets(list []*Node) {
 func (s *Service) SetOperateTime(group string) {
 	nodeLastOperateTimeLock.Lock()
 	defer nodeLastOperateTimeLock.Unlock()
-	nodeLastOperateTime[group] = time.Now().UnixMilli()
+	nodeLastOperateTime[group] = time.Now().UnixMicro()
 }
 
 // GetOperateTime 获取上次操作时间
@@ -148,6 +148,9 @@ func (s *Service) Register(group string, name string, address string) {
 			IsLocal: true,
 		})
 	} else {
+		if data.OnlineStatus != int(Online) {
+			s.SetOperateTime(group)
+		}
 		data.IsLocal = true
 		data.OnlineStatus = int(Online)
 		data.LastHeart = time.Now().Unix()

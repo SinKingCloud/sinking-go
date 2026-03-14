@@ -104,7 +104,7 @@ func (s *Service) Sets(list []*Config) {
 func (s *Service) SetOperateTime(group string) {
 	configLastOperateTimeLock.Lock()
 	defer configLastOperateTimeLock.Unlock()
-	configLastOperateTime[group] = time.Now().UnixMilli()
+	configLastOperateTime[group] = time.Now().UnixMicro()
 }
 
 // GetOperateTime 获取上次操作时间
