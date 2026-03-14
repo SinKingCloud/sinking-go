@@ -102,15 +102,15 @@ func (s *Service) Sets(list []*Config) {
 
 // SetOperateTime 设置操作时间
 func (s *Service) SetOperateTime(group string) {
-	configLock.Lock()
-	defer configLock.Unlock()
+	configLastOperateTimeLock.Lock()
+	defer configLastOperateTimeLock.Unlock()
 	configLastOperateTime[group] = time.Now().UnixMilli()
 }
 
 // GetOperateTime 获取上次操作时间
 func (s *Service) GetOperateTime(group string) int64 {
-	configLock.Lock()
-	defer configLock.Unlock()
+	configLastOperateTimeLock.RLock()
+	defer configLastOperateTimeLock.RUnlock()
 	return configLastOperateTime[group]
 }
 

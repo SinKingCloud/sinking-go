@@ -103,15 +103,15 @@ func (s *Service) Sets(list []*Node) {
 
 // SetOperateTime 设置上次操作时间
 func (s *Service) SetOperateTime(group string) {
-	nodeLock.Lock()
-	defer nodeLock.Unlock()
+	nodeLastOperateTimeLock.Lock()
+	defer nodeLastOperateTimeLock.Unlock()
 	nodeLastOperateTime[group] = time.Now().UnixMilli()
 }
 
 // GetOperateTime 获取上次操作时间
 func (s *Service) GetOperateTime(group string) int64 {
-	nodeLock.Lock()
-	defer nodeLock.Unlock()
+	nodeLastOperateTimeLock.RLock()
+	defer nodeLastOperateTimeLock.RUnlock()
 	return nodeLastOperateTime[group]
 }
 
