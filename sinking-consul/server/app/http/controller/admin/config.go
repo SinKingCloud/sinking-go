@@ -10,6 +10,7 @@ import (
 	"server/app/util/page"
 	"server/app/util/str"
 	"strconv"
+	"strings"
 )
 
 type ControllerConfig struct {
@@ -148,6 +149,7 @@ func (ControllerConfig) Create(c *context.Context) {
 		c.Error(msg)
 		return
 	}
+	form.Name = strings.ToLower(form.Name)
 	if _, ok := service.Config.Status()[config.Status(form.Status)]; !ok {
 		c.Error("状态值不合法")
 		return
