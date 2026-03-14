@@ -206,3 +206,28 @@ func (c *Client) RpcHandle() http.Handler {
 func (c *Client) RpcCall(serviceName string, action string, params interface{}, result interface{}, options ...interface{}) error {
 	return c.rpc.Call(serviceName, action, params, result, options...)
 }
+
+// GetGroup 获取群组名称
+func (c *Client) GetGroup() string {
+	return c.group
+}
+
+// GetName 获取服务名称
+func (c *Client) GetName() string {
+	return c.name
+}
+
+// GetAddress 获取注册地址
+func (c *Client) GetAddress() string {
+	return c.addr
+}
+
+// GetToken 获取注册中心密钥
+func (c *Client) GetToken() string {
+	return c.token
+}
+
+// GetServer 获取注册中心地址
+func (c *Client) GetServer() string {
+	return c.server
+}
