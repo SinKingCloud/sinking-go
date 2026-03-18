@@ -119,6 +119,7 @@ func (s *Service) GetOperateTime(group string) int64 {
 func (s *Service) Delete(group string, key string) {
 	nodeLock.Lock()
 	defer nodeLock.Unlock()
+	s.SetOperateTime(group)
 	if key == "*" || key == "" {
 		if _, ok := nodePool[group]; ok {
 			delete(nodePool, group)

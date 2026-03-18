@@ -142,6 +142,7 @@ func (s *Service) CheckIsChange(list []*Config) bool {
 func (s *Service) Delete(group string, key string) {
 	configLock.Lock()
 	defer configLock.Unlock()
+	s.SetOperateTime(group)
 	if key == "*" || key == "" {
 		if _, ok := configPool[group]; ok {
 			delete(configPool, group)
