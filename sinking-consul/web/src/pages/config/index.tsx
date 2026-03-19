@@ -115,17 +115,6 @@ export default (): React.ReactNode => {
     const tableRef = useRef<ProTableRef>({} as ProTableRef);
     const columns: any[] = [
         {
-            title: '标识',
-            dataIndex: 'key',
-            tip: '配置标识',
-            valueType: 'text',
-            hideInSearch: true,
-            hideInTable: true,
-            render: (text: any, record: any) => {
-                return record?.group + "-" + record?.name + "-" + record?.type;
-            }
-        },
-        {
             title: '配置分组',
             dataIndex: 'group',
             tip: '配置分组',
@@ -229,7 +218,7 @@ export default (): React.ReactNode => {
                 ref={tableRef}
                 extraRefreshBtn={true}
                 title={<Title>配置管理</Title>}
-                rowKey={'key'}
+                rowKey={((record) => `${record.group}-${record.name}-${record.type}-${record.hash}`) as any}
                 columns={columns}
                 defaultPage={1}
                 defaultPageSize={20}
