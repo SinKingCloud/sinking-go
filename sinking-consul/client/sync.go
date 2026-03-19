@@ -40,7 +40,7 @@ func (c *Client) syncNodeTask() {
 func (c *Client) doSyncNodes() {
 	localLastOperateTime := atomic.LoadInt64(&c.nodeLastOperateTime)
 	lastOperateTime, nodes, err := c.getNodeList(localLastOperateTime)
-	if err == nil && nodes != nil && len(nodes) > 0 {
+	if err == nil && localLastOperateTime != lastOperateTime {
 		newNodes := make(map[string][]*Node)
 		for _, node := range nodes {
 			if newNodes[node.Name] == nil {
@@ -70,11 +70,34 @@ func (c *Client) syncConfigTask() {
 	}
 }
 
-// doSyncConfigs 执行配置同步
+// doSyncConfigs 执行配置同步（支持增删改）
 func (c *Client) doSyncConfigs() {
 	localLastOperateTime := atomic.LoadInt64(&c.configLastOperateTime)
 	lastOperateTime, configs, err := c.getConfigList(localLastOperateTime)
-	if err == nil && configs != nil {
+	if err == nil && localLastOperateTime != lastOperateTime {
+		if configs == nil {
+			configs = []*Config{}
+		}
+		// 第一步：构建服务端配置名称集合，用于增量删除
+		serverConfigNames := make(map[string]bool, len(configs))
+		for _, config := range configs {
+			serverConfigNames[config.Name] = true
+		}
+		// 第二步：找出需要删除的配置（本地有但服务端没有）
+		c.configsMu.Lock()
+		var deleteNames []string
+		for name := range c.configs {
+			if !serverConfigNames[name] {
+				deleteNames = append(deleteNames, name)
+			}
+		}
+		// 执行删除
+		for _, name := range deleteNames {
+			delete(c.configs, name)
+			delete(c.parsers, name)
+		}
+		c.configsMu.Unlock()
+		// 第三步：处理新增和更新
 		type updateAction struct {
 			config         *Config
 			existingParser *ConfigParser
@@ -102,19 +125,19 @@ func (c *Client) doSyncConfigs() {
 			action := &actions[i]
 			switch action.actionType {
 			case "update":
-				if err := action.existingParser.UpdateConfig(action.config.Content, action.config.Type); err != nil {
+				if err = action.existingParser.UpdateConfig(action.config.Content, action.config.Type); err != nil {
 					if newParser, parseErr := NewConfigParser(action.config.Content, action.config.Type); parseErr == nil {
 						action.newParser = newParser
 						action.actionType = "replace"
 					} else {
-						action.actionType = "skip" // 解析失败，跳过
+						action.actionType = "skip"
 					}
 				}
 			case "create":
 				if newParser, parseErr := NewConfigParser(action.config.Content, action.config.Type); parseErr == nil {
 					action.newParser = newParser
 				} else {
-					action.actionType = "skip" // 解析失败，跳过
+					action.actionType = "skip"
 				}
 			}
 		}
