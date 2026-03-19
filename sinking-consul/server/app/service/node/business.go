@@ -88,7 +88,7 @@ func (s *Service) Sets(list []*Node) {
 		}
 		if value, ok := nodePool[v.Group][v.Address]; ok {
 			v.IsLocal = value.IsLocal
-			if value.Status != value.Status || value.OnlineStatus != value.OnlineStatus {
+			if v.Status != value.Status || v.OnlineStatus != value.OnlineStatus {
 				g[v.Group] = 1
 			}
 		} else {
