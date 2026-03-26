@@ -182,6 +182,11 @@ func (engine *Engine) SetDebugMode(mode bool) *Engine {
 	return engine
 }
 
+// Routes 获取所有路由信息
+func (engine *Engine) Routes() []RouteInfo {
+	return engine.router.getAllRoutes()
+}
+
 // SetTimeOut 设置超时时间
 func (engine *Engine) SetTimeOut(read time.Duration, write time.Duration) *Engine {
 	engine.readTimeout = read
@@ -219,13 +224,13 @@ func server(addr string, engine *Engine) *http.Server {
 }
 
 func (engine *Engine) Run(addr string) (err error) {
-	server := server(addr, engine)
-	return server.ListenAndServe()
+	s := server(addr, engine)
+	return s.ListenAndServe()
 }
 
 func (engine *Engine) RunTLS(addr string, certFile string, keyFile string) (err error) {
-	server := server(addr, engine)
-	return server.ListenAndServeTLS(certFile, keyFile)
+	s := server(addr, engine)
+	return s.ListenAndServeTLS(certFile, keyFile)
 }
 
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {

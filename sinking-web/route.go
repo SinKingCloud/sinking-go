@@ -11,6 +11,13 @@ type router struct {
 	handlers map[string]HandlerFunc
 }
 
+// RouteInfo 路由信息
+type RouteInfo struct {
+	Method  string
+	Pattern string
+	Handler HandlerFunc
+}
+
 // newRouter 实例化新的路由组
 func newRouter() *router {
 	return &router{
@@ -19,8 +26,8 @@ func newRouter() *router {
 	}
 }
 
-// Only one * is allowed
-func parsePattern(pattern string) []string {
+// parsePattern 解析路由模式
+func (r *router) parsePattern(pattern string) []string {
 	vs := strings.Split(pattern, "/")
 	parts := make([]string, 0)
 	for _, item := range vs {
@@ -36,7 +43,7 @@ func parsePattern(pattern string) []string {
 
 // addRoute 添加路由
 func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
-	parts := parsePattern(pattern)
+	parts := r.parsePattern(pattern)
 	key := method + "-" + pattern
 	_, ok := r.roots[method]
 	if !ok {
@@ -48,7 +55,7 @@ func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
 
 // getRoute 获取路由
 func (r *router) getRoute(method string, path string) (*node, map[string]string) {
-	searchParts := parsePattern(path)
+	searchParts := r.parsePattern(path)
 	params := make(map[string]string)
 	root, ok := r.roots[method]
 	if !ok {
@@ -56,7 +63,7 @@ func (r *router) getRoute(method string, path string) (*node, map[string]string)
 	}
 	n := root.search(searchParts, 0)
 	if n != nil {
-		parts := parsePattern(n.pattern)
+		parts := r.parsePattern(n.pattern)
 		for index, part := range parts {
 			if part[0] == ':' {
 				params[part[1:]] = searchParts[index]
@@ -80,6 +87,24 @@ func (r *router) getRoutes(method string) []*node {
 	nodes := make([]*node, 0)
 	root.travel(&nodes)
 	return nodes
+}
+
+// getAllRoutes 获取所有路由信息
+func (r *router) getAllRoutes() []RouteInfo {
+	routes := make([]RouteInfo, 0)
+	for method, root := range r.roots {
+		nodes := make([]*node, 0)
+		root.travel(&nodes)
+		for _, n := range nodes {
+			key := method + "-" + n.pattern
+			routes = append(routes, RouteInfo{
+				Method:  method,
+				Pattern: n.pattern,
+				Handler: r.handlers[key],
+			})
+		}
+	}
+	return routes
 }
 
 // handle 执行方法

@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/SinKingCloud/sinking-go/sinking-web"
-	"github.com/SinKingCloud/sinking-go/sinking-websocket"
 	"html/template"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"strings"
 	"time"
+
+	"github.com/SinKingCloud/sinking-go/sinking-web"
+	"github.com/SinKingCloud/sinking-go/sinking-websocket"
 )
 
 // TestMiddle 测试中间件
@@ -55,15 +56,12 @@ func LimitRateMiddle() sinking_web.HandlerFunc {
 //4.复制本示例代码执行main函数
 
 func main() {
-	//设置是否以debug模式运行
-	sinking_web.SetDebugMode(false)
-
-	//设置读写超时时间
-	sinking_web.SetTimeOut(10*time.Second, 10*time.Second)
-
 	//实例化一个http server
 	r := sinking_web.Default()
-
+	//设置是否以debug模式运行
+	r.SetDebugMode(false)
+	//设置读写超时时间
+	r.SetTimeOut(10*time.Second, 10*time.Second)
 	//设置错误回调
 	r.SetErrorHandle(&sinking_web.ErrorHandel{
 		//资源不存在错误
