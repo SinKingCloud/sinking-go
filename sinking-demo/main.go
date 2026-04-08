@@ -153,7 +153,7 @@ func main() {
 	})
 
 	//websocket功能
-	wsConn := sinking_websocket.NewWebSocketConnections() //ws连接池
+	wsConn := sinking_websocket.NewConnections() //ws连接池
 	ws := r.Group("/ws")
 	//ws本质是get长连接,可使用get建立短连接在升级为长连接最后使用协程监听消息
 	ws.GET("/message/listen/:id", func(s *sinking_web.Context) {
@@ -165,15 +165,15 @@ func main() {
 				wsConn.Delete(id)
 				log.Println("websocket错误", err)
 			},
-			OnConnect: func(id string, ws *sinking_websocket.Conn) {
+			OnConnect: func(id string, ws *sinking_websocket.Connection) {
 				wsConn.Set(id, ws)
 				log.Println("websocket连接", uid)
 			},
-			OnClose: func(id string, err error) {
+			OnClose: func(id string, ws *sinking_websocket.Connection, err error) {
 				wsConn.Delete(id)
 				log.Println("websocket关闭", err)
 			},
-			OnMessage: func(id string, ws *sinking_websocket.Conn, messageType int, data []byte) {
+			OnMessage: func(id string, ws *sinking_websocket.Connection, messageType int, data []byte) {
 				log.Println("websocket消息", string(data), messageType)
 				conn := wsConn.Get(id)
 				if conn != nil {
