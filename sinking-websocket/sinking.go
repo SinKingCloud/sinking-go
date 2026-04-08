@@ -30,6 +30,7 @@ type WebSocket struct {
 	HandshakeTimeout  time.Duration
 	ReadBufferSize    int
 	WriteBufferSize   int
+	WriteQueueSize    int
 	ReadLimit         int64
 	WriteWait         time.Duration
 	PongWait          time.Duration
@@ -61,6 +62,12 @@ func (handle *WebSocket) SetErrorHandle(fun func(id string, err error)) *WebSock
 // SetConnectHandle 设置连接建立成功后的回调。
 func (handle *WebSocket) SetConnectHandle(fun func(id string, ws *Connection)) *WebSocket {
 	handle.OnConnect = fun
+	return handle
+}
+
+// SetWriteQueueSize 设置单连接异步发送队列大小。
+func (handle *WebSocket) SetWriteQueueSize(size int) *WebSocket {
+	handle.WriteQueueSize = size
 	return handle
 }
 
@@ -128,17 +135,12 @@ func (handle *WebSocket) Listen(writer http.ResponseWriter, request *http.Reques
 		return
 	}
 	conn := NewConnection(ws)
-	done := make(chan struct{})
 	defer func() {
-		close(done)
 		_ = conn.Close()
 	}()
 	handle.configureConn(conn)
 	if handle.OnConnect != nil {
 		handle.OnConnect(handle.Id, conn)
-	}
-	if pingPeriod := handle.pingPeriod(); pingPeriod > 0 {
-		go handle.keepAlive(conn, done, pingPeriod)
 	}
 	for {
 		messageType, data, err := conn.ReadMessage()
@@ -163,6 +165,10 @@ func (handle *WebSocket) configureConn(conn *Connection) {
 	}
 	if !handle.DisableHeartbeat {
 		_ = conn.SetReadDeadline(time.Now().Add(handle.pongWait()))
+		pingPeriod := handle.pingPeriod()
+		if pingPeriod > 0 {
+			go handle.keepAlive(conn, conn.done, pingPeriod)
+		}
 	}
 	conn.SetCloseHandler(func(code int, text string) error {
 		if handle.OnCloseFrame != nil {
