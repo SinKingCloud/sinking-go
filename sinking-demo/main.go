@@ -159,7 +159,7 @@ func main() {
 	ws.GET("/message/listen/:id", func(s *sinking_web.Context) {
 		//生成uid
 		uid := "user-" + s.Param("id")
-		wsServer := sinking_websocket.WebSocket{
+		wsServer := sinking_websocket.Server{
 			Id: uid,
 			OnError: func(id string, err error) {
 				wsConn.Delete(id)

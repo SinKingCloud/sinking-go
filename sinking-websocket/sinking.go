@@ -19,13 +19,13 @@ var (
 	}
 )
 
-// NewWebSocket 创建 websocket 处理器
-func NewWebSocket() *WebSocket {
-	return &WebSocket{}
+// NewServer 创建 websocket 处理器
+func NewServer() *Server {
+	return &Server{}
 }
 
-// WebSocket 封装 websocket 连接的升级、心跳和回调处理。
-type WebSocket struct {
+// Server 封装 websocket 连接的升级、心跳和回调处理。
+type Server struct {
 	Id                string
 	HandshakeTimeout  time.Duration
 	ReadBufferSize    int
@@ -48,61 +48,61 @@ type WebSocket struct {
 }
 
 // SetId 设置当前 websocket 处理器关联的业务标识。
-func (handle *WebSocket) SetId(id string) *WebSocket {
+func (handle *Server) SetId(id string) *Server {
 	handle.Id = id
 	return handle
 }
 
 // SetErrorHandle 设置握手失败等错误回调。
-func (handle *WebSocket) SetErrorHandle(fun func(id string, err error)) *WebSocket {
+func (handle *Server) SetErrorHandle(fun func(id string, err error)) *Server {
 	handle.OnError = fun
 	return handle
 }
 
 // SetConnectHandle 设置连接建立成功后的回调。
-func (handle *WebSocket) SetConnectHandle(fun func(id string, ws *Connection)) *WebSocket {
+func (handle *Server) SetConnectHandle(fun func(id string, ws *Connection)) *Server {
 	handle.OnConnect = fun
 	return handle
 }
 
 // SetWriteQueueSize 设置单连接异步发送队列大小。
-func (handle *WebSocket) SetWriteQueueSize(size int) *WebSocket {
+func (handle *Server) SetWriteQueueSize(size int) *Server {
 	handle.WriteQueueSize = size
 	return handle
 }
 
 // SetCloseHandler 设置收到 close frame 时的协议层回调。
-func (handle *WebSocket) SetCloseHandler(fun func(id string, ws *Connection, code int, text string) error) *WebSocket {
+func (handle *Server) SetCloseHandler(fun func(id string, ws *Connection, code int, text string) error) *Server {
 	handle.OnCloseFrame = fun
 	return handle
 }
 
 // SetCloseFrameHandle 是 SetCloseHandler 的语义化别名。
-func (handle *WebSocket) SetCloseFrameHandle(fun func(id string, ws *Connection, code int, text string) error) *WebSocket {
+func (handle *Server) SetCloseFrameHandle(fun func(id string, ws *Connection, code int, text string) error) *Server {
 	handle.OnCloseFrame = fun
 	return handle
 }
 
 // SetCloseHandle 设置连接读循环退出时的业务层关闭回调。
-func (handle *WebSocket) SetCloseHandle(fun func(id string, ws *Connection, err error)) *WebSocket {
+func (handle *Server) SetCloseHandle(fun func(id string, ws *Connection, err error)) *Server {
 	handle.OnClose = fun
 	return handle
 }
 
 // SetOnMessageHandle 设置收到业务消息后的回调。
-func (handle *WebSocket) SetOnMessageHandle(fun func(id string, ws *Connection, messageType int, data []byte)) *WebSocket {
+func (handle *Server) SetOnMessageHandle(fun func(id string, ws *Connection, messageType int, data []byte)) *Server {
 	handle.OnMessage = fun
 	return handle
 }
 
 // SetPingHandle 设置收到 ping 控制帧后的回调。
-func (handle *WebSocket) SetPingHandle(fun func(id string, ws *Connection, appData string)) *WebSocket {
+func (handle *Server) SetPingHandle(fun func(id string, ws *Connection, appData string)) *Server {
 	handle.OnPing = fun
 	return handle
 }
 
 // SetPongHandle 设置收到 pong 控制帧后的回调。
-func (handle *WebSocket) SetPongHandle(fun func(id string, ws *Connection, appData string)) *WebSocket {
+func (handle *Server) SetPongHandle(fun func(id string, ws *Connection, appData string)) *Server {
 	handle.OnPong = fun
 	return handle
 }
@@ -119,7 +119,7 @@ func (err *Error) Error() string {
 }
 
 // Listen 完成协议升级并持续处理连接生命周期。
-func (handle *WebSocket) Listen(writer http.ResponseWriter, request *http.Request, responseHeader http.Header) {
+func (handle *Server) Listen(writer http.ResponseWriter, request *http.Request, responseHeader http.Header) {
 	upgrader := websocket.Upgrader{
 		HandshakeTimeout:  handle.handshakeTimeout(),
 		ReadBufferSize:    handle.ReadBufferSize,
@@ -157,7 +157,7 @@ func (handle *WebSocket) Listen(writer http.ResponseWriter, request *http.Reques
 }
 
 // configureConn 配置读写限制、心跳处理和关闭回调。
-func (handle *WebSocket) configureConn(conn *Connection) {
+func (handle *Server) configureConn(conn *Connection) {
 	defaultCloseHandler := conn.CloseHandler()
 	conn.writeWait = handle.writeWait()
 	if handle.ReadLimit > 0 {
@@ -202,7 +202,7 @@ func (handle *WebSocket) configureConn(conn *Connection) {
 }
 
 // keepAlive 按固定周期主动发送 ping 保持连接活性。
-func (handle *WebSocket) keepAlive(conn *Connection, done <-chan struct{}, pingPeriod time.Duration) {
+func (handle *Server) keepAlive(conn *Connection, done <-chan struct{}, pingPeriod time.Duration) {
 	ticker := time.NewTicker(pingPeriod)
 	defer ticker.Stop()
 	for {
@@ -219,7 +219,7 @@ func (handle *WebSocket) keepAlive(conn *Connection, done <-chan struct{}, pingP
 }
 
 // checkOrigin 返回本次升级请求使用的 Origin 校验函数。
-func (handle *WebSocket) checkOrigin() func(r *http.Request) bool {
+func (handle *Server) checkOrigin() func(r *http.Request) bool {
 	if handle.CheckOrigin != nil {
 		return handle.CheckOrigin
 	}
@@ -227,7 +227,7 @@ func (handle *WebSocket) checkOrigin() func(r *http.Request) bool {
 }
 
 // handshakeTimeout 返回 websocket 握手超时时间。
-func (handle *WebSocket) handshakeTimeout() time.Duration {
+func (handle *Server) handshakeTimeout() time.Duration {
 	if handle.HandshakeTimeout > 0 {
 		return handle.HandshakeTimeout
 	}
@@ -235,7 +235,7 @@ func (handle *WebSocket) handshakeTimeout() time.Duration {
 }
 
 // writeWait 返回单次写操作允许的最长时间。
-func (handle *WebSocket) writeWait() time.Duration {
+func (handle *Server) writeWait() time.Duration {
 	if handle.WriteWait > 0 {
 		return handle.WriteWait
 	}
@@ -243,7 +243,7 @@ func (handle *WebSocket) writeWait() time.Duration {
 }
 
 // pongWait 返回等待对端 pong 的最长时间。
-func (handle *WebSocket) pongWait() time.Duration {
+func (handle *Server) pongWait() time.Duration {
 	if handle.PongWait > 0 {
 		return handle.PongWait
 	}
@@ -251,7 +251,7 @@ func (handle *WebSocket) pongWait() time.Duration {
 }
 
 // pingPeriod 返回主动发送 ping 的时间间隔。
-func (handle *WebSocket) pingPeriod() time.Duration {
+func (handle *Server) pingPeriod() time.Duration {
 	if handle.DisableHeartbeat {
 		return 0
 	}
