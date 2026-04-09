@@ -6,9 +6,8 @@ import (
 	"server/app/enum/cluster_status"
 	"server/app/enum/node_online_status"
 	"server/app/enum/node_status"
+	"server/app/model"
 	"server/app/service"
-	"server/app/service/cluster"
-	"server/app/service/config"
 	"server/app/service/node"
 	"server/app/util"
 	"server/app/util/str"
@@ -31,7 +30,7 @@ func Init() {
 					break
 				}
 			}
-			service.Cluster.Each(func(key string, value *cluster.Cluster) bool {
+			service.Cluster.Each(func(key string, value *model.Cluster) bool {
 				if value.LastHeart+60 < time.Now().Unix() {
 					value.Status = cluster_status.Offline
 				}
@@ -57,7 +56,7 @@ func Init() {
 				}
 			}
 			temp2 := make(map[string]uint64)
-			service.Config.Each("*", func(value *config.Config) {
+			service.Config.Each("*", func(value *model.Config) {
 				temp2[value.Group] += strTool.ToNumber(value.Hash, strToolMax)
 			})
 			for k, v := range temp2 {
@@ -67,7 +66,7 @@ func Init() {
 				}
 			}
 			if i == 3 {
-				service.Cluster.Each(func(key string, value *cluster.Cluster) bool {
+				service.Cluster.Each(func(key string, value *model.Cluster) bool {
 					if value.Status == cluster_status.Online {
 						sync.Instance.SendTask(&sync.Task{
 							Type:          sync.SynchronizeData,

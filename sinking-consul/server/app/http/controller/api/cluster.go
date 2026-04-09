@@ -2,6 +2,8 @@ package api
 
 import (
 	"server/app/model"
+	repositoryConfig "server/app/repository/config"
+	repositoryNode "server/app/repository/node"
 	"server/app/service"
 	"server/app/service/cluster"
 	"server/app/util/context"
@@ -136,23 +138,23 @@ func (ControllerCluster) Update(c *context.Context) {
 		return
 	}
 	if form.Configs != nil && len(form.Configs.Keys) > 0 {
-		data := make(map[string]interface{})
+		data := &repositoryConfig.UpdateConfig{}
 		if form.Configs.Type != "" {
-			data["type"] = form.Configs.Type
+			data.Type = form.Configs.Type
 		}
 		if form.Configs.Content != "" {
-			data["content"] = form.Configs.Content
-			data["hash"] = str.NewStringTool().Md5(form.Configs.Content)
+			data.Content = form.Configs.Content
+			data.Hash = str.NewStringTool().Md5(form.Configs.Content)
 		}
 		if form.Configs.Status != "" {
-			data["status"] = form.Configs.Status
+			data.Status = form.Configs.Status
 		}
 		_ = service.Config.UpdateByGroupAndName(form.Configs.Keys, data)
 	}
 	if form.Nodes != nil && len(form.Nodes.Addresses) > 0 {
-		data := make(map[string]interface{})
+		data := &repositoryNode.UpdateNode{}
 		if form.Nodes.Status != "" {
-			data["status"] = form.Nodes.Status
+			data.Status = form.Nodes.Status
 		}
 		_ = service.Node.UpdateByAddresses(form.Nodes.Addresses, data)
 	}

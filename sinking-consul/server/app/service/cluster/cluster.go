@@ -4,59 +4,69 @@ import (
 	"crypto/tls"
 	"net/http"
 	"server/app/model"
+	"server/app/repository/cluster"
+	"server/app/service/config"
+	"server/app/service/node"
+	"server/app/service/setting"
+	"server/app/util/cache"
 	"sync"
 	"time"
 )
 
-// service 单例对象
-type service struct {
+// Service 集群服务接口
+type Service interface {
+	Select(where *cluster.SelectCluster, orderByField string, orderByType string, page int, pageSize int) ([]*model.Cluster, int64, error)
+	CountByStatus(status int) (int64, error)
+	CountAll() (int64, error)
+	Each(fun func(key string, value *model.Cluster) bool)
+	Register(address string)
+	GetLocalAddr() string
+	RegisterRemoteService(remoteAddress string) error
+	SynchronizeRemoteData(remoteAddress string) error
+	SyncDataLock() error
+	SyncDataUnLock() error
+	ChangeAllClusterLockStatus(status int) error
+	DeleteAllClusterData(configs []*model.Config, nodes []*model.Node)
+	UpdateAllClusterData(configs *ConfigUpdateValidate, nodes *NodeUpdateValidate)
+	CreateAllClusterData(config *model.Config, node *model.Node)
+	Save() error
 }
 
-// obj 单例对象
-var (
-	//实例对象
-	obj = &service{}
-	//原子锁
-	clusterOnce = &sync.Once{}
-	//正在同步数据的协程数量(原子计数器)
-	syncDataCoroutineCount = int64(0)
-	// 集群池
-	clusterPool = &sync.Map{}
-	// globalClient 全局请求client
-	globalClient = &http.Client{
-		Timeout: 10 * time.Second,
-		Transport: &http.Transport{
-			MaxIdleConns:        10,
-			IdleConnTimeout:     30 * time.Second,
-			DisableKeepAlives:   false,
-			TLSHandshakeTimeout: 5 * time.Second,
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
+// service 集群服务
+type service struct {
+	repository    cluster.Interface
+	cache         cache.Interface
+	setting       setting.Service
+	nodeService   node.Service
+	configService config.Service
+
+	once                   sync.Once
+	syncDataCoroutineCount int64
+	clusterPool            sync.Map
+	globalClient           *http.Client
+}
+
+// NewService 创建集群服务
+func NewService(repository cluster.Interface, cache cache.Interface, setting setting.Service, nodeService node.Service, configService config.Service) Service {
+	s := &service{
+		repository:    repository,
+		cache:         cache,
+		setting:       setting,
+		nodeService:   nodeService,
+		configService: configService,
+		globalClient: &http.Client{
+			Timeout: 10 * time.Second,
+			Transport: &http.Transport{
+				MaxIdleConns:        10,
+				IdleConnTimeout:     30 * time.Second,
+				DisableKeepAlives:   false,
+				TLSHandshakeTimeout: 5 * time.Second,
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
 			},
 		},
 	}
-)
-
-// GetIns 获取单例
-func GetIns() *service {
-	return obj
-}
-
-// Cluster 集群列表
-type Cluster struct {
-	*model.Cluster
-}
-
-// ConfigUpdateValidate 配置更新验证器
-type ConfigUpdateValidate struct {
-	Keys    []*model.Config `json:"keys" default:"" validate:"required,min=1,max=1000" label:"配置列表"`
-	Type    string          `json:"type" default:"" validate:"omitempty" label:"配置类型"`
-	Content string          `json:"content" default:"" validate:"omitempty" label:"配置内容"`
-	Status  string          `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
-}
-
-// NodeUpdateValidate 节点更新验证器
-type NodeUpdateValidate struct {
-	Addresses []string `json:"addresses" default:"" validate:"required,min=1,max=1000,unique" label:"节点列表"`
-	Status    string   `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
+	s.initialize()
+	return s
 }

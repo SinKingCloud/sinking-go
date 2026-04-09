@@ -8,6 +8,7 @@ import (
 // Interface 配置仓储接口
 type Interface interface {
 	Create(data *model.Cluster) (err error)                                                                                                       //插入数据
+	Save(clusters []*model.Cluster) error                                                                                                         //保存数据
 	CountByStatus(status int) (total int64, err error)                                                                                            //根据状态统计
 	CountAll() (total int64, err error)                                                                                                           //统计所有
 	DeleteAll() (err error)                                                                                                                       //删除所有数据

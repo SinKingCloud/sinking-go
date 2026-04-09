@@ -2,43 +2,50 @@ package config
 
 import (
 	"server/app/model"
-	"server/app/util/str"
+	"server/app/repository/config"
+	"server/app/util/cache"
 	"sync"
 )
 
-// service 单例对象
+// Service 配置服务接口
+type Service interface {
+	SelectAll() ([]*config.Config, error)
+	Select(where *config.SelectConfig, orderByField string, orderByType string, page int, pageSize int) ([]*config.Config, int64, error)
+	CountByStatus(status int) (int64, error)
+	CountAll() (int64, error)
+	Save() error
+	Each(group string, fun func(value *model.Config))
+	Sets(list []*model.Config)
+	SetOperateTime(group string)
+	GetOperateTime(group string) int64
+	CheckIsChange(list []*model.Config) bool
+	GetAllConfigs(group string, showContent bool, filterStatus bool) []*model.Config
+	FindByGroupAndName(group string, name string) (*model.Config, error)
+	DeleteByGroupAndName(keys []*model.Config) error
+	UpdateByGroupAndName(keys []*model.Config, data *config.UpdateConfig) error
+	Create(data *model.Config) error
+}
+
+// service 配置服务
 type service struct {
+	repository config.Interface
+	cache      cache.Interface
+
+	once                      sync.Once
+	configPool                map[string]map[string]*model.Config
+	configLock                sync.RWMutex
+	configLastOperateTime     map[string]int64
+	configLastOperateTimeLock sync.RWMutex
 }
 
-var (
-	//实例对象
-	obj = &service{}
-	//原子锁
-	configOnce = &sync.Once{}
-	// 节点池 组[配置名]
-	configPool                = make(map[string]map[string]*Config)
-	configLock                = sync.RWMutex{}
-	configLastOperateTimeLock = sync.RWMutex{}
-	configLastOperateTime     = make(map[string]int64)
-)
-
-// GetIns 获取单例
-func GetIns() *service {
-	return obj
-}
-
-// Config 配置信息
-type Config struct {
-	*model.Config
-}
-
-// SelectConfig 搜索结果
-type SelectConfig struct {
-	Group      string       `gorm:"column:group" json:"group"`
-	Name       string       `gorm:"column:name" json:"name"`
-	Type       string       `gorm:"column:type" json:"type"`
-	Hash       string       `gorm:"column:hash" json:"hash"`
-	Status     int          `gorm:"column:status" json:"status"`
-	CreateTime str.DateTime `gorm:"column:create_time" json:"create_time"`
-	UpdateTime str.DateTime `gorm:"column:update_time" json:"update_time"`
+// NewService 创建配置服务
+func NewService(repository config.Interface, cache cache.Interface) Service {
+	s := &service{
+		repository:            repository,
+		cache:                 cache,
+		configPool:            make(map[string]map[string]*model.Config),
+		configLastOperateTime: make(map[string]int64),
+	}
+	s.initialize()
+	return s
 }

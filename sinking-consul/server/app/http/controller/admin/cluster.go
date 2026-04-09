@@ -2,6 +2,7 @@ package admin
 
 import (
 	"server/app/enum/log_type"
+	"server/app/repository/cluster"
 	"server/app/service"
 	"server/app/util/context"
 	"server/app/util/page"
@@ -26,21 +27,21 @@ func (ControllerCluster) List(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	where := make(map[string]string)
+	where := &cluster.SelectCluster{}
 	if form.Status != "" {
-		where["status"] = form.Status
+		where.Status = form.Status
 	}
 	if form.CreateTimeStart != "" {
-		where["create_time_start"] = form.CreateTimeStart
+		where.CreateTimeStart = form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where["create_time_end"] = form.CreateTimeEnd
+		where.CreateTimeEnd = form.CreateTimeEnd
 	}
 	if form.UpdateTimeStart != "" {
-		where["update_time_start"] = form.UpdateTimeStart
+		where.UpdateTimeStart = form.UpdateTimeStart
 	}
 	if form.UpdateTimeEnd != "" {
-		where["update_time_end"] = form.UpdateTimeEnd
+		where.UpdateTimeEnd = form.UpdateTimeEnd
 	}
 	data, total, err := service.Cluster.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {

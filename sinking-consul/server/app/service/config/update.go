@@ -2,23 +2,14 @@ package config
 
 import (
 	"server/app/model"
-	"server/app/util"
-	"server/app/util/str"
-	"time"
+	repositoryConfig "server/app/repository/config"
 )
 
 // UpdateByGroupAndName 通过group name更新
-func (s *service) UpdateByGroupAndName(keys []*model.Config, data map[string]interface{}) (err error) {
-	data["update_time"] = str.DateTime(time.Now())
-	var conditions [][]interface{}
-	for _, key := range keys {
-		if key.Group != "" && key.Name != "" {
-			conditions = append(conditions, []interface{}{key.Group, key.Name})
-		}
-	}
-	err = util.Database.Db.Model(&model.Config{}).Where("(`group`, `name`) IN (?)", conditions).Updates(data).Error
+func (s *service) UpdateByGroupAndName(keys []*model.Config, data *repositoryConfig.UpdateConfig) (err error) {
+	err = s.repository.UpdateByGroupAndName(keys, data)
 	if err == nil {
-		list, err2 := s.SelectInGroupAndName(keys)
+		list, err2 := s.repository.SelectInGroupAndName(keys)
 		if err2 == nil {
 			s.Sets(list)
 		}

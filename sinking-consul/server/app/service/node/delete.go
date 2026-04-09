@@ -1,14 +1,9 @@
 package node
 
-import (
-	"server/app/model"
-	"server/app/util"
-)
-
 // DeleteByAddress 通过address删除
 func (s *service) DeleteByAddress(addresses []string) (err error) {
-	list2, err2 := s.SelectInAddress(addresses)
-	err = util.Database.Db.Where("`address` IN ?", addresses).Delete(&model.Node{}).Error
+	list2, err2 := s.repository.SelectInAddress(addresses)
+	err = s.repository.DeleteByAddress(addresses)
 	if list2 != nil && err2 == nil {
 		for _, key := range list2 {
 			if key.Group != "" && key.Name != "" {

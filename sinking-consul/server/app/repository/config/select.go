@@ -11,7 +11,7 @@ func (r *Repository) SelectAll() (list []*Config, err error) {
 }
 
 // SelectInGroupAndName 根据group name查询
-func (r *Repository) SelectInGroupAndName(keys []*model.Config) (list []*Config, err error) {
+func (r *Repository) SelectInGroupAndName(keys []*model.Config) (list []*model.Config, err error) {
 	var conditions [][]interface{}
 	for _, key := range keys {
 		if key.Group != "" && key.Name != "" {

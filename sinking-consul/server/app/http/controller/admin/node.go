@@ -4,6 +4,7 @@ import (
 	"server/app/enum/log_type"
 	"server/app/enum/node_status"
 	"server/app/model"
+	"server/app/repository/node"
 	"server/app/service"
 	"server/app/service/cluster"
 	"server/app/util/context"
@@ -33,30 +34,30 @@ func (ControllerNode) List(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	where := make(map[string]string)
+	where := &node.SelectNode{}
 	if form.Group != "" {
-		where["group"] = form.Group
+		where.Group = form.Group
 	}
 	if form.Name != "" {
-		where["name"] = form.Name
+		where.Name = form.Name
 	}
 	if form.OnlineStatus != "" {
-		where["online_status"] = form.OnlineStatus
+		where.OnlineStatus = form.OnlineStatus
 	}
 	if form.Status != "" {
-		where["status"] = form.Status
+		where.Status = form.Status
 	}
 	if form.CreateTimeStart != "" {
-		where["create_time_start"] = form.CreateTimeStart
+		where.CreateTimeStart = form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where["create_time_end"] = form.CreateTimeEnd
+		where.CreateTimeEnd = form.CreateTimeEnd
 	}
 	if form.UpdateTimeStart != "" {
-		where["update_time_start"] = form.UpdateTimeStart
+		where.UpdateTimeStart = form.UpdateTimeStart
 	}
 	if form.UpdateTimeEnd != "" {
-		where["update_time_end"] = form.UpdateTimeEnd
+		where.UpdateTimeEnd = form.UpdateTimeEnd
 	}
 	data, total, err := service.Node.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
@@ -73,14 +74,14 @@ func (ControllerNode) Update(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	data := make(map[string]interface{})
+	data := &node.UpdateNode{}
 	if form.Status != "" {
 		n, _ := strconv.Atoi(form.Status)
 		if _, ok := node_status.Map()[n]; !ok {
 			c.Error("状态值不合法")
 			return
 		}
-		data["status"] = form.Status
+		data.Status = form.Status
 	}
 	err := service.Cluster.ChangeAllClusterLockStatus(0)
 	if err != nil {

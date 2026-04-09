@@ -1,19 +1,10 @@
 package config
 
-import (
-	"server/app/model"
-	"server/app/util"
-)
+import "server/app/model"
 
 // DeleteByGroupAndName 通过集群和名称删除
 func (s *service) DeleteByGroupAndName(keys []*model.Config) (err error) {
-	var conditions [][]interface{}
-	for _, key := range keys {
-		if key.Group != "" && key.Name != "" {
-			conditions = append(conditions, []interface{}{key.Group, key.Name})
-		}
-	}
-	err = util.Database.Db.Where("(`group`, `name`) IN (?)", conditions).Delete(&model.Config{}).Error
+	err = s.repository.DeleteByGroupAndName(keys)
 	if err == nil {
 		for _, key := range keys {
 			if key.Group != "" && key.Name != "" {

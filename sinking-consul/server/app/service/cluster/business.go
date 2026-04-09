@@ -9,9 +9,7 @@ import (
 	"server/app/constant"
 	"server/app/enum/cluster_status"
 	"server/app/model"
-	"server/app/service/config"
 	"server/app/service/node"
-	"server/app/util"
 	"server/app/util/ip"
 	"strconv"
 	"strings"
@@ -21,34 +19,34 @@ import (
 )
 
 // Get 获取集群节点信息
-func (s *service) Get(key string) *Cluster {
-	if v, ok := clusterPool.Load(key); ok && v != nil {
-		return v.(*Cluster)
+func (s *service) Get(key string) *model.Cluster {
+	if v, ok := s.clusterPool.Load(key); ok && v != nil {
+		return v.(*model.Cluster)
 	}
 	return nil
 }
 
 // Set 设置集群节点信息
-func (s *service) Set(key string, value *Cluster) {
-	clusterPool.Store(key, value)
+func (s *service) Set(key string, value *model.Cluster) {
+	s.clusterPool.Store(key, value)
 }
 
 // Sets 批量设置集群信息
-func (s *service) Sets(list []*Cluster) {
+func (s *service) Sets(list []*model.Cluster) {
 	for _, v := range list {
-		clusterPool.Store(v.Address, v)
+		s.clusterPool.Store(v.Address, v)
 	}
 }
 
 // Delete 删除集群节点
 func (s *service) Delete(key string) {
-	clusterPool.Delete(key)
+	s.clusterPool.Delete(key)
 }
 
 // Each 遍历集群信息
-func (s *service) Each(fun func(key string, value *Cluster) bool) {
-	clusterPool.Range(func(key, value any) bool {
-		return fun(key.(string), value.(*Cluster))
+func (s *service) Each(fun func(key string, value *model.Cluster) bool) {
+	s.clusterPool.Range(func(key, value any) bool {
+		return fun(key.(string), value.(*model.Cluster))
 	})
 }
 
@@ -56,12 +54,10 @@ func (s *service) Each(fun func(key string, value *Cluster) bool) {
 func (s *service) Register(address string) {
 	data := s.Get(address)
 	if data == nil {
-		s.Set(address, &Cluster{
-			Cluster: &model.Cluster{
-				Address:   address,
-				Status:    cluster_status.Online,
-				LastHeart: time.Now().Unix(),
-			},
+		s.Set(address, &model.Cluster{
+			Address:   address,
+			Status:    cluster_status.Online,
+			LastHeart: time.Now().Unix(),
 		})
 	} else {
 		data.Status = cluster_status.Online
@@ -69,38 +65,36 @@ func (s *service) Register(address string) {
 	}
 }
 
-// Init 初始化服务
-func (s *service) Init() {
-	clusterOnce.Do(func() {
-		_ = s.DeleteAll()
+// initialize 初始化服务
+func (s *service) initialize() {
+	s.once.Do(func() {
+		_ = s.repository.DeleteAll()
 		var list []string
-		str := util.Conf.GetString(constant.ClusterNodes)
+		str := s.setting.GetString(constant.ClusterNodes)
 		if str == "" {
-			list = util.Conf.GetStringSlice(constant.ClusterNodes)
+			list = s.setting.GetStringSlice(constant.ClusterNodes)
 		} else {
 			list = strings.Split(str, ",")
 		}
 		for _, v := range list {
-			d, e := s.FindByAddress(v)
+			d, e := s.repository.FindByAddress(v)
 			if e != nil || d == nil {
-				_ = s.create(&model.Cluster{
+				_ = s.repository.Create(&model.Cluster{
 					Address:   v,
 					Status:    cluster_status.Offline,
 					LastHeart: 0,
 				})
 			}
 		}
-		all, e := s.SelectAll()
+		all, e := s.repository.SelectAll()
 		if e == nil && all != nil {
 			for _, v := range all {
-				s.Set(v.Address, &Cluster{
-					Cluster: &model.Cluster{
-						Address:    v.Address,
-						Status:     v.Status,
-						LastHeart:  v.LastHeart,
-						CreateTime: v.CreateTime,
-						UpdateTime: v.UpdateTime,
-					},
+				s.Set(v.Address, &model.Cluster{
+					Address:    v.Address,
+					Status:     v.Status,
+					LastHeart:  v.LastHeart,
+					CreateTime: v.CreateTime,
+					UpdateTime: v.UpdateTime,
 				})
 			}
 		}
@@ -128,9 +122,12 @@ func (s *service) request(address string, action string, body interface{}) (int,
 		reader = bytes.NewReader(b)
 	}
 	req, err := http.NewRequest(http.MethodPost, address, reader)
+	if err != nil {
+		return 500, "构造请求失败" + err.Error(), nil, errors.New("构造请求失败: " + err.Error())
+	}
 	req.Header.Set("content-type", "application/json")
-	req.Header.Set(constant.JwtTokenName, util.Conf.GetString(constant.AuthApiToken))
-	resp, err := globalClient.Do(req)
+	req.Header.Set(constant.JwtTokenName, s.setting.GetString(constant.AuthApiToken))
+	resp, err := s.globalClient.Do(req)
 	if err != nil {
 		return 500, "请求集群失败" + err.Error(), nil, errors.New("请求集群失败: " + err.Error())
 	}
@@ -154,15 +151,27 @@ func (s *service) request(address string, action string, body interface{}) (int,
 
 // GetLocalAddr 获取本机地址
 func (s *service) GetLocalAddr() string {
-	str := util.Cache.Remember(constant.CacheNameWithLocalIp, func() interface{} {
-		local := util.Conf.GetString(constant.ClusterLocal)
+	str := s.cache.Remember(constant.CacheNameWithLocalIp, func() interface{} {
+		local := s.setting.GetString(constant.ClusterLocal)
 		if local == "" {
-			_, port := util.ServerAddr()
+			_, port := s.serverAddr()
 			local = ip.GetLocalIP() + ":" + strconv.Itoa(port)
 		}
 		return local
 	}, constant.CacheTimeWithLocalIp)
 	return str.(string)
+}
+
+func (s *service) serverAddr() (host string, port int) {
+	host = s.setting.GetString(constant.ServerHost)
+	port = s.setting.GetInt(constant.ServerPort)
+	if host == "" {
+		host = "0.0.0.0"
+	}
+	if port <= 0 {
+		port = 5678
+	}
+	return host, port
 }
 
 // RegisterRemoteService 向集群节点发送注册请求
@@ -256,14 +265,14 @@ func (s *service) RemoteUpdateData(remoteAddress string, configs *ConfigUpdateVa
 // SynchronizeRemoteData 同步集群信息
 func (s *service) SynchronizeRemoteData(remoteAddress string) error {
 	for {
-		if util.Cache.IsLock(constant.LockSyncData) {
+		if s.cache.IsLock(constant.LockSyncData) {
 			time.Sleep(time.Second)
 		} else {
 			break
 		}
 	}
-	atomic.AddInt64(&syncDataCoroutineCount, 1)
-	defer atomic.AddInt64(&syncDataCoroutineCount, -1)
+	atomic.AddInt64(&s.syncDataCoroutineCount, 1)
+	defer atomic.AddInt64(&s.syncDataCoroutineCount, -1)
 	var nodeList []*node.Node
 	needSetNode := false
 	code, _, data, err := s.request(remoteAddress, "api/cluster/node", nil)
@@ -272,7 +281,7 @@ func (s *service) SynchronizeRemoteData(remoteAddress string) error {
 			needSetNode = true
 		}
 	}
-	var configList []*config.Config
+	var configList []*model.Config
 	needSetConfig := false
 	body := map[string]interface{}{
 		"show_content": false,
@@ -280,7 +289,7 @@ func (s *service) SynchronizeRemoteData(remoteAddress string) error {
 	code, _, data, err = s.request(remoteAddress, "api/cluster/config", body)
 	if err == nil && code == 200 {
 		if err = json.Unmarshal(data, &configList); err == nil && configList != nil {
-			isChange := config.GetIns().CheckIsChange(configList)
+			isChange := s.configService.CheckIsChange(configList)
 			if isChange {
 				body = map[string]interface{}{
 					"show_content": true,
@@ -295,10 +304,10 @@ func (s *service) SynchronizeRemoteData(remoteAddress string) error {
 		}
 	}
 	if needSetNode && nodeList != nil {
-		node.GetIns().Sets(nodeList)
+		s.nodeService.Sets(nodeList)
 	}
 	if needSetConfig && configList != nil {
-		config.GetIns().Sets(configList)
+		s.configService.Sets(configList)
 	}
 	return nil
 }
@@ -306,12 +315,12 @@ func (s *service) SynchronizeRemoteData(remoteAddress string) error {
 // SyncDataLock 加锁同步数据
 func (s *service) SyncDataLock() error {
 	key := constant.LockSyncData
-	if !util.Cache.Lock(key, constant.LockTimeSyncData) {
+	if !s.cache.Lock(key, constant.LockTimeSyncData) {
 		return errors.New("系统繁忙,请稍后重试(-1)")
 	}
 	success := false
 	for i := 0; i < 15; i++ {
-		if atomic.LoadInt64(&syncDataCoroutineCount) >= 1 {
+		if atomic.LoadInt64(&s.syncDataCoroutineCount) >= 1 {
 			time.Sleep(time.Second)
 		} else {
 			success = true
@@ -327,18 +336,18 @@ func (s *service) SyncDataLock() error {
 // SyncDataUnLock 解锁同步数据
 func (s *service) SyncDataUnLock() error {
 	key := constant.LockSyncData
-	util.Cache.UnLock(key)
+	s.cache.UnLock(key)
 	return nil
 }
 
 // ChangeAllClusterLockStatus 远程分布式锁(0加锁 1解锁)
 func (s *service) ChangeAllClusterLockStatus(status int) error {
 	type lockResult struct {
-		cluster *Cluster
+		cluster *model.Cluster
 		err     error
 	}
-	list := make([]*Cluster, 0)
-	s.Each(func(key string, value *Cluster) bool {
+	list := make([]*model.Cluster, 0)
+	s.Each(func(key string, value *model.Cluster) bool {
 		if value.Status == cluster_status.Online {
 			list = append(list, value)
 		}
@@ -346,7 +355,7 @@ func (s *service) ChangeAllClusterLockStatus(status int) error {
 	})
 	// 使用工作池模式，限制最大并发数
 	maxWorkers := 10
-	clusterChan := make(chan *Cluster, len(list))
+	clusterChan := make(chan *model.Cluster, len(list))
 	resultChan := make(chan *lockResult, len(list))
 	// 启动工作goroutine
 	var wg sync.WaitGroup
@@ -374,7 +383,7 @@ func (s *service) ChangeAllClusterLockStatus(status int) error {
 		close(resultChan)
 	}()
 	// 收集结果
-	successList := make([]*Cluster, 0)
+	successList := make([]*model.Cluster, 0)
 	var lastError error
 	for result := range resultChan {
 		if result.err == nil {
@@ -390,7 +399,7 @@ func (s *service) ChangeAllClusterLockStatus(status int) error {
 	if status == 0 && lastError != nil {
 		// 加锁失败,解锁已加锁成功的节点
 		var rollbackWg sync.WaitGroup
-		rollbackChan := make(chan *Cluster, len(successList))
+		rollbackChan := make(chan *model.Cluster, len(successList))
 		// 启动回滚工作goroutine
 		for i := 0; i < maxWorkers; i++ {
 			rollbackWg.Add(1)
@@ -415,8 +424,8 @@ func (s *service) ChangeAllClusterLockStatus(status int) error {
 
 // DeleteAllClusterData 删除所有节点数据
 func (s *service) DeleteAllClusterData(configs []*model.Config, nodes []*model.Node) {
-	list := make([]*Cluster, 0)
-	s.Each(func(key string, value *Cluster) bool {
+	list := make([]*model.Cluster, 0)
+	s.Each(func(key string, value *model.Cluster) bool {
 		if value.Status == cluster_status.Online {
 			list = append(list, value)
 		}
@@ -433,8 +442,8 @@ func (s *service) DeleteAllClusterData(configs []*model.Config, nodes []*model.N
 
 // UpdateAllClusterData 更新所有节点数据
 func (s *service) UpdateAllClusterData(configs *ConfigUpdateValidate, nodes *NodeUpdateValidate) {
-	list := make([]*Cluster, 0)
-	s.Each(func(key string, value *Cluster) bool {
+	list := make([]*model.Cluster, 0)
+	s.Each(func(key string, value *model.Cluster) bool {
 		if value.Status == cluster_status.Online {
 			list = append(list, value)
 		}
@@ -451,8 +460,8 @@ func (s *service) UpdateAllClusterData(configs *ConfigUpdateValidate, nodes *Nod
 
 // CreateAllClusterData 创建所有节点数据
 func (s *service) CreateAllClusterData(config *model.Config, node *model.Node) {
-	list := make([]*Cluster, 0)
-	s.Each(func(key string, value *Cluster) bool {
+	list := make([]*model.Cluster, 0)
+	s.Each(func(key string, value *model.Cluster) bool {
 		if value.Status == cluster_status.Online {
 			list = append(list, value)
 		}
@@ -506,4 +515,19 @@ func (s *service) executeWithWorkers(workers int, tasks []func() error) []error 
 		results[i] = <-resultChan
 	}
 	return results
+}
+
+// Save 保存数据
+func (s *service) Save() error {
+	var clusters []*model.Cluster
+	s.Each(func(key string, value *model.Cluster) bool {
+		if value != nil {
+			clusters = append(clusters, value)
+		}
+		return true
+	})
+	if len(clusters) == 0 {
+		return nil
+	}
+	return s.repository.Save(clusters)
 }

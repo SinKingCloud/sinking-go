@@ -12,9 +12,10 @@ type Interface interface {
 	Create(data *model.Config) (err error)                                                                                                //创建数据
 	DeleteByGroupAndName(keys []*model.Config) error                                                                                      //通过集群和名称删除
 	FindByGroupAndName(group string, name string) (*model.Config, error)                                                                  //通过group name查询父信息
+	Save(configs []*model.Config) error                                                                                                   //保存数据
 	UpdateByGroupAndName(keys []*model.Config, config *UpdateConfig) error                                                                //根据 code 更新权限
 	SelectAll() (list []*Config, err error)                                                                                               //查询所有
-	SelectInGroupAndName(keys []*model.Config) (list []*Config, err error)                                                                //据group name查询
+	SelectInGroupAndName(keys []*model.Config) (list []*model.Config, err error)                                                          //据group name查询
 	Select(where *SelectConfig, orderByField string, orderByType string, page int, pageSize int) (list []*Config, total int64, err error) //查询数据
 }
 

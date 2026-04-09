@@ -1,8 +1,8 @@
 package api
 
 import (
+	"server/app/model"
 	"server/app/service"
-	"server/app/service/config"
 	"server/app/util/context"
 
 	sinking_web "github.com/SinKingCloud/sinking-go/sinking-web"
@@ -22,7 +22,7 @@ func (ControllerConfig) Sync(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	var list []*config.Config
+	var list []*model.Config
 	lastOperateTime := service.Config.GetOperateTime(form.Group)
 	if form.LastSyncTime <= 0 || form.LastSyncTime != lastOperateTime {
 		list = service.Config.GetAllConfigs(form.Group, true, true)
