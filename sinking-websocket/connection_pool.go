@@ -91,17 +91,22 @@ func (connections *ConnectionPool) Delete(key string, expected ...*Connection) b
 	}
 	shard := connections.shard(key)
 	shard.lock.Lock()
-	defer shard.lock.Unlock()
-	current := shard.conn[key]
-	if current == nil {
+	current, exists := shard.conn[key]
+	if !exists {
+		shard.lock.Unlock()
 		return true
 	}
 	if expectedConn != nil && current != expectedConn {
+		shard.lock.Unlock()
 		return false
+	}
+	delete(shard.conn, key)
+	shard.lock.Unlock()
+	if current == nil || current.IsClosed() {
+		return true
 	}
 	if err := current.Close(); err != nil {
 		return false
 	}
-	delete(shard.conn, key)
 	return true
 }
