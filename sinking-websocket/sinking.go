@@ -71,12 +71,6 @@ func (handle *Server) SetWriteQueueSize(size int) *Server {
 	return handle
 }
 
-// SetCloseHandler 设置收到 close frame 时的协议层回调。
-func (handle *Server) SetCloseHandler(fun func(id string, ws *Connection, code int, text string) error) *Server {
-	handle.OnCloseFrame = fun
-	return handle
-}
-
 // SetCloseFrameHandle 是 SetCloseHandler 的语义化别名。
 func (handle *Server) SetCloseFrameHandle(fun func(id string, ws *Connection, code int, text string) error) *Server {
 	handle.OnCloseFrame = fun
