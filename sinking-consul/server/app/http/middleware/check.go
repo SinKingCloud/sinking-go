@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"server/app/constant"
-	"server/app/util"
+	"server/app/service"
 	"server/app/util/context"
 	"server/app/util/jwt"
 )
@@ -11,24 +11,19 @@ import (
 func CheckLogin(c *context.Context) {
 	token := c.Request.Header.Get(constant.JwtTokenName)
 	if token == "" {
-		c.NotLogin("您还未登陆,请先登陆账户", nil)
+		c.NotLogin("您还未登陆,请先登陆账户")
 		c.Abort()
 		return
 	}
 	key := jwt.CheckToken(token)
 	if key == nil || key.User == nil {
-		c.TokenError("登陆超时,请重新登陆", nil)
+		c.TokenError("登陆超时,请重新登陆")
 		c.Abort()
 		return
 	}
-	loginToken := util.Conf.GetString(constant.AuthLoginToken)
-	if loginToken == "" {
-		c.TokenError("您的账户已注销登陆,请重新登陆", nil)
-		c.Abort()
-		return
-	}
-	if key.User.LoginToken != loginToken {
-		c.TokenError("您的账户已在其他设备登陆,请重新登陆", nil)
+	err := service.Auth.CheckLoginToken(key.User.LoginToken)
+	if err != nil {
+		c.TokenError(err.Error())
 		c.Abort()
 		return
 	}
@@ -38,14 +33,9 @@ func CheckLogin(c *context.Context) {
 
 // CheckToken 判断token
 func CheckToken(c *context.Context) {
-	token := c.Request.Header.Get(constant.JwtTokenName)
-	if token == "" {
-		c.NotLogin("鉴权token缺失,请检查请求", nil)
-		c.Abort()
-		return
-	}
-	if token != util.Conf.GetString(constant.AuthApiToken) {
-		c.TokenError("鉴权token无效,请确认token是否正确", nil)
+	err := service.Auth.CheckApiToken(c.Request.Header.Get(constant.JwtTokenName))
+	if err != nil {
+		c.TokenError(err.Error())
 		c.Abort()
 		return
 	}

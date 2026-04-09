@@ -3,6 +3,9 @@ package sync
 import (
 	"server/app/command/queue/sync"
 	"server/app/constant"
+	"server/app/enum/cluster_status"
+	"server/app/enum/node_online_status"
+	"server/app/enum/node_status"
 	"server/app/service"
 	"server/app/service/cluster"
 	"server/app/service/config"
@@ -30,7 +33,7 @@ func Init() {
 			}
 			service.Cluster.Each(func(key string, value *cluster.Cluster) bool {
 				if value.LastHeart+60 < time.Now().Unix() {
-					value.Status = int(cluster.Offline)
+					value.Status = cluster_status.Offline
 				}
 				sync.Instance.SendTask(&sync.Task{
 					Type:          sync.RegisterService,
@@ -41,9 +44,9 @@ func Init() {
 			temp1 := make(map[string]uint64)
 			service.Node.Each("*", func(value *node.Node) {
 				if value.LastHeart+60 < time.Now().Unix() {
-					value.OnlineStatus = int(node.Offline)
+					value.OnlineStatus = node_online_status.Offline
 				}
-				if value.OnlineStatus == int(node.Online) && value.Status == int(node.Normal) {
+				if value.OnlineStatus == node_online_status.Online && value.Status == node_status.Normal {
 					temp1[value.Group] += strTool.ToNumber(value.Address, strToolMax)
 				}
 			})
@@ -65,7 +68,7 @@ func Init() {
 			}
 			if i == 3 {
 				service.Cluster.Each(func(key string, value *cluster.Cluster) bool {
-					if value.Status == int(cluster.Online) {
+					if value.Status == cluster_status.Online {
 						sync.Instance.SendTask(&sync.Task{
 							Type:          sync.SynchronizeData,
 							RemoteAddress: key,

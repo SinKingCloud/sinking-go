@@ -1,14 +1,15 @@
 package auth
 
 import (
-	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"server/app/constant"
-	"server/app/util"
+	"server/app/service"
 	"server/app/util/context"
+
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
 func Info(c *context.Context) {
-	config := util.Conf
+	config := service.Setting
 	c.SuccessWithData("获取成功", sinking_web.H{
 		"title":    c.GetStringWithDefault(config.GetString(constant.WebTitle), "豁者云服务"),
 		"name":     c.GetStringWithDefault(config.GetString(constant.WebName), "云上豁者"),

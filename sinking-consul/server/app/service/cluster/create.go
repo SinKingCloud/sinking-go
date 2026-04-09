@@ -6,7 +6,7 @@ import (
 )
 
 // create 插入数据
-func (s *Service) create(data *model.Cluster) (err error) {
+func (s *service) create(data *model.Cluster) (err error) {
 	err = util.Database.Db.Create(&data).Error
 	return
 }

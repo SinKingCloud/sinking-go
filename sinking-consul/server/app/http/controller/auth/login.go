@@ -1,8 +1,8 @@
 package auth
 
 import (
+	"server/app/enum/log_type"
 	"server/app/service"
-	"server/app/service/log"
 	"server/app/util/context"
 )
 
@@ -33,6 +33,6 @@ func Login(c *context.Context) {
 		c.Error(e.Error())
 		return
 	}
-	service.Log.Create(c.GetRequestIp(), log.EventLogin, "系统账户登录", "系统登录成功")
+	service.Log.Create(c.GetRequestIp(), log_type.EventLogin, "系统账户登录", "系统登录成功")
 	c.SuccessWithData("登录成功", token)
 }

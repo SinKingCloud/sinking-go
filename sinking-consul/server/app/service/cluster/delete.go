@@ -6,7 +6,7 @@ import (
 )
 
 // DeleteAll 删除全部数据
-func (s *Service) DeleteAll() (err error) {
+func (s *service) DeleteAll() (err error) {
 	err = util.Database.Db.Where("1 = 1").Delete(&model.Cluster{}).Error
 	return
 }

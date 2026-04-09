@@ -1,17 +1,18 @@
 package util
 
 import (
-	"github.com/spf13/viper"
 	"log"
 	"server/app/constant"
 	"server/app/util/cache"
 	"server/app/util/database"
+
+	"github.com/spf13/viper"
 )
 
 var (
 	Database *database.Database //数据库
 	Conf     *viper.Viper       //文件配置
-	Cache    *cache.Cache
+	Cache    cache.Interface
 	Log      *log.Logger
 )
 

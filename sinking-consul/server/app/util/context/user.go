@@ -16,5 +16,5 @@ func (c *Context) GetUserInfo() *jwt.User {
 	if exists {
 		return value.(*jwt.User)
 	}
-	return nil
+	return &jwt.User{}
 }

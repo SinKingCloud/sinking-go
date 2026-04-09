@@ -5,13 +5,13 @@ import (
 	"sync"
 )
 
-// Service 单例对象
-type Service struct {
+// service 单例对象
+type service struct {
 }
 
 var (
 	//实例对象
-	obj = &Service{}
+	obj = &service{}
 	//原子锁
 	nodeOnce = &sync.Once{}
 	// 节点池 组[节点地址]
@@ -22,7 +22,7 @@ var (
 )
 
 // GetIns 获取单例
-func GetIns() *Service {
+func GetIns() *service {
 	return obj
 }
 

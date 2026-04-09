@@ -1,11 +1,12 @@
 package config
 
 import (
+	"server/app/enum/config_status"
 	"server/app/model"
 	"time"
 )
 
-func (s *Service) Init() {
+func (s *service) Init() {
 	configOnce.Do(func() {
 		all, e := s.SelectAll()
 		if e == nil && all != nil {
@@ -28,21 +29,21 @@ func (s *Service) Init() {
 }
 
 // GetGroup 获取集群组节点信息
-func (s *Service) GetGroup(group string) map[string]*Config {
+func (s *service) GetGroup(group string) map[string]*Config {
 	configLock.RLock()
 	defer configLock.RUnlock()
 	return configPool[group]
 }
 
 // Get 获取集群节点信息
-func (s *Service) Get(group string, key string) *Config {
+func (s *service) Get(group string, key string) *Config {
 	configLock.RLock()
 	defer configLock.RUnlock()
 	return configPool[group][key]
 }
 
 // Each 遍历集群信息
-func (s *Service) Each(group string, fun func(value *Config)) {
+func (s *service) Each(group string, fun func(value *Config)) {
 	configLock.RLock()
 	defer configLock.RUnlock()
 	if group == "*" || group == "" {
@@ -61,7 +62,7 @@ func (s *Service) Each(group string, fun func(value *Config)) {
 }
 
 // Set 设置集群配置信息
-func (s *Service) Set(group string, key string, value *Config) {
+func (s *service) Set(group string, key string, value *Config) {
 	configLock.Lock()
 	defer configLock.Unlock()
 	if _, ok := configPool[group]; !ok {
@@ -75,7 +76,7 @@ func (s *Service) Set(group string, key string, value *Config) {
 }
 
 // Sets 批量设置集群配置信息
-func (s *Service) Sets(list []*Config) {
+func (s *service) Sets(list []*Config) {
 	configLock.Lock()
 	defer configLock.Unlock()
 	g := make(map[string]int64)
@@ -101,21 +102,21 @@ func (s *Service) Sets(list []*Config) {
 }
 
 // SetOperateTime 设置操作时间
-func (s *Service) SetOperateTime(group string) {
+func (s *service) SetOperateTime(group string) {
 	configLastOperateTimeLock.Lock()
 	defer configLastOperateTimeLock.Unlock()
 	configLastOperateTime[group] = time.Now().UnixMicro()
 }
 
 // GetOperateTime 获取上次操作时间
-func (s *Service) GetOperateTime(group string) int64 {
+func (s *service) GetOperateTime(group string) int64 {
 	configLastOperateTimeLock.RLock()
 	defer configLastOperateTimeLock.RUnlock()
 	return configLastOperateTime[group]
 }
 
 // CheckIsChange 检查配置是否有变更
-func (s *Service) CheckIsChange(list []*Config) bool {
+func (s *service) CheckIsChange(list []*Config) bool {
 	configLock.Lock()
 	defer configLock.Unlock()
 	change := false
@@ -139,7 +140,7 @@ func (s *Service) CheckIsChange(list []*Config) bool {
 }
 
 // Delete 删除配置信息
-func (s *Service) Delete(group string, key string) {
+func (s *service) Delete(group string, key string) {
 	configLock.Lock()
 	defer configLock.Unlock()
 	s.SetOperateTime(group)
@@ -157,7 +158,7 @@ func (s *Service) Delete(group string, key string) {
 }
 
 // GetAllConfigs 获取本地配置信息
-func (s *Service) GetAllConfigs(group string, showContent bool, filterStatus bool) []*Config {
+func (s *service) GetAllConfigs(group string, showContent bool, filterStatus bool) []*Config {
 	configLock.RLock()
 	defer configLock.RUnlock()
 	count := 0
@@ -167,7 +168,7 @@ func (s *Service) GetAllConfigs(group string, showContent bool, filterStatus boo
 	list := make([]*Config, 0, count)
 	for _, g := range configPool {
 		for _, value := range g {
-			if filterStatus && value.Status == int(Stop) {
+			if filterStatus && value.Status == config_status.Stop {
 				continue
 			}
 			if group != "" && group != "*" {

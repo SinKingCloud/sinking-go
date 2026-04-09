@@ -8,7 +8,7 @@ import (
 )
 
 // UpdateByGroupAndName 通过group name更新
-func (s *Service) UpdateByGroupAndName(keys []*model.Config, data map[string]interface{}) (err error) {
+func (s *service) UpdateByGroupAndName(keys []*model.Config, data map[string]interface{}) (err error) {
 	data["update_time"] = str.DateTime(time.Now())
 	var conditions [][]interface{}
 	for _, key := range keys {

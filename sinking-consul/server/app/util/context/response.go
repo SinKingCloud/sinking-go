@@ -1,8 +1,9 @@
 package context
 
 import (
-	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"net/http"
+
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
 const (
@@ -44,10 +45,10 @@ func (c *Context) ErrorWithData(message interface{}, data interface{}) {
 	c.response(ErrorCode, message, data)
 }
 
-func (c *Context) TokenError(message interface{}, data interface{}) {
-	c.response(TokenErrorCode, message, data)
+func (c *Context) TokenError(message interface{}) {
+	c.response(TokenErrorCode, message, nil)
 }
 
-func (c *Context) NotLogin(message interface{}, data interface{}) {
-	c.response(NotLoginCode, message, data)
+func (c *Context) NotLogin(message interface{}) {
+	c.response(NotLoginCode, message, nil)
 }

@@ -1,8 +1,8 @@
 package admin
 
 import (
+	"server/app/enum/log_type"
 	"server/app/service"
-	"server/app/service/log"
 	"server/app/util/context"
 	"server/app/util/page"
 )
@@ -46,7 +46,7 @@ func (ControllerCluster) List(c *context.Context) {
 	if err != nil {
 		c.Error("获取失败")
 	} else {
-		service.Log.Create(c.GetRequestIp(), log.EventShow, "查看系统集群", "查看系统集群列表")
+		service.Log.Create(c.GetRequestIp(), log_type.EventShow, "查看系统集群", "查看系统集群列表")
 		c.SuccessWithData("获取成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }

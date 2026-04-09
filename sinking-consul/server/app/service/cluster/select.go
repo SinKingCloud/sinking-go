@@ -6,13 +6,13 @@ import (
 )
 
 // SelectAll 查询所有
-func (s *Service) SelectAll() (list []*Cluster, err error) {
+func (s *service) SelectAll() (list []*Cluster, err error) {
 	err = util.Database.Db.Model(&model.Cluster{}).Find(&list).Error
 	return list, err
 }
 
 // Select 获取数据
-func (s *Service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*Cluster, total int64, err error) {
+func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*Cluster, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := util.Database.Db.Model(&model.Cluster{})
 	if where["status"] != "" {

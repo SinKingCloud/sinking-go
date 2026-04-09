@@ -1,14 +1,16 @@
 package node
 
 import (
+	"server/app/enum/node_online_status"
+	"server/app/enum/node_status"
 	"server/app/model"
 	"time"
 )
 
 // Init 初始化服务
-func (s *Service) Init() {
+func (s *service) Init() {
 	nodeOnce.Do(func() {
-		_ = s.UpdateAll(map[string]interface{}{"online_status": Offline})
+		_ = s.UpdateAll(map[string]interface{}{"online_status": node_online_status.Offline})
 		all, e := s.SelectAll()
 		if e == nil && all != nil {
 			for _, v := range all {
@@ -17,7 +19,7 @@ func (s *Service) Init() {
 						Group:        v.Group,
 						Name:         v.Name,
 						Address:      v.Address,
-						OnlineStatus: int(Offline),
+						OnlineStatus: node_online_status.Offline,
 						Status:       v.Status,
 						LastHeart:    v.LastHeart,
 						CreateTime:   v.CreateTime,
@@ -31,21 +33,21 @@ func (s *Service) Init() {
 }
 
 // GetGroup 获取集群组节点信息
-func (s *Service) GetGroup(group string) map[string]*Node {
+func (s *service) GetGroup(group string) map[string]*Node {
 	nodeLock.RLock()
 	defer nodeLock.RUnlock()
 	return nodePool[group]
 }
 
 // Get 获取集群节点信息
-func (s *Service) Get(group string, key string) *Node {
+func (s *service) Get(group string, key string) *Node {
 	nodeLock.RLock()
 	defer nodeLock.RUnlock()
 	return nodePool[group][key]
 }
 
 // Each 遍历集群信息
-func (s *Service) Each(group string, fun func(value *Node)) {
+func (s *service) Each(group string, fun func(value *Node)) {
 	nodeLock.RLock()
 	defer nodeLock.RUnlock()
 	if group == "*" || group == "" {
@@ -64,7 +66,7 @@ func (s *Service) Each(group string, fun func(value *Node)) {
 }
 
 // Set 设置集群节点信息
-func (s *Service) Set(group string, key string, value *Node) {
+func (s *service) Set(group string, key string, value *Node) {
 	nodeLock.Lock()
 	defer nodeLock.Unlock()
 	if _, ok := nodePool[group]; !ok {
@@ -78,7 +80,7 @@ func (s *Service) Set(group string, key string, value *Node) {
 }
 
 // Sets 批量设置集群节点信息
-func (s *Service) Sets(list []*Node) {
+func (s *service) Sets(list []*Node) {
 	nodeLock.Lock()
 	defer nodeLock.Unlock()
 	g := make(map[string]int64)
@@ -102,21 +104,21 @@ func (s *Service) Sets(list []*Node) {
 }
 
 // SetOperateTime 设置上次操作时间
-func (s *Service) SetOperateTime(group string) {
+func (s *service) SetOperateTime(group string) {
 	nodeLastOperateTimeLock.Lock()
 	defer nodeLastOperateTimeLock.Unlock()
 	nodeLastOperateTime[group] = time.Now().UnixMicro()
 }
 
 // GetOperateTime 获取上次操作时间
-func (s *Service) GetOperateTime(group string) int64 {
+func (s *service) GetOperateTime(group string) int64 {
 	nodeLastOperateTimeLock.RLock()
 	defer nodeLastOperateTimeLock.RUnlock()
 	return nodeLastOperateTime[group]
 }
 
 // Delete 删除集群节点信息
-func (s *Service) Delete(group string, key string) {
+func (s *service) Delete(group string, key string) {
 	nodeLock.Lock()
 	defer nodeLock.Unlock()
 	s.SetOperateTime(group)
@@ -134,7 +136,7 @@ func (s *Service) Delete(group string, key string) {
 }
 
 // Register 注册节点信息
-func (s *Service) Register(group string, name string, address string) {
+func (s *service) Register(group string, name string, address string) {
 	data := s.Get(group, address)
 	if data == nil {
 		s.Set(group, address, &Node{
@@ -142,24 +144,24 @@ func (s *Service) Register(group string, name string, address string) {
 				Group:        group,
 				Name:         name,
 				Address:      address,
-				OnlineStatus: int(Online),
-				Status:       int(Normal),
+				OnlineStatus: node_online_status.Online,
+				Status:       node_status.Normal,
 				LastHeart:    time.Now().Unix(),
 			},
 			IsLocal: true,
 		})
 	} else {
-		if data.OnlineStatus != int(Online) {
+		if data.OnlineStatus != node_online_status.Online {
 			s.SetOperateTime(group)
 		}
 		data.IsLocal = true
-		data.OnlineStatus = int(Online)
+		data.OnlineStatus = node_online_status.Online
 		data.LastHeart = time.Now().Unix()
 	}
 }
 
 // GetLocalNodes 获取本地服务信息
-func (s *Service) GetLocalNodes() []*model.Node {
+func (s *service) GetLocalNodes() []*model.Node {
 	nodeLock.RLock()
 	defer nodeLock.RUnlock()
 	count := 0
@@ -178,7 +180,7 @@ func (s *Service) GetLocalNodes() []*model.Node {
 }
 
 // GetAllOnlineNodes 获取正常服务数据信息
-func (s *Service) GetAllOnlineNodes(group string) []*model.Node {
+func (s *service) GetAllOnlineNodes(group string) []*model.Node {
 	nodeLock.RLock()
 	defer nodeLock.RUnlock()
 	count := 0
@@ -188,7 +190,7 @@ func (s *Service) GetAllOnlineNodes(group string) []*model.Node {
 	list := make([]*model.Node, 0, count)
 	for _, g := range nodePool {
 		for _, value := range g {
-			if value.OnlineStatus == int(Online) && value.Status == int(Normal) && value.Group == group {
+			if value.OnlineStatus == node_online_status.Online && value.Status == node_status.Normal && value.Group == group {
 				list = append(list, value.Node)
 			}
 		}

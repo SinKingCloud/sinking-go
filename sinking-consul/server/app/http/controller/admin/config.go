@@ -1,11 +1,12 @@
 package admin
 
 import (
+	"server/app/enum/config_status"
+	"server/app/enum/config_type"
+	"server/app/enum/log_type"
 	"server/app/model"
 	"server/app/service"
 	"server/app/service/cluster"
-	"server/app/service/config"
-	"server/app/service/log"
 	"server/app/util/context"
 	"server/app/util/page"
 	"server/app/util/str"
@@ -72,7 +73,7 @@ func (ControllerConfig) List(c *context.Context) {
 	if err != nil {
 		c.Error("获取失败")
 	} else {
-		service.Log.Create(c.GetRequestIp(), log.EventShow, "查看服务配置", "查看服务配置列表")
+		service.Log.Create(c.GetRequestIp(), log_type.EventShow, "查看服务配置", "查看服务配置列表")
 		c.SuccessWithData("获取成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }
@@ -91,7 +92,7 @@ func (ControllerConfig) Info(c *context.Context) {
 	if err != nil {
 		c.Error("获取失败")
 	} else {
-		service.Log.Create(c.GetRequestIp(), log.EventShow, "查看配置详情", "查看配置["+form.Group+":"+form.Name+"]详情")
+		service.Log.Create(c.GetRequestIp(), log_type.EventShow, "查看配置详情", "查看配置["+form.Group+":"+form.Name+"]详情")
 		c.SuccessWithData("获取成功", info)
 	}
 }
@@ -112,7 +113,7 @@ func (ControllerConfig) Update(c *context.Context) {
 	}
 	if form.Status != "" {
 		n, _ := strconv.Atoi(form.Status)
-		if _, ok := service.Config.Status()[config.Status(n)]; !ok {
+		if _, ok := config_status.Map()[n]; !ok {
 			c.Error("状态值不合法")
 			return
 		}
@@ -132,7 +133,7 @@ func (ControllerConfig) Update(c *context.Context) {
 		return
 	}
 	service.Cluster.UpdateAllClusterData(form, nil)
-	service.Log.Create(c.GetRequestIp(), log.EventUpdate, "修改服务配置", "修改服务配置数据")
+	service.Log.Create(c.GetRequestIp(), log_type.EventUpdate, "修改服务配置", "修改服务配置数据")
 	c.Success("修改成功")
 }
 
@@ -150,11 +151,11 @@ func (ControllerConfig) Create(c *context.Context) {
 		return
 	}
 	form.Name = strings.ToLower(form.Name)
-	if _, ok := service.Config.Status()[config.Status(form.Status)]; !ok {
+	if _, ok := config_status.Map()[form.Status]; !ok {
 		c.Error("状态值不合法")
 		return
 	}
-	if _, ok := service.Config.Types()[config.Type(form.Type)]; !ok {
+	if _, ok := config_type.Map()[form.Type]; !ok {
 		c.Error("配置类型不合法")
 		return
 	}
@@ -182,7 +183,7 @@ func (ControllerConfig) Create(c *context.Context) {
 		return
 	}
 	service.Cluster.CreateAllClusterData(d, nil)
-	service.Log.Create(c.GetRequestIp(), log.EventCreate, "创建服务配置", "创建服务配置["+form.Group+":"+form.Name+"]")
+	service.Log.Create(c.GetRequestIp(), log_type.EventCreate, "创建服务配置", "创建服务配置["+form.Group+":"+form.Name+"]")
 	c.Success("创建成功")
 }
 
@@ -209,6 +210,6 @@ func (ControllerConfig) Delete(c *context.Context) {
 		return
 	}
 	service.Cluster.DeleteAllClusterData(form.Keys, nil)
-	service.Log.Create(c.GetRequestIp(), log.EventDelete, "删除服务配置", "删除服务配置数据")
+	service.Log.Create(c.GetRequestIp(), log_type.EventDelete, "删除服务配置", "删除服务配置数据")
 	c.Success("删除成功")
 }

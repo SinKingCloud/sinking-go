@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"server/app/constant"
+	"server/app/enum/cluster_status"
 	"server/app/model"
 	"server/app/service/config"
 	"server/app/service/node"
@@ -20,7 +21,7 @@ import (
 )
 
 // Get 获取集群节点信息
-func (s *Service) Get(key string) *Cluster {
+func (s *service) Get(key string) *Cluster {
 	if v, ok := clusterPool.Load(key); ok && v != nil {
 		return v.(*Cluster)
 	}
@@ -28,48 +29,48 @@ func (s *Service) Get(key string) *Cluster {
 }
 
 // Set 设置集群节点信息
-func (s *Service) Set(key string, value *Cluster) {
+func (s *service) Set(key string, value *Cluster) {
 	clusterPool.Store(key, value)
 }
 
 // Sets 批量设置集群信息
-func (s *Service) Sets(list []*Cluster) {
+func (s *service) Sets(list []*Cluster) {
 	for _, v := range list {
 		clusterPool.Store(v.Address, v)
 	}
 }
 
 // Delete 删除集群节点
-func (s *Service) Delete(key string) {
+func (s *service) Delete(key string) {
 	clusterPool.Delete(key)
 }
 
 // Each 遍历集群信息
-func (s *Service) Each(fun func(key string, value *Cluster) bool) {
+func (s *service) Each(fun func(key string, value *Cluster) bool) {
 	clusterPool.Range(func(key, value any) bool {
 		return fun(key.(string), value.(*Cluster))
 	})
 }
 
 // Register 注册集群信息
-func (s *Service) Register(address string) {
+func (s *service) Register(address string) {
 	data := s.Get(address)
 	if data == nil {
 		s.Set(address, &Cluster{
 			Cluster: &model.Cluster{
 				Address:   address,
-				Status:    int(Online),
+				Status:    cluster_status.Online,
 				LastHeart: time.Now().Unix(),
 			},
 		})
 	} else {
-		data.Status = int(Online)
+		data.Status = cluster_status.Online
 		data.LastHeart = time.Now().Unix()
 	}
 }
 
 // Init 初始化服务
-func (s *Service) Init() {
+func (s *service) Init() {
 	clusterOnce.Do(func() {
 		_ = s.DeleteAll()
 		var list []string
@@ -84,7 +85,7 @@ func (s *Service) Init() {
 			if e != nil || d == nil {
 				_ = s.create(&model.Cluster{
 					Address:   v,
-					Status:    int(Offline),
+					Status:    cluster_status.Offline,
 					LastHeart: 0,
 				})
 			}
@@ -107,7 +108,7 @@ func (s *Service) Init() {
 }
 
 // request 向集群节点发送请求
-func (s *Service) request(address string, action string, body interface{}) (int, string, []byte, error) {
+func (s *service) request(address string, action string, body interface{}) (int, string, []byte, error) {
 	if !strings.HasPrefix(address, "http://") {
 		address = "http://" + address
 	}
@@ -152,7 +153,7 @@ func (s *Service) request(address string, action string, body interface{}) (int,
 }
 
 // GetLocalAddr 获取本机地址
-func (s *Service) GetLocalAddr() string {
+func (s *service) GetLocalAddr() string {
 	str := util.Cache.Remember(constant.CacheNameWithLocalIp, func() interface{} {
 		local := util.Conf.GetString(constant.ClusterLocal)
 		if local == "" {
@@ -165,7 +166,7 @@ func (s *Service) GetLocalAddr() string {
 }
 
 // RegisterRemoteService 向集群节点发送注册请求
-func (s *Service) RegisterRemoteService(remoteAddress string) error {
+func (s *service) RegisterRemoteService(remoteAddress string) error {
 	body := map[string]string{
 		"address": s.GetLocalAddr(),
 	}
@@ -181,7 +182,7 @@ func (s *Service) RegisterRemoteService(remoteAddress string) error {
 
 // RemoteLock 远程分布式锁
 // status 0加锁 1解锁
-func (s *Service) RemoteLock(remoteAddress string, status int) error {
+func (s *service) RemoteLock(remoteAddress string, status int) error {
 	body := map[string]int{
 		"status": status,
 	}
@@ -196,7 +197,7 @@ func (s *Service) RemoteLock(remoteAddress string, status int) error {
 }
 
 // RemoteDeleteData 远程删除数据
-func (s *Service) RemoteDeleteData(remoteAddress string, configs []*model.Config, nodes []*model.Node) error {
+func (s *service) RemoteDeleteData(remoteAddress string, configs []*model.Config, nodes []*model.Node) error {
 	body := map[string]interface{}{}
 	if configs != nil {
 		body["configs"] = configs
@@ -215,7 +216,7 @@ func (s *Service) RemoteDeleteData(remoteAddress string, configs []*model.Config
 }
 
 // RemoteCreateData 远程创建数据
-func (s *Service) RemoteCreateData(remoteAddress string, config *model.Config, node *model.Node) error {
+func (s *service) RemoteCreateData(remoteAddress string, config *model.Config, node *model.Node) error {
 	body := map[string]interface{}{}
 	if config != nil {
 		body["config"] = config
@@ -234,7 +235,7 @@ func (s *Service) RemoteCreateData(remoteAddress string, config *model.Config, n
 }
 
 // RemoteUpdateData 远程更新数据
-func (s *Service) RemoteUpdateData(remoteAddress string, configs *ConfigUpdateValidate, nodes *NodeUpdateValidate) error {
+func (s *service) RemoteUpdateData(remoteAddress string, configs *ConfigUpdateValidate, nodes *NodeUpdateValidate) error {
 	body := map[string]interface{}{}
 	if configs != nil {
 		body["configs"] = configs
@@ -253,7 +254,7 @@ func (s *Service) RemoteUpdateData(remoteAddress string, configs *ConfigUpdateVa
 }
 
 // SynchronizeRemoteData 同步集群信息
-func (s *Service) SynchronizeRemoteData(remoteAddress string) error {
+func (s *service) SynchronizeRemoteData(remoteAddress string) error {
 	for {
 		if util.Cache.IsLock(constant.LockSyncData) {
 			time.Sleep(time.Second)
@@ -303,7 +304,7 @@ func (s *Service) SynchronizeRemoteData(remoteAddress string) error {
 }
 
 // SyncDataLock 加锁同步数据
-func (s *Service) SyncDataLock() error {
+func (s *service) SyncDataLock() error {
 	key := constant.LockSyncData
 	if !util.Cache.Lock(key, constant.LockTimeSyncData) {
 		return errors.New("系统繁忙,请稍后重试(-1)")
@@ -324,21 +325,21 @@ func (s *Service) SyncDataLock() error {
 }
 
 // SyncDataUnLock 解锁同步数据
-func (s *Service) SyncDataUnLock() error {
+func (s *service) SyncDataUnLock() error {
 	key := constant.LockSyncData
 	util.Cache.UnLock(key)
 	return nil
 }
 
 // ChangeAllClusterLockStatus 远程分布式锁(0加锁 1解锁)
-func (s *Service) ChangeAllClusterLockStatus(status int) error {
+func (s *service) ChangeAllClusterLockStatus(status int) error {
 	type lockResult struct {
 		cluster *Cluster
 		err     error
 	}
 	list := make([]*Cluster, 0)
 	s.Each(func(key string, value *Cluster) bool {
-		if value.Status == int(Online) {
+		if value.Status == cluster_status.Online {
 			list = append(list, value)
 		}
 		return true
@@ -413,10 +414,10 @@ func (s *Service) ChangeAllClusterLockStatus(status int) error {
 }
 
 // DeleteAllClusterData 删除所有节点数据
-func (s *Service) DeleteAllClusterData(configs []*model.Config, nodes []*model.Node) {
+func (s *service) DeleteAllClusterData(configs []*model.Config, nodes []*model.Node) {
 	list := make([]*Cluster, 0)
 	s.Each(func(key string, value *Cluster) bool {
-		if value.Status == int(Online) {
+		if value.Status == cluster_status.Online {
 			list = append(list, value)
 		}
 		return true
@@ -431,10 +432,10 @@ func (s *Service) DeleteAllClusterData(configs []*model.Config, nodes []*model.N
 }
 
 // UpdateAllClusterData 更新所有节点数据
-func (s *Service) UpdateAllClusterData(configs *ConfigUpdateValidate, nodes *NodeUpdateValidate) {
+func (s *service) UpdateAllClusterData(configs *ConfigUpdateValidate, nodes *NodeUpdateValidate) {
 	list := make([]*Cluster, 0)
 	s.Each(func(key string, value *Cluster) bool {
-		if value.Status == int(Online) {
+		if value.Status == cluster_status.Online {
 			list = append(list, value)
 		}
 		return true
@@ -449,10 +450,10 @@ func (s *Service) UpdateAllClusterData(configs *ConfigUpdateValidate, nodes *Nod
 }
 
 // CreateAllClusterData 创建所有节点数据
-func (s *Service) CreateAllClusterData(config *model.Config, node *model.Node) {
+func (s *service) CreateAllClusterData(config *model.Config, node *model.Node) {
 	list := make([]*Cluster, 0)
 	s.Each(func(key string, value *Cluster) bool {
-		if value.Status == int(Online) {
+		if value.Status == cluster_status.Online {
 			list = append(list, value)
 		}
 		return true
@@ -470,7 +471,7 @@ func (s *Service) CreateAllClusterData(config *model.Config, node *model.Node) {
 // workers: 工作goroutine数量
 // tasks: 要执行的任务函数列表
 // 返回: 每个任务的错误结果，顺序与输入任务顺序一致
-func (s *Service) executeWithWorkers(workers int, tasks []func() error) []error {
+func (s *service) executeWithWorkers(workers int, tasks []func() error) []error {
 	if workers <= 0 {
 		workers = 1
 	}

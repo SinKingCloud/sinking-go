@@ -6,13 +6,13 @@ import (
 )
 
 // SelectAll 查询所有
-func (s *Service) SelectAll() (list []*Config, err error) {
+func (s *service) SelectAll() (list []*Config, err error) {
 	err = util.Database.Db.Model(&model.Config{}).Find(&list).Error
 	return list, err
 }
 
 // SelectInGroupAndName 根据group name查询
-func (s *Service) SelectInGroupAndName(keys []*model.Config) (list []*Config, err error) {
+func (s *service) SelectInGroupAndName(keys []*model.Config) (list []*Config, err error) {
 	var conditions [][]interface{}
 	for _, key := range keys {
 		if key.Group != "" && key.Name != "" {
@@ -24,7 +24,7 @@ func (s *Service) SelectInGroupAndName(keys []*model.Config) (list []*Config, er
 }
 
 // Select 获取数据
-func (s *Service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*SelectConfig, total int64, err error) {
+func (s *service) Select(where map[string]string, orderByField string, orderByType string, page int, pageSize int) (list []*SelectConfig, total int64, err error) {
 	offset := pageSize * (page - 1)
 	query := util.Database.Db.Model(&model.Config{})
 	if where["group"] != "" {

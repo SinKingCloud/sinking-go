@@ -6,7 +6,7 @@ import (
 )
 
 // DeleteByGroupAndName 通过集群和名称删除
-func (s *Service) DeleteByGroupAndName(keys []*model.Config) (err error) {
+func (s *service) DeleteByGroupAndName(keys []*model.Config) (err error) {
 	var conditions [][]interface{}
 	for _, key := range keys {
 		if key.Group != "" && key.Name != "" {

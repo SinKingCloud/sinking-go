@@ -8,7 +8,7 @@ import (
 )
 
 // Create 插入数据
-func (s *Service) Create(data *model.Node) (err error) {
+func (s *service) Create(data *model.Node) (err error) {
 	key := constant.LockNodeCreate
 	if !util.Cache.Lock(key, constant.LockTimeNodeCreate) {
 		return errors.New("系统繁忙,请稍后重试")

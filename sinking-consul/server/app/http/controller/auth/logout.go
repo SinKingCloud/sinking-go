@@ -1,9 +1,9 @@
 package auth
 
 import (
+	"server/app/enum/log_type"
 	"server/app/http/middleware"
 	"server/app/service"
-	"server/app/service/log"
 	"server/app/util/context"
 )
 
@@ -14,6 +14,6 @@ func Logout(c *context.Context) {
 		return
 	}
 	_ = service.Auth.ClearLoginToken()
-	service.Log.Create(c.GetRequestIp(), log.EventLogin, "注销账户登录", "注销登录成功")
+	service.Log.Create(c.GetRequestIp(), log_type.EventLogin, "注销账户登录", "注销登录成功")
 	c.Success("注销成功")
 }

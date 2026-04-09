@@ -8,14 +8,14 @@ import (
 	"time"
 )
 
-// Service 单例对象
-type Service struct {
+// service 单例对象
+type service struct {
 }
 
 // obj 单例对象
 var (
 	//实例对象
-	obj = &Service{}
+	obj = &service{}
 	//原子锁
 	clusterOnce = &sync.Once{}
 	//正在同步数据的协程数量(原子计数器)
@@ -38,7 +38,7 @@ var (
 )
 
 // GetIns 获取单例
-func GetIns() *Service {
+func GetIns() *service {
 	return obj
 }
 

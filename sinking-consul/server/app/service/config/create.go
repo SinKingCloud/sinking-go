@@ -8,7 +8,7 @@ import (
 )
 
 // Create 插入数据
-func (s *Service) Create(data *model.Config) (err error) {
+func (s *service) Create(data *model.Config) (err error) {
 	key := constant.LockConfigCreate
 	if !util.Cache.Lock(key, constant.LockTimeConfigCreate) {
 		return errors.New("系统繁忙,请稍后重试")

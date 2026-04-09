@@ -1,30 +1,33 @@
 package admin
 
 import (
-	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"server/app/constant"
+	"server/app/enum"
+	"server/app/enum/cluster_status"
+	"server/app/enum/config_status"
+	"server/app/enum/log_type"
+	"server/app/enum/node_online_status"
 	"server/app/service"
-	"server/app/service/cluster"
-	"server/app/service/config"
-	"server/app/service/log"
-	"server/app/service/node"
-	"server/app/util"
+	"server/app/service/setting"
 	"server/app/util/context"
+
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
 type ControllerSystem struct{}
 
 func (ControllerSystem) Overview(c *context.Context) {
+	conf := service.Setting
 	clusterNum, _ := service.Cluster.CountAll()
-	clusterOnlineNum, _ := service.Cluster.CountByStatus(cluster.Online)
+	clusterOnlineNum, _ := service.Cluster.CountByStatus(cluster_status.Online)
 	nodeNum, _ := service.Node.CountAll()
-	nodeOnlineNum, _ := service.Node.CountByOnlineStatus(node.Online)
+	nodeOnlineNum, _ := service.Node.CountByOnlineStatus(node_online_status.Online)
 	configNum, _ := service.Config.CountAll()
-	configNormalNum, _ := service.Config.CountByStatus(config.Normal)
+	configNormalNum, _ := service.Config.CountByStatus(config_status.Normal)
 	c.SuccessWithData("获取成功", sinking_web.H{
 		"application": sinking_web.H{
-			"mode":    c.GetStringWithDefault(util.Conf.GetString(constant.ServerMode), "release"),
-			"listen":  util.Conf.GetString(constant.ServerHost) + ":" + c.GetStringWithDefault(util.Conf.GetString(constant.ServerPort), "5678"),
+			"mode":    c.GetStringWithDefault(conf.GetString(constant.ServerMode), "release"),
+			"listen":  conf.GetString(constant.ServerHost) + ":" + c.GetStringWithDefault(conf.GetString(constant.ServerPort), "5678"),
 			"address": service.Cluster.GetLocalAddr(),
 		},
 		"cluster": sinking_web.H{
@@ -54,7 +57,7 @@ func (ControllerSystem) Enum(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	if value, ok := service.Enum[form.Name]; ok {
+	if value, ok := enum.Data[form.Name]; ok {
 		c.SuccessWithData("获取数据成功", value)
 	} else {
 		c.Error("枚举类型不存在")
@@ -77,20 +80,24 @@ func (ControllerSystem) Config(c *context.Context) {
 		return
 	}
 	if form.Action == "set" {
+		var list []*setting.Config
 		for _, v := range form.Configs {
 			if v.Key != "" {
-				util.Conf.Set(form.Group+"."+v.Key, v.Value)
+				list = append(list, &setting.Config{
+					Key:   form.Group + "." + v.Key,
+					Value: v.Value,
+				})
 			}
 		}
-		err := util.Conf.WriteConfig()
+		err := service.Setting.Sets(list)
 		if err == nil {
-			service.Log.Create(c.GetRequestIp(), log.EventUpdate, "修改系统配置", "修改系统配置["+form.Group+"]数据")
+			service.Log.Create(c.GetRequestIp(), log_type.EventUpdate, "修改系统配置", "修改系统配置["+form.Group+"]数据")
 			c.Success("保存成功")
 		} else {
 			c.Error("保存失败")
 		}
 	} else {
-		service.Log.Create(c.GetRequestIp(), log.EventShow, "查看系统配置", "查看系统配置["+form.Group+"]列表")
-		c.SuccessWithData("获取成功", util.Conf.AllSettings()[form.Group])
+		service.Log.Create(c.GetRequestIp(), log_type.EventShow, "查看系统配置", "查看系统配置["+form.Group+"]列表")
+		c.SuccessWithData("获取成功", service.Setting.GetByGroup(form.Group))
 	}
 }

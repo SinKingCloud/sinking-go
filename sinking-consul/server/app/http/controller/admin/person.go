@@ -1,14 +1,14 @@
 package admin
 
 import (
-	"github.com/SinKingCloud/sinking-go/sinking-web"
 	"server/app/constant"
+	"server/app/enum/log_type"
+	"server/app/repository/log"
 	"server/app/service"
-	"server/app/service/log"
-	"server/app/util"
 	"server/app/util/context"
 	"server/app/util/page"
-	"server/app/util/str"
+
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
 type ControllerPerson struct {
@@ -17,7 +17,7 @@ type ControllerPerson struct {
 func (ControllerPerson) Info(c *context.Context) {
 	user := c.GetUserInfo()
 	c.SuccessWithData("获取成功", sinking_web.H{
-		"account":    util.Conf.GetString(constant.AuthAccount),
+		"account":    service.Setting.GetString(constant.AuthAccount),
 		"login_ip":   user.LoginIp,
 		"login_time": user.LoginTime,
 	})
@@ -32,12 +32,11 @@ func (ControllerPerson) Password(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	sPwd, _ := str.NewStringTool().BcryptHash(form.Password)
-	util.Conf.Set(constant.AuthPassword, sPwd)
-	if util.Conf.WriteConfig() != nil {
-		c.Error("修改失败")
+	err := service.Auth.ChangePassword(form.Password)
+	if err != nil {
+		c.Error(err.Error())
 	} else {
-		service.Log.Create(c.GetRequestIp(), log.EventUpdate, "修改登录信息", "修改登录密码")
+		service.Log.Create(c.GetRequestIp(), log_type.EventUpdate, "修改登录信息", "修改登录密码")
 		c.Success("修改成功")
 	}
 }
@@ -61,36 +60,36 @@ func (ControllerPerson) Log(c *context.Context) {
 		c.Error(msg)
 		return
 	}
-	where := make(map[string]string)
+	where := &log.SelectLog{}
 	if form.Ip != "" {
-		where["ip"] = form.Ip
+		where.Ip = form.Ip
 	}
 	if form.Type != "" {
-		where["type"] = form.Type
+		where.Type = form.Type
 	}
 	if form.Title != "" {
-		where["title"] = form.Title
+		where.Title = form.Title
 	}
 	if form.Content != "" {
-		where["content"] = form.Content
+		where.Content = form.Content
 	}
 	if form.CreateTimeStart != "" {
-		where["create_time_start"] = form.CreateTimeStart
+		where.CreateTimeStart = form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where["create_time_end"] = form.CreateTimeEnd
+		where.CreateTimeEnd = form.CreateTimeEnd
 	}
 	if form.UpdateTimeStart != "" {
-		where["update_time_start"] = form.UpdateTimeStart
+		where.UpdateTimeStart = form.UpdateTimeStart
 	}
 	if form.UpdateTimeEnd != "" {
-		where["update_time_end"] = form.UpdateTimeEnd
+		where.UpdateTimeEnd = form.UpdateTimeEnd
 	}
 	data, total, err := service.Log.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
 	if err != nil {
 		c.Error("获取失败")
 	} else {
-		service.Log.Create(c.GetRequestIp(), log.EventShow, "查看系统日志", "查看系统日志列表")
+		service.Log.Create(c.GetRequestIp(), log_type.EventShow, "查看系统日志", "查看系统日志列表")
 		c.SuccessWithData("获取成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }

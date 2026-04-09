@@ -1,11 +1,11 @@
 package admin
 
 import (
+	"server/app/enum/log_type"
+	"server/app/enum/node_status"
 	"server/app/model"
 	"server/app/service"
 	"server/app/service/cluster"
-	"server/app/service/log"
-	"server/app/service/node"
 	"server/app/util/context"
 	"server/app/util/page"
 	"strconv"
@@ -62,7 +62,7 @@ func (ControllerNode) List(c *context.Context) {
 	if err != nil {
 		c.Error("获取失败")
 	} else {
-		service.Log.Create(c.GetRequestIp(), log.EventShow, "查看服务节点", "查看服务节点列表")
+		service.Log.Create(c.GetRequestIp(), log_type.EventShow, "查看服务节点", "查看服务节点列表")
 		c.SuccessWithData("获取成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
 	}
 }
@@ -76,7 +76,7 @@ func (ControllerNode) Update(c *context.Context) {
 	data := make(map[string]interface{})
 	if form.Status != "" {
 		n, _ := strconv.Atoi(form.Status)
-		if _, ok := service.Node.Status()[node.Status(n)]; !ok {
+		if _, ok := node_status.Map()[n]; !ok {
 			c.Error("状态值不合法")
 			return
 		}
@@ -96,7 +96,7 @@ func (ControllerNode) Update(c *context.Context) {
 		return
 	}
 	service.Cluster.UpdateAllClusterData(nil, form)
-	service.Log.Create(c.GetRequestIp(), log.EventUpdate, "修改服务节点", "修改服务节点数据")
+	service.Log.Create(c.GetRequestIp(), log_type.EventUpdate, "修改服务节点", "修改服务节点数据")
 	c.Success("修改成功")
 }
 
@@ -134,6 +134,6 @@ func (ControllerNode) Delete(c *context.Context) {
 		}
 		service.Cluster.DeleteAllClusterData(nil, list2)
 	}
-	service.Log.Create(c.GetRequestIp(), log.EventDelete, "删除服务节点", "删除服务节点数据")
+	service.Log.Create(c.GetRequestIp(), log_type.EventDelete, "删除服务节点", "删除服务节点数据")
 	c.Success("删除成功")
 }
