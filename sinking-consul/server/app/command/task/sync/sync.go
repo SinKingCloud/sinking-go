@@ -10,17 +10,12 @@ import (
 	"server/app/service"
 	"server/app/service/node"
 	"server/app/util"
-	"server/app/util/str"
 	"time"
 )
 
 // Init 定时同步数据
 func Init() {
 	go func() {
-		strTool := str.NewStringTool()
-		strToolMax := uint64(10000000)
-		nodeTemp := make(map[string]uint64)
-		configTemp := make(map[string]uint64)
 		i := 0
 		for {
 			for {
@@ -42,28 +37,13 @@ func Init() {
 			})
 			temp1 := make(map[string]uint64)
 			service.Node.Each("*", func(value *node.Node) {
-				if value.LastHeart+60 < time.Now().Unix() {
+				if value.Status == node_status.Normal && value.OnlineStatus == node_online_status.Online && value.LastHeart+60 < time.Now().Unix() {
 					value.OnlineStatus = node_online_status.Offline
-				}
-				if value.OnlineStatus == node_online_status.Online && value.Status == node_status.Normal {
-					temp1[value.Group] += strTool.ToNumber(value.Address, strToolMax)
+					temp1[value.Group] = 1
 				}
 			})
-			for k, v := range temp1 {
-				if v2, ok := nodeTemp[k]; !ok || v2 != v {
-					service.Node.SetOperateTime(k)
-					nodeTemp = temp1
-				}
-			}
-			temp2 := make(map[string]uint64)
-			service.Config.Each("*", func(value *model.Config) {
-				temp2[value.Group] += strTool.ToNumber(value.Hash, strToolMax)
-			})
-			for k, v := range temp2 {
-				if v2, ok := configTemp[k]; !ok || v2 != v {
-					service.Config.SetOperateTime(k)
-					configTemp = temp2
-				}
+			for k := range temp1 {
+				service.Node.SetOperateTime(k)
 			}
 			if i == 3 {
 				service.Cluster.Each(func(key string, value *model.Cluster) bool {
