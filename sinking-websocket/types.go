@@ -17,6 +17,12 @@ type Message struct {
 	Payload []byte
 }
 
+type BroadcastResult struct {
+	Queued  int
+	Dropped int
+	Closed  int
+}
+
 func PrepareMessage(messageType int, payload []byte) (*PreparedMessage, error) {
 	return websocket.NewPreparedMessage(messageType, payload)
 }

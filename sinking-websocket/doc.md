@@ -49,6 +49,7 @@ http.Handle("/ws", handler)
 - `WithHandshakeTimeout(...)`
 - `WithReadBufferSize(...)`
 - `WithWriteBufferSize(...)`
+- `WithWriteBufferPool(...)`
 - `WithReadLimit(...)`
 - `WithWriteTimeout(...)`
 - `WithWriteQueueSize(...)`
@@ -107,12 +108,11 @@ registry.Close()
 
 ```go
 func broadcast(registry *sinking_websocket.Registry, payload []byte) {
-	registry.Range(func(id string, connection *sinking_websocket.Connection) bool {
-		if err := connection.TrySend(sinking_websocket.TextMessage, payload); err != nil {
-			registry.DeleteIfMatch(id, connection)
-		}
-		return true
-	})
+	result, err := registry.Broadcast(sinking_websocket.TextMessage, payload)
+	if err != nil {
+		return
+	}
+	_ = result
 }
 ```
 
@@ -137,9 +137,17 @@ registry.Range(func(id string, connection *sinking_websocket.Connection) bool {
 })
 ```
 
+如果是单条消息扇出到很多连接，更推荐直接走注册表内置广播：
+
+```go
+result := registry.BroadcastPrepared(prepared)
+_ = result
+```
+
 ## 行为保证
 
 - 普通业务消息只会由单写协程写入底层连接
 - 连接关闭时不会关闭发送队列，因此不会出现 `send on closed channel`
 - `DisconnectHandler` 总会在连接生命周期结束时执行一次
 - 回调 panic 会被收敛成错误并结束当前连接，不会把整个服务拖崩
+- 高频广播默认走 `PreparedMessage`，避免每个连接重复编码同一条消息

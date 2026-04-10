@@ -1,6 +1,7 @@
 package sinking_websocket
 
 import (
+	"encoding/json"
 	"hash/maphash"
 	"sync"
 	"sync/atomic"
@@ -21,6 +22,12 @@ type Registry struct {
 	seed   maphash.Seed
 	size   int64
 	shards []registryShard
+}
+
+var registryEntriesPool = sync.Pool{
+	New: func() interface{} {
+		return make([]registryEntry, 0, 64)
+	},
 }
 
 func NewRegistry() *Registry {
@@ -81,7 +88,7 @@ func (registry *Registry) Range(visitor func(id string, connection *Connection) 
 		shard := &registry.shards[i]
 
 		shard.mu.RLock()
-		snapshot := make([]registryEntry, 0, len(shard.items))
+		snapshot := acquireRegistryEntries(len(shard.items))
 		for id, connection := range shard.items {
 			snapshot = append(snapshot, registryEntry{
 				id:         id,
@@ -92,9 +99,12 @@ func (registry *Registry) Range(visitor func(id string, connection *Connection) 
 
 		for _, entry := range snapshot {
 			if !visitor(entry.id, entry.connection) {
+				releaseRegistryEntries(snapshot)
 				return
 			}
 		}
+
+		releaseRegistryEntries(snapshot)
 	}
 }
 
@@ -110,6 +120,67 @@ func (registry *Registry) Close() {
 		registry.DeleteIfMatch(id, connection)
 		return true
 	})
+}
+
+func (registry *Registry) Broadcast(messageType int, payload []byte) (BroadcastResult, error) {
+	prepared, err := PrepareMessage(messageType, payload)
+	if err != nil {
+		return BroadcastResult{}, err
+	}
+	return registry.BroadcastPrepared(prepared), nil
+}
+
+func (registry *Registry) BroadcastJSON(value interface{}) (BroadcastResult, error) {
+	payload, err := json.Marshal(value)
+	if err != nil {
+		return BroadcastResult{}, err
+	}
+	return registry.Broadcast(TextMessage, payload)
+}
+
+func (registry *Registry) BroadcastPrepared(message *PreparedMessage) BroadcastResult {
+	if registry == nil || message == nil {
+		return BroadcastResult{}
+	}
+
+	registry.init()
+
+	var result BroadcastResult
+	failed := acquireRegistryEntries(0)
+
+	for i := range registry.shards {
+		shard := &registry.shards[i]
+
+		shard.mu.RLock()
+		for id, connection := range shard.items {
+			switch err := connection.TrySendPrepared(message); err {
+			case nil:
+				result.Queued++
+			case ErrSendQueueFull:
+				result.Dropped++
+			case ErrConnectionClosed:
+				result.Closed++
+				failed = append(failed, registryEntry{
+					id:         id,
+					connection: connection,
+				})
+			default:
+				result.Closed++
+				failed = append(failed, registryEntry{
+					id:         id,
+					connection: connection,
+				})
+			}
+		}
+		shard.mu.RUnlock()
+	}
+
+	for _, entry := range failed {
+		registry.DeleteIfMatch(entry.id, entry.connection)
+	}
+
+	releaseRegistryEntries(failed)
+	return result
 }
 
 func (registry *Registry) delete(id string, expected *Connection) bool {
@@ -156,4 +227,19 @@ func (registry *Registry) shard(id string) *registryShard {
 	registry.init()
 	index := maphash.String(registry.seed, id) % uint64(len(registry.shards))
 	return &registry.shards[index]
+}
+
+func acquireRegistryEntries(sizeHint int) []registryEntry {
+	entries := registryEntriesPool.Get().([]registryEntry)
+	if cap(entries) < sizeHint {
+		return make([]registryEntry, 0, sizeHint)
+	}
+	return entries[:0]
+}
+
+func releaseRegistryEntries(entries []registryEntry) {
+	if cap(entries) > 4096 {
+		return
+	}
+	registryEntriesPool.Put(entries[:0])
 }

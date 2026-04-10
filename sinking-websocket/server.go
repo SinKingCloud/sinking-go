@@ -9,8 +9,9 @@ import (
 )
 
 type Server struct {
-	config   serverConfig
-	upgrader websocket.Upgrader
+	config     serverConfig
+	upgrader   websocket.Upgrader
+	dispatcher *writeDispatcher
 }
 
 func NewServer(options ...ServerOption) *Server {
@@ -26,10 +27,16 @@ func NewServer(options ...ServerOption) *Server {
 		upgrader: websocket.Upgrader{
 			HandshakeTimeout:  config.handshakeTimeout,
 			ReadBufferSize:    config.readBufferSize,
-			WriteBufferSize:   config.writeBufferSize,
+			WriteBufferSize:   resolvedWriteBufferSize(config.writeBufferSize),
+			WriteBufferPool:   resolvedWriteBufferPool(config),
 			CheckOrigin:       config.originValidator,
 			EnableCompression: config.enableCompression,
 		},
+		dispatcher: newWriteDispatcher(writeDispatcherConfig{
+			shardCount:             config.writeDispatcherShards,
+			pingInterval:           config.resolvedPingInterval(),
+			heartbeatSweepInterval: config.heartbeatSweepInterval,
+		}),
 	}
 }
 
@@ -55,6 +62,7 @@ func (server *Server) Handle(writer http.ResponseWriter, request *http.Request, 
 		writeTimeout:   server.config.writeTimeout,
 		pingInterval:   server.config.resolvedPingInterval(),
 		writeQueueSize: server.config.writeQueueSize,
+		dispatcher:     server.dispatcher,
 	})
 
 	server.configureConnection(connection)
@@ -224,4 +232,11 @@ func normalizeDisconnectError(err error) error {
 		return nil
 	}
 	return err
+}
+
+func resolvedWriteBufferPool(config serverConfig) websocket.BufferPool {
+	if config.writeBufferPool != nil {
+		return config.writeBufferPool
+	}
+	return sharedWriteBufferPool(config.writeBufferSize)
 }

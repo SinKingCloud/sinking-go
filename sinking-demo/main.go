@@ -199,14 +199,7 @@ func main() {
 	})
 	//广播消息
 	ws.GET("/message/send/:message", func(s *sinking_web.Context) {
-		wsConn.Range(func(id string, connection *sinking_websocket.Connection) bool {
-			if connection != nil {
-				if err := connection.Send(sinking_websocket.TextMessage, []byte(s.Param("message"))); err != nil {
-					wsConn.DeleteIfMatch(id, connection)
-				}
-			}
-			return true
-		})
+		_, _ = wsConn.Broadcast(sinking_websocket.TextMessage, []byte(s.Param("message")))
 		s.JSON(200, sinking_web.H{"code": "500", "message": "发送消息成功"})
 	})
 	//反向代理功能

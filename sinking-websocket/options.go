@@ -3,13 +3,16 @@ package sinking_websocket
 import (
 	"net/http"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 const (
 	defaultHandshakeTimeout = 10 * time.Second
+	defaultWriteBufferSize  = 4096
 	defaultWriteTimeout     = 10 * time.Second
 	defaultPongTimeout      = 60 * time.Second
-	defaultWriteQueueSize   = 256
+	defaultWriteQueueSize   = 64
 	defaultRegistryShards   = 64
 )
 
@@ -34,30 +37,34 @@ type ControlHandler func(connection *Connection, payload string)
 type ServerOption func(config *serverConfig)
 
 type serverConfig struct {
-	handshakeTimeout  time.Duration
-	readBufferSize    int
-	writeBufferSize   int
-	writeQueueSize    int
-	readLimit         int64
-	writeTimeout      time.Duration
-	pongTimeout       time.Duration
-	pingInterval      time.Duration
-	enableCompression bool
-	disableHeartbeat  bool
-	originValidator   func(r *http.Request) bool
-	idResolver        ConnectionIDResolver
-	upgradeError      UpgradeErrorHandler
-	connectHandler    ConnectHandler
-	closeFrameHandler CloseFrameHandler
-	disconnectHandler DisconnectHandler
-	messageHandler    MessageHandler
-	pingHandler       ControlHandler
-	pongHandler       ControlHandler
+	handshakeTimeout       time.Duration
+	readBufferSize         int
+	writeBufferSize        int
+	writeQueueSize         int
+	readLimit              int64
+	writeTimeout           time.Duration
+	pongTimeout            time.Duration
+	pingInterval           time.Duration
+	heartbeatSweepInterval time.Duration
+	enableCompression      bool
+	disableHeartbeat       bool
+	originValidator        func(r *http.Request) bool
+	writeBufferPool        websocket.BufferPool
+	writeDispatcherShards  int
+	idResolver             ConnectionIDResolver
+	upgradeError           UpgradeErrorHandler
+	connectHandler         ConnectHandler
+	closeFrameHandler      CloseFrameHandler
+	disconnectHandler      DisconnectHandler
+	messageHandler         MessageHandler
+	pingHandler            ControlHandler
+	pongHandler            ControlHandler
 }
 
 func defaultServerConfig() serverConfig {
 	return serverConfig{
 		handshakeTimeout: defaultHandshakeTimeout,
+		writeBufferSize:  defaultWriteBufferSize,
 		writeQueueSize:   defaultWriteQueueSize,
 		writeTimeout:     defaultWriteTimeout,
 		pongTimeout:      defaultPongTimeout,
@@ -117,10 +124,24 @@ func WithWriteBufferSize(size int) ServerOption {
 	}
 }
 
+func WithWriteBufferPool(pool websocket.BufferPool) ServerOption {
+	return func(config *serverConfig) {
+		config.writeBufferPool = pool
+	}
+}
+
 func WithWriteQueueSize(size int) ServerOption {
 	return func(config *serverConfig) {
 		if size > 0 {
 			config.writeQueueSize = size
+		}
+	}
+}
+
+func WithWriteDispatcherShards(shards int) ServerOption {
+	return func(config *serverConfig) {
+		if shards > 0 {
+			config.writeDispatcherShards = shards
 		}
 	}
 }
@@ -155,6 +176,21 @@ func WithPingInterval(interval time.Duration) ServerOption {
 			config.pingInterval = interval
 		}
 	}
+}
+
+func WithHeartbeatSweepInterval(interval time.Duration) ServerOption {
+	return func(config *serverConfig) {
+		if interval > 0 {
+			config.heartbeatSweepInterval = interval
+		}
+	}
+}
+
+func resolvedWriteQueueSize(size int) int {
+	if size > 0 {
+		return size
+	}
+	return defaultWriteQueueSize
 }
 
 func WithCompression(enabled bool) ServerOption {

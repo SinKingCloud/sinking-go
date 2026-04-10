@@ -1,6 +1,7 @@
 package sinking_websocket
 
 import (
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -73,11 +74,99 @@ func TestRegistryRangeAllowsDeletion(t *testing.T) {
 	}
 }
 
+func TestRegistryBroadcastPreparedDropsFullQueues(t *testing.T) {
+	registry := NewRegistry()
+	prepared, err := PrepareMessage(TextMessage, []byte("broadcast"))
+	if err != nil {
+		t.Fatalf("failed to prepare message: %v", err)
+	}
+
+	full := newConnection("full", nil, &websocket.Conn{}, connectionConfig{writeQueueSize: 1})
+	ready := newConnection("ready", nil, &websocket.Conn{}, connectionConfig{writeQueueSize: 1})
+
+	if err := full.TrySendPrepared(prepared); err != nil {
+		t.Fatalf("failed to prefill full connection queue: %v", err)
+	}
+
+	registry.Store(full.id, full)
+	registry.Store(ready.id, ready)
+
+	result := registry.BroadcastPrepared(prepared)
+	if result.Queued != 1 || result.Dropped != 1 || result.Closed != 0 {
+		t.Fatalf("unexpected broadcast result: %+v", result)
+	}
+
+	if len(ready.pending) != 1 {
+		t.Fatalf("expected ready connection to receive prepared message")
+	}
+
+	if len(full.pending) != 1 {
+		t.Fatalf("expected full connection queue to stay full")
+	}
+}
+
+func TestRegistryBroadcastLifecycle(t *testing.T) {
+	registry := NewRegistry()
+	disconnects := make(chan error, 2)
+
+	server := newLoopbackServer(t, NewServer(
+		WithConnectionIDResolver(func(request *http.Request) (string, error) {
+			return request.URL.Query().Get("id"), nil
+		}),
+		WithConnectHandler(func(connection *Connection) error {
+			registry.Store(connection.ID(), connection)
+			return nil
+		}),
+		WithDisconnectHandler(func(connection *Connection, err error) {
+			registry.DeleteIfMatch(connection.ID(), connection)
+			disconnects <- err
+		}),
+	))
+	defer server.Close()
+
+	first, _, err := websocket.DefaultDialer.Dial(websocketURL(server.URL+"/?id=first"), nil)
+	if err != nil {
+		t.Fatalf("failed to dial first websocket client: %v", err)
+	}
+	defer first.Close()
+
+	second, _, err := websocket.DefaultDialer.Dial(websocketURL(server.URL+"/?id=second"), nil)
+	if err != nil {
+		t.Fatalf("failed to dial second websocket client: %v", err)
+	}
+	defer second.Close()
+
+	waitFor(t, func() bool {
+		return registry.Len() == 2
+	}, "expected two websocket connections to be registered")
+
+	result, err := registry.Broadcast(TextMessage, []byte("fanout"))
+	if err != nil {
+		t.Fatalf("failed to broadcast prepared message: %v", err)
+	}
+	if result.Queued != 2 || result.Dropped != 0 || result.Closed != 0 {
+		t.Fatalf("unexpected broadcast result: %+v", result)
+	}
+
+	for _, client := range []*websocket.Conn{first, second} {
+		messageType, payload, err := client.ReadMessage()
+		if err != nil {
+			t.Fatalf("failed to read broadcast message: %v", err)
+		}
+		if messageType != websocket.TextMessage {
+			t.Fatalf("expected text message, got %d", messageType)
+		}
+		if string(payload) != "fanout" {
+			t.Fatalf("expected broadcast payload fanout, got %s", string(payload))
+		}
+	}
+}
+
 func TestServerEchoLifecycle(t *testing.T) {
 	registry := NewRegistry()
 	disconnects := make(chan error, 1)
 
-	server := httptest.NewServer(NewServer(
+	server := newLoopbackServer(t, NewServer(
 		WithConnectionIDResolver(func(request *http.Request) (string, error) {
 			return request.URL.Query().Get("id"), nil
 		}),
@@ -148,7 +237,7 @@ func TestServerEchoLifecycle(t *testing.T) {
 func TestServerRecoversMessageHandlerPanic(t *testing.T) {
 	disconnects := make(chan error, 1)
 
-	server := httptest.NewServer(NewServer(
+	server := newLoopbackServer(t, NewServer(
 		WithMessageHandler(func(connection *Connection, message Message) error {
 			panic("boom")
 		}),
@@ -194,4 +283,18 @@ func waitFor(t *testing.T, condition func() bool, message string) {
 		time.Sleep(10 * time.Millisecond)
 	}
 	t.Fatal(message)
+}
+
+func newLoopbackServer(t *testing.T, handler http.Handler) *httptest.Server {
+	t.Helper()
+
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Skipf("loopback listen is unavailable in this environment: %v", err)
+	}
+
+	server := httptest.NewUnstartedServer(handler)
+	server.Listener = listener
+	server.Start()
+	return server
 }

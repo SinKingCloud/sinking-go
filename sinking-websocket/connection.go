@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -27,35 +28,47 @@ type connectionConfig struct {
 	writeTimeout   time.Duration
 	pingInterval   time.Duration
 	writeQueueSize int
+	dispatcher     *writeDispatcher
 }
 
 type Connection struct {
-	id           string
-	request      *http.Request
-	raw          *websocket.Conn
-	writeTimeout time.Duration
-	outgoing     chan queuedWrite
-	done         chan struct{}
-	closeOnce    sync.Once
-	closeErr     error
+	id             string
+	request        *http.Request
+	raw            *websocket.Conn
+	writeTimeout   time.Duration
+	writeQueueSize int
+	dispatcher     *writeDispatcherShard
+	nextPingAt     int64
+
+	pendingMu sync.Mutex
+	spaceCond *sync.Cond
+	pending   []queuedWrite
+	scheduled bool
+	closed    bool
+
+	done      chan struct{}
+	closeOnce sync.Once
+	closeErr  error
 }
 
 func newConnection(id string, request *http.Request, raw *websocket.Conn, config connectionConfig) *Connection {
-	queueSize := config.writeQueueSize
-	if queueSize <= 0 {
-		queueSize = defaultWriteQueueSize
-	}
-
 	connection := &Connection{
-		id:           id,
-		request:      request,
-		raw:          raw,
-		writeTimeout: config.writeTimeout,
-		outgoing:     make(chan queuedWrite, queueSize),
-		done:         make(chan struct{}),
+		id:             id,
+		request:        request,
+		raw:            raw,
+		writeTimeout:   config.writeTimeout,
+		writeQueueSize: resolvedWriteQueueSize(config.writeQueueSize),
+		done:           make(chan struct{}),
 	}
 
-	go connection.writeLoop(config.pingInterval)
+	if config.dispatcher != nil {
+		connection.dispatcher = config.dispatcher.bind(connection)
+	}
+
+	if config.pingInterval > 0 {
+		atomic.StoreInt64(&connection.nextPingAt, time.Now().Add(config.pingInterval).UnixNano())
+	}
+
 	return connection
 }
 
@@ -114,7 +127,11 @@ func (connection *Connection) SendJSON(value interface{}) error {
 	if err != nil {
 		return err
 	}
-	return connection.Send(TextMessage, payload)
+	return connection.enqueue(queuedWrite{
+		kind:        queuedMessageWrite,
+		messageType: TextMessage,
+		payload:     payload,
+	}, true)
 }
 
 func (connection *Connection) TrySendJSON(value interface{}) error {
@@ -122,7 +139,11 @@ func (connection *Connection) TrySendJSON(value interface{}) error {
 	if err != nil {
 		return err
 	}
-	return connection.TrySend(TextMessage, payload)
+	return connection.enqueue(queuedWrite{
+		kind:        queuedMessageWrite,
+		messageType: TextMessage,
+		payload:     payload,
+	}, false)
 }
 
 func (connection *Connection) SendPrepared(message *PreparedMessage) error {
@@ -151,7 +172,21 @@ func (connection *Connection) Close() error {
 	}
 
 	connection.closeOnce.Do(func() {
+		connection.pendingMu.Lock()
+		connection.closed = true
+		releaseQueuedWrites(connection.pending)
+		connection.pending = nil
+		if connection.spaceCond != nil {
+			connection.spaceCond.Broadcast()
+		}
+		connection.pendingMu.Unlock()
+
 		close(connection.done)
+
+		if connection.dispatcher != nil {
+			connection.dispatcher.unregister(connection)
+		}
+
 		if connection.raw != nil {
 			connection.closeErr = connection.raw.Close()
 		}
@@ -165,49 +200,73 @@ func (connection *Connection) enqueue(write queuedWrite, blocking bool) error {
 		return errNilConnection
 	}
 
-	if blocking {
-		select {
-		case <-connection.done:
+	shouldSchedule := false
+
+	connection.pendingMu.Lock()
+	for {
+		if connection.closed {
+			connection.pendingMu.Unlock()
 			return ErrConnectionClosed
-		case connection.outgoing <- write:
+		}
+		if len(connection.pending) < connection.writeQueueSize {
+			connection.pending = appendQueuedWrite(connection.pending, write)
+			if !connection.scheduled {
+				connection.scheduled = true
+				shouldSchedule = true
+			}
+			connection.pendingMu.Unlock()
+
+			if shouldSchedule && connection.dispatcher != nil {
+				connection.dispatcher.schedule(connection)
+			}
+
 			return nil
 		}
-	}
-
-	select {
-	case <-connection.done:
-		return ErrConnectionClosed
-	case connection.outgoing <- write:
-		return nil
-	default:
-		return ErrSendQueueFull
+		if !blocking {
+			connection.pendingMu.Unlock()
+			return ErrSendQueueFull
+		}
+		if connection.spaceCond == nil {
+			connection.spaceCond = sync.NewCond(&connection.pendingMu)
+		}
+		connection.spaceCond.Wait()
 	}
 }
 
-func (connection *Connection) writeLoop(pingInterval time.Duration) {
-	var ticker *time.Ticker
-
-	if pingInterval > 0 {
-		ticker = time.NewTicker(pingInterval)
-		defer ticker.Stop()
-	}
-
+func (connection *Connection) flushPending() {
 	for {
-		select {
-		case <-connection.done:
+		batch := connection.takePendingBatch()
+		if len(batch) == 0 {
 			return
-		case write := <-connection.outgoing:
+		}
+
+		for _, write := range batch {
 			if err := connection.write(write); err != nil {
-				_ = connection.Close()
-				return
-			}
-		case <-tickerChannel(ticker):
-			if err := connection.writeControl(PingMessage, nil); err != nil {
+				releaseQueuedWrites(batch)
 				_ = connection.Close()
 				return
 			}
 		}
+
+		releaseQueuedWrites(batch)
 	}
+}
+
+func (connection *Connection) takePendingBatch() []queuedWrite {
+	connection.pendingMu.Lock()
+	defer connection.pendingMu.Unlock()
+
+	if len(connection.pending) == 0 {
+		connection.scheduled = false
+		return nil
+	}
+
+	batch := connection.pending
+	connection.pending = nil
+	if connection.spaceCond != nil {
+		connection.spaceCond.Broadcast()
+	}
+	return batch
 }
 
 func (connection *Connection) write(write queuedWrite) error {
@@ -243,6 +302,40 @@ func (connection *Connection) writeDeadline() time.Time {
 	return time.Now().Add(connection.writeTimeout)
 }
 
+var queuedWritePool = sync.Pool{
+	New: func() interface{} {
+		return make([]queuedWrite, 0, 8)
+	},
+}
+
+func appendQueuedWrite(batch []queuedWrite, write queuedWrite) []queuedWrite {
+	if batch == nil {
+		batch = acquireQueuedWrites(1)
+	}
+	return append(batch, write)
+}
+
+func acquireQueuedWrites(sizeHint int) []queuedWrite {
+	batch := queuedWritePool.Get().([]queuedWrite)
+	if cap(batch) < sizeHint {
+		return make([]queuedWrite, 0, sizeHint)
+	}
+	return batch[:0]
+}
+
+func releaseQueuedWrites(batch []queuedWrite) {
+	if batch == nil {
+		return
+	}
+	if cap(batch) > 1024 {
+		return
+	}
+	for i := range batch {
+		batch[i] = queuedWrite{}
+	}
+	queuedWritePool.Put(batch[:0])
+}
+
 func cloneBytes(payload []byte) []byte {
 	if len(payload) == 0 {
 		return nil
@@ -251,11 +344,4 @@ func cloneBytes(payload []byte) []byte {
 	cloned := make([]byte, len(payload))
 	copy(cloned, payload)
 	return cloned
-}
-
-func tickerChannel(ticker *time.Ticker) <-chan time.Time {
-	if ticker == nil {
-		return nil
-	}
-	return ticker.C
 }

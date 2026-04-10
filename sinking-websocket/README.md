@@ -53,12 +53,11 @@ func main() {
 
 ```go
 func broadcast(registry *sinking_websocket.Registry, payload []byte) {
-	registry.Range(func(id string, connection *sinking_websocket.Connection) bool {
-		if err := connection.TrySend(sinking_websocket.TextMessage, payload); err != nil {
-			registry.DeleteIfMatch(id, connection)
-		}
-		return true
-	})
+	result, err := registry.Broadcast(sinking_websocket.TextMessage, payload)
+	if err != nil {
+		return
+	}
+	_ = result
 }
 ```
 
@@ -69,6 +68,7 @@ func broadcast(registry *sinking_websocket.Registry, payload []byte) {
 - `(*Connection).Send` / `TrySend` / `SendJSON`：异步串行发送消息
 - `NewRegistry()`：创建连接注册表
 - `(*Registry).Load` / `Store` / `DeleteIfMatch` / `Range`：管理在线连接
+- `(*Registry).Broadcast` / `BroadcastPrepared` / `BroadcastJSON`：高频广播快路径
 - `PrepareMessage(...)`：预构建消息，适合高频广播
 
 更详细的示例见 [doc.md](./doc.md)。
