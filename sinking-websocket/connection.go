@@ -2,136 +2,193 @@ package sinking_websocket
 
 import (
 	"encoding/json"
-	"errors"
+	"net/http"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
 
-const (
-	defaultConnectionPoolShards = 64
-	defaultWriteQueueSize       = 256
-)
-
-var (
-	errNilConnection    = errors.New("websocket connection is nil")
-	ErrConnectionClosed = errors.New("websocket connection is closed")
-	ErrSendQueueFull    = errors.New("websocket send queue is full")
-)
-
-type writeRequestKind uint8
+type queuedWriteKind uint8
 
 const (
-	writeMessageRequest writeRequestKind = iota
-	writePreparedMessageRequest
+	queuedMessageWrite queuedWriteKind = iota
+	queuedPreparedWrite
 )
 
-type writeRequest struct {
-	kind        writeRequestKind
+type queuedWrite struct {
+	kind        queuedWriteKind
 	messageType int
-	data        []byte
-	prepared    *websocket.PreparedMessage
+	payload     []byte
+	prepared    *PreparedMessage
 }
 
-// Connection 对 gorilla websocket 连接做了一层并发、关闭和异步发送保护。
+type connectionConfig struct {
+	writeTimeout   time.Duration
+	pingInterval   time.Duration
+	writeQueueSize int
+}
+
 type Connection struct {
-	*websocket.Conn
-	stateOnce  sync.Once
-	writerOnce sync.Once
-	writeLock  sync.Mutex
-	closeOnce  sync.Once
-	closeErr   error
-	done       chan struct{}
-	sendQueue  chan writeRequest
-	writeWait  time.Duration
-	pingPeriod time.Duration
-	queueSize  int
+	id           string
+	request      *http.Request
+	raw          *websocket.Conn
+	writeTimeout time.Duration
+	outgoing     chan queuedWrite
+	done         chan struct{}
+	closeOnce    sync.Once
+	closeErr     error
 }
 
-// NewConnection 包装原始 websocket 连接。
-func NewConnection(conn *websocket.Conn) *Connection {
-	return &Connection{
-		Conn: conn,
+func newConnection(id string, request *http.Request, raw *websocket.Conn, config connectionConfig) *Connection {
+	queueSize := config.writeQueueSize
+	if queueSize <= 0 {
+		queueSize = defaultWriteQueueSize
+	}
+
+	connection := &Connection{
+		id:           id,
+		request:      request,
+		raw:          raw,
+		writeTimeout: config.writeTimeout,
+		outgoing:     make(chan queuedWrite, queueSize),
+		done:         make(chan struct{}),
+	}
+
+	go connection.writeLoop(config.pingInterval)
+	return connection
+}
+
+func (connection *Connection) ID() string {
+	if connection == nil {
+		return ""
+	}
+	return connection.id
+}
+
+func (connection *Connection) Request() *http.Request {
+	if connection == nil {
+		return nil
+	}
+	return connection.request
+}
+
+func (connection *Connection) Done() <-chan struct{} {
+	if connection == nil {
+		return nil
+	}
+	return connection.done
+}
+
+func (connection *Connection) Closed() bool {
+	if connection == nil {
+		return true
+	}
+
+	select {
+	case <-connection.done:
+		return true
+	default:
+		return false
 	}
 }
 
-// initState 初始化连接内部状态。
-func (connection *Connection) initState() {
-	connection.stateOnce.Do(func() {
-		connection.done = make(chan struct{})
-	})
+func (connection *Connection) Send(messageType int, payload []byte) error {
+	return connection.enqueue(queuedWrite{
+		kind:        queuedMessageWrite,
+		messageType: messageType,
+		payload:     cloneBytes(payload),
+	}, true)
 }
 
-// configureAsyncWrite 配置写超时、写队列和心跳参数。
-func (connection *Connection) configureAsyncWrite(writeWait, pingPeriod time.Duration, queueSize int) {
-	connection.initState()
-	connection.writeWait = writeWait
-	connection.pingPeriod = pingPeriod
-	if queueSize > 0 {
-		connection.queueSize = queueSize
+func (connection *Connection) TrySend(messageType int, payload []byte) error {
+	return connection.enqueue(queuedWrite{
+		kind:        queuedMessageWrite,
+		messageType: messageType,
+		payload:     cloneBytes(payload),
+	}, false)
+}
+
+func (connection *Connection) SendJSON(value interface{}) error {
+	payload, err := json.Marshal(value)
+	if err != nil {
+		return err
 	}
+	return connection.Send(TextMessage, payload)
 }
 
-// startWriter 启动单连接写协程，负责异步消息发送和 ping 心跳。
-func (connection *Connection) startWriter() {
-	connection.initState()
-	connection.writerOnce.Do(func() {
-		if connection.queueSize <= 0 {
-			connection.queueSize = defaultWriteQueueSize
+func (connection *Connection) TrySendJSON(value interface{}) error {
+	payload, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	return connection.TrySend(TextMessage, payload)
+}
+
+func (connection *Connection) SendPrepared(message *PreparedMessage) error {
+	if message == nil {
+		return errNilPreparedMessage
+	}
+	return connection.enqueue(queuedWrite{
+		kind:     queuedPreparedWrite,
+		prepared: message,
+	}, true)
+}
+
+func (connection *Connection) TrySendPrepared(message *PreparedMessage) error {
+	if message == nil {
+		return errNilPreparedMessage
+	}
+	return connection.enqueue(queuedWrite{
+		kind:     queuedPreparedWrite,
+		prepared: message,
+	}, false)
+}
+
+func (connection *Connection) Close() error {
+	if connection == nil {
+		return nil
+	}
+
+	connection.closeOnce.Do(func() {
+		close(connection.done)
+		if connection.raw != nil {
+			connection.closeErr = connection.raw.Close()
 		}
-		connection.sendQueue = make(chan writeRequest, connection.queueSize)
-		go connection.writeLoop()
 	})
+
+	return connection.closeErr
 }
 
-// withWriteLock 串行化普通写入，避免 gorilla websocket 并发写 panic。
-func (connection *Connection) withWriteLock(fun func() error) error {
-	if connection == nil || connection.Conn == nil {
+func (connection *Connection) enqueue(write queuedWrite, blocking bool) error {
+	if connection == nil || connection.raw == nil {
 		return errNilConnection
 	}
 
-	connection.writeLock.Lock()
-	defer connection.writeLock.Unlock()
-	return fun()
-}
-
-// writeMessageNow 直接向底层连接写入消息。
-func (connection *Connection) writeMessageNow(messageType int, data []byte) error {
-	return connection.withWriteLock(func() error {
-		if connection.writeWait > 0 {
-			_ = connection.Conn.SetWriteDeadline(time.Now().Add(connection.writeWait))
+	if blocking {
+		select {
+		case <-connection.done:
+			return ErrConnectionClosed
+		case connection.outgoing <- write:
+			return nil
 		}
-		return connection.Conn.WriteMessage(messageType, data)
-	})
+	}
+
+	select {
+	case <-connection.done:
+		return ErrConnectionClosed
+	case connection.outgoing <- write:
+		return nil
+	default:
+		return ErrSendQueueFull
+	}
 }
 
-// writeJSONNow 直接向底层连接写入 JSON 消息。
-func (connection *Connection) writeJSONNow(v interface{}) error {
-	return connection.withWriteLock(func() error {
-		if connection.writeWait > 0 {
-			_ = connection.Conn.SetWriteDeadline(time.Now().Add(connection.writeWait))
-		}
-		return connection.Conn.WriteJSON(v)
-	})
-}
-
-// writePreparedMessageNow 直接向底层连接写入 PreparedMessage。
-func (connection *Connection) writePreparedMessageNow(pm *websocket.PreparedMessage) error {
-	return connection.withWriteLock(func() error {
-		if connection.writeWait > 0 {
-			_ = connection.Conn.SetWriteDeadline(time.Now().Add(connection.writeWait))
-		}
-		return connection.Conn.WritePreparedMessage(pm)
-	})
-}
-
-// writeLoop 串行处理异步发送队列和连接心跳。
-func (connection *Connection) writeLoop() {
+func (connection *Connection) writeLoop(pingInterval time.Duration) {
 	var ticker *time.Ticker
 
-	if connection.pingPeriod > 0 {
-		ticker = time.NewTicker(connection.pingPeriod)
+	if pingInterval > 0 {
+		ticker = time.NewTicker(pingInterval)
 		defer ticker.Stop()
 	}
 
@@ -139,13 +196,13 @@ func (connection *Connection) writeLoop() {
 		select {
 		case <-connection.done:
 			return
-		case request := <-connection.sendQueue:
-			if err := connection.handleWriteRequest(request); err != nil {
+		case write := <-connection.outgoing:
+			if err := connection.write(write); err != nil {
 				_ = connection.Close()
 				return
 			}
 		case <-tickerChannel(ticker):
-			if err := connection.WriteControl(websocket.PingMessage, nil, time.Now().Add(connection.writeWait)); err != nil {
+			if err := connection.writeControl(PingMessage, nil); err != nil {
 				_ = connection.Close()
 				return
 			}
@@ -153,170 +210,52 @@ func (connection *Connection) writeLoop() {
 	}
 }
 
-// handleWriteRequest 执行异步写请求。
-func (connection *Connection) handleWriteRequest(request writeRequest) error {
-	switch request.kind {
-	case writeMessageRequest:
-		return connection.writeMessageNow(request.messageType, request.data)
-	case writePreparedMessageRequest:
-		return connection.writePreparedMessageNow(request.prepared)
-	default:
-		return nil
-	}
-}
-
-// enqueueWrite 将写请求投递到异步发送队列。
-func (connection *Connection) enqueueWrite(request writeRequest, blocking bool) error {
-	if connection == nil || connection.Conn == nil {
+func (connection *Connection) write(write queuedWrite) error {
+	if connection == nil || connection.raw == nil {
 		return errNilConnection
 	}
 
-	connection.startWriter()
+	if err := connection.raw.SetWriteDeadline(connection.writeDeadline()); err != nil {
+		return err
+	}
 
-	select {
-	case <-connection.done:
-		return ErrConnectionClosed
+	switch write.kind {
+	case queuedMessageWrite:
+		return connection.raw.WriteMessage(write.messageType, write.payload)
+	case queuedPreparedWrite:
+		return connection.raw.WritePreparedMessage(write.prepared)
 	default:
-	}
-
-	if blocking {
-		select {
-		case connection.sendQueue <- request:
-			return nil
-		case <-connection.done:
-			return ErrConnectionClosed
-		}
-	}
-
-	select {
-	case connection.sendQueue <- request:
 		return nil
-	case <-connection.done:
-		return ErrConnectionClosed
-	default:
-		return ErrSendQueueFull
 	}
 }
 
-// cloneBytes 复制异步发送使用的消息体，避免调用方后续修改原始切片。
-func cloneBytes(data []byte) []byte {
-	if len(data) == 0 {
+func (connection *Connection) writeControl(messageType int, payload []byte) error {
+	if connection == nil || connection.raw == nil {
+		return errNilConnection
+	}
+	return connection.raw.WriteControl(messageType, payload, connection.writeDeadline())
+}
+
+func (connection *Connection) writeDeadline() time.Time {
+	if connection.writeTimeout <= 0 {
+		return time.Time{}
+	}
+	return time.Now().Add(connection.writeTimeout)
+}
+
+func cloneBytes(payload []byte) []byte {
+	if len(payload) == 0 {
 		return nil
 	}
 
-	cloned := make([]byte, len(data))
-	copy(cloned, data)
+	cloned := make([]byte, len(payload))
+	copy(cloned, payload)
 	return cloned
 }
 
-// tickerChannel 返回 ticker 的只读通道，便于在未启用心跳时关闭该分支。
 func tickerChannel(ticker *time.Ticker) <-chan time.Time {
 	if ticker == nil {
 		return nil
 	}
 	return ticker.C
-}
-
-// WriteMessage 同步写入业务消息。
-func (connection *Connection) WriteMessage(messageType int, data []byte) error {
-	return connection.writeMessageNow(messageType, data)
-}
-
-// WriteJSON 同步写入 JSON。
-func (connection *Connection) WriteJSON(v interface{}) error {
-	return connection.writeJSONNow(v)
-}
-
-// WritePreparedMessage 同步写入 PreparedMessage。
-func (connection *Connection) WritePreparedMessage(pm *websocket.PreparedMessage) error {
-	return connection.writePreparedMessageNow(pm)
-}
-
-// SendMessage 将消息异步投递到发送队列，适合高并发推送场景。
-func (connection *Connection) SendMessage(messageType int, data []byte) error {
-	return connection.enqueueWrite(writeRequest{
-		kind:        writeMessageRequest,
-		messageType: messageType,
-		data:        cloneBytes(data),
-	}, true)
-}
-
-// TrySendMessage 非阻塞地将消息投递到发送队列，队列满时立即返回错误。
-func (connection *Connection) TrySendMessage(messageType int, data []byte) error {
-	return connection.enqueueWrite(writeRequest{
-		kind:        writeMessageRequest,
-		messageType: messageType,
-		data:        cloneBytes(data),
-	}, false)
-}
-
-// SendJSON 序列化 JSON 后异步投递到发送队列。
-func (connection *Connection) SendJSON(v interface{}) error {
-	payload, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-	return connection.SendMessage(websocket.TextMessage, payload)
-}
-
-// TrySendJSON 非阻塞地序列化 JSON 并投递到发送队列。
-func (connection *Connection) TrySendJSON(v interface{}) error {
-	payload, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-	return connection.TrySendMessage(websocket.TextMessage, payload)
-}
-
-// SendPreparedMessage 将 PreparedMessage 异步投递到发送队列。
-func (connection *Connection) SendPreparedMessage(pm *websocket.PreparedMessage) error {
-	return connection.enqueueWrite(writeRequest{
-		kind:     writePreparedMessageRequest,
-		prepared: pm,
-	}, true)
-}
-
-// TrySendPreparedMessage 非阻塞地将 PreparedMessage 投递到发送队列。
-func (connection *Connection) TrySendPreparedMessage(pm *websocket.PreparedMessage) error {
-	return connection.enqueueWrite(writeRequest{
-		kind:     writePreparedMessageRequest,
-		prepared: pm,
-	}, false)
-}
-
-// WriteControl 直接写入控制帧。
-func (connection *Connection) WriteControl(messageType int, data []byte, deadline time.Time) error {
-	if connection == nil || connection.Conn == nil {
-		return errNilConnection
-	}
-	return connection.Conn.WriteControl(messageType, data, deadline)
-}
-
-// Close 保证连接只会被真正关闭一次。
-func (connection *Connection) Close() error {
-	if connection == nil {
-		return nil
-	}
-
-	connection.initState()
-	connection.closeOnce.Do(func() {
-		close(connection.done)
-		if connection.sendQueue != nil {
-			close(connection.sendQueue)
-		}
-		if connection.Conn != nil {
-			connection.closeErr = connection.Conn.Close()
-		}
-	})
-	return connection.closeErr
-}
-
-// IsClosed 是否关闭
-func (connection *Connection) IsClosed() bool {
-	select {
-	case <-connection.done:
-		return true
-	default:
-		return false
-	}
 }

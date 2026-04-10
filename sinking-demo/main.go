@@ -153,44 +153,41 @@ func main() {
 	})
 
 	//websocket功能
-	wsConn := sinking_websocket.NewConnections() //ws连接池
+	wsConn := sinking_websocket.NewRegistry() // ws连接注册表
 	ws := r.Group("/ws")
 	//ws本质是get长连接,可使用get建立短连接在升级为长连接最后使用协程监听消息
 	ws.GET("/message/listen/:id", func(s *sinking_web.Context) {
 		//生成uid
 		uid := "user-" + s.Param("id")
-		wsServer := sinking_websocket.Server{
-			Id: uid,
-			OnError: func(id string, err error) {
-				wsConn.Delete(id)
+		wsServer := sinking_websocket.NewServer(
+			sinking_websocket.WithConnectionID(uid),
+			sinking_websocket.WithUpgradeErrorHandler(func(request *http.Request, err error) {
 				log.Println("websocket错误", err)
-			},
-			OnConnect: func(id string, ws *sinking_websocket.Connection) {
-				wsConn.Set(id, ws)
-				log.Println("websocket连接", uid)
-			},
-			OnClose: func(id string, ws *sinking_websocket.Connection, err error) {
-				wsConn.Delete(id)
+			}),
+			sinking_websocket.WithConnectHandler(func(connection *sinking_websocket.Connection) error {
+				wsConn.Store(connection.ID(), connection)
+				log.Println("websocket连接", connection.ID())
+				return nil
+			}),
+			sinking_websocket.WithDisconnectHandler(func(connection *sinking_websocket.Connection, err error) {
+				wsConn.DeleteIfMatch(connection.ID(), connection)
 				log.Println("websocket关闭", err)
-			},
-			OnMessage: func(id string, ws *sinking_websocket.Connection, messageType int, data []byte) {
-				log.Println("websocket消息", string(data), messageType)
-				conn := wsConn.Get(id)
-				if conn != nil {
-					_ = conn.WriteMessage(1, data)
-				}
-			},
-		}
-		wsServer.Listen(s.Writer, s.Request, nil)
+			}),
+			sinking_websocket.WithMessageHandler(func(connection *sinking_websocket.Connection, message sinking_websocket.Message) error {
+				log.Println("websocket消息", string(message.Payload), message.Type)
+				return connection.Send(message.Type, message.Payload)
+			}),
+		)
+		_ = wsServer.Handle(s.Writer, s.Request, nil)
 		//ws地址 ws://ip:port/ws/message/listen/[示例ID]
 		//在线测试ws工具 http://coolaf.com/zh/tool/chattest
 	})
 	//单播消息
 	ws.GET("/message/send/:id/:message", func(s *sinking_web.Context) {
 		uid := "user-" + s.Param("id")
-		conn := wsConn.Get(uid)
-		if conn != nil {
-			err := conn.WriteMessage(1, []byte(s.Param("message")))
+		conn, ok := wsConn.Load(uid)
+		if ok && conn != nil {
+			err := conn.Send(sinking_websocket.TextMessage, []byte(s.Param("message")))
 			if err != nil {
 				s.JSON(200, sinking_web.H{"code": "500", "message": "发送消息失败"})
 			} else {
@@ -202,11 +199,14 @@ func main() {
 	})
 	//广播消息
 	ws.GET("/message/send/:message", func(s *sinking_web.Context) {
-		for _, v := range wsConn.GetAll() {
-			if v != nil {
-				_ = v.WriteMessage(1, []byte(s.Param("message")))
+		wsConn.Range(func(id string, connection *sinking_websocket.Connection) bool {
+			if connection != nil {
+				if err := connection.Send(sinking_websocket.TextMessage, []byte(s.Param("message"))); err != nil {
+					wsConn.DeleteIfMatch(id, connection)
+				}
 			}
-		}
+			return true
+		})
 		s.JSON(200, sinking_web.H{"code": "500", "message": "发送消息成功"})
 	})
 	//反向代理功能

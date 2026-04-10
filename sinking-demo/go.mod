@@ -1,6 +1,6 @@
 module sinking-demo
 
-go 1.11
+go 1.14
 
 require (
 	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20251210092505-e7ad146c8491
