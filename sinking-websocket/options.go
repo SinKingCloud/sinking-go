@@ -13,7 +13,6 @@ const (
 	defaultWriteTimeout     = 10 * time.Second
 	defaultPongTimeout      = 60 * time.Second
 	defaultWriteQueueSize   = 64
-	defaultRegistryShards   = 64
 )
 
 var defaultOriginValidator = func(r *http.Request) bool {

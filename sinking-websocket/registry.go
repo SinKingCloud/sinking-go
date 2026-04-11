@@ -3,6 +3,7 @@ package sinking_websocket
 import (
 	"encoding/json"
 	"hash/maphash"
+	"runtime"
 	"sync"
 	"sync/atomic"
 )
@@ -28,6 +29,21 @@ var registryEntriesPool = sync.Pool{
 	New: func() interface{} {
 		return make([]registryEntry, 0, 64)
 	},
+}
+
+func acquireRegistryEntries(sizeHint int) []registryEntry {
+	entries := registryEntriesPool.Get().([]registryEntry)
+	if cap(entries) < sizeHint {
+		return make([]registryEntry, 0, sizeHint)
+	}
+	return entries[:0]
+}
+
+func releaseRegistryEntries(entries []registryEntry) {
+	if cap(entries) > 4096 {
+		return
+	}
+	registryEntriesPool.Put(entries[:0])
 }
 
 func NewRegistry() *Registry {
@@ -213,10 +229,23 @@ func (registry *Registry) init() {
 	if registry == nil {
 		return
 	}
-
+	defaultGroupShards := func() int {
+		target := runtime.GOMAXPROCS(0) * 4
+		if target <= 0 {
+			target = runtime.NumCPU() * 8
+		}
+		if target <= 0 {
+			target = 8
+		}
+		shards := 1
+		for shards < target {
+			shards <<= 1
+		}
+		return shards
+	}
 	registry.once.Do(func() {
 		registry.seed = maphash.MakeSeed()
-		registry.shards = make([]registryShard, defaultRegistryShards)
+		registry.shards = make([]registryShard, defaultGroupShards())
 		for i := range registry.shards {
 			registry.shards[i].items = make(map[string]*Connection)
 		}
@@ -227,19 +256,4 @@ func (registry *Registry) shard(id string) *registryShard {
 	registry.init()
 	index := maphash.String(registry.seed, id) % uint64(len(registry.shards))
 	return &registry.shards[index]
-}
-
-func acquireRegistryEntries(sizeHint int) []registryEntry {
-	entries := registryEntriesPool.Get().([]registryEntry)
-	if cap(entries) < sizeHint {
-		return make([]registryEntry, 0, sizeHint)
-	}
-	return entries[:0]
-}
-
-func releaseRegistryEntries(entries []registryEntry) {
-	if cap(entries) > 4096 {
-		return
-	}
-	registryEntriesPool.Put(entries[:0])
 }
