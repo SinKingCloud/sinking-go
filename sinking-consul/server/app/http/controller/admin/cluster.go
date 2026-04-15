@@ -12,10 +12,9 @@ type ControllerCluster struct {
 }
 
 func (ControllerCluster) List(c *context.Context) {
-	pageInfo := page.ValidatePageDefault(c)
+	pageNum, pageSize := c.ValidatePage()
+	orderByField, orderByType := c.ValidateOrderBy("create_time", "desc", "create_time,update_time")
 	type Form struct {
-		OrderByField    string `json:"order_by_field" default:"create_time" validate:"oneof=update_time create_time" label:"排序字段"`
-		OrderByType     string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
 		Status          string `json:"status" default:"" validate:"omitempty,numeric" label:"在线状态"`
 		UpdateTimeStart string `json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
 		UpdateTimeEnd   string `json:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
@@ -43,11 +42,11 @@ func (ControllerCluster) List(c *context.Context) {
 	if form.UpdateTimeEnd != "" {
 		where.UpdateTimeEnd = form.UpdateTimeEnd
 	}
-	data, total, err := service.Cluster.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.Cluster.Select(where, orderByField, orderByType, pageNum, pageSize)
 	if err != nil {
 		c.Error("获取失败")
 	} else {
 		service.Log.Create(c.GetRequestIp(), log_type.EventShow, "查看系统集群", "查看系统集群列表")
-		c.SuccessWithData("获取成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
+		c.SuccessWithData("获取成功", page.NewPage(total, pageNum, pageSize, data))
 	}
 }

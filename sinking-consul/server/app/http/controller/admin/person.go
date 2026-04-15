@@ -42,10 +42,9 @@ func (ControllerPerson) Password(c *context.Context) {
 }
 
 func (ControllerPerson) Log(c *context.Context) {
-	pageInfo := page.ValidatePageDefault(c)
+	pageNum, pageSize := c.ValidatePage()
+	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,type,ip,create_time,update_time")
 	type Form struct {
-		OrderByField    string `json:"order_by_field" default:"id" validate:"oneof=id type ip create_time update_time" label:"排序字段"`
-		OrderByType     string `json:"order_by_type" default:"desc" validate:"oneof=desc asc" label:"排序类型"`
 		Type            string `json:"type" default:"" validate:"omitempty,numeric" label:"类型"`
 		Ip              string `json:"ip" default:"" validate:"omitempty" label:"IP地址"`
 		Title           string `json:"title" default:"" validate:"omitempty" label:"标题"`
@@ -85,11 +84,11 @@ func (ControllerPerson) Log(c *context.Context) {
 	if form.UpdateTimeEnd != "" {
 		where.UpdateTimeEnd = form.UpdateTimeEnd
 	}
-	data, total, err := service.Log.Select(where, form.OrderByField, form.OrderByType, pageInfo.Page, pageInfo.PageSize)
+	data, total, err := service.Log.Select(where, orderByField, orderByType, pageNum, pageSize)
 	if err != nil {
 		c.Error("获取失败")
 	} else {
 		service.Log.Create(c.GetRequestIp(), log_type.EventShow, "查看系统日志", "查看系统日志列表")
-		c.SuccessWithData("获取成功", page.NewPage(total, pageInfo.Page, pageInfo.PageSize, data))
+		c.SuccessWithData("获取成功", page.NewPage(total, pageNum, pageSize, data))
 	}
 }
