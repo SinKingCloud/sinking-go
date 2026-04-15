@@ -1,12 +1,13 @@
 package sync
 
 import (
-	"server/app/command/queue/sync"
 	"server/app/constant"
 	"server/app/enum/cluster_status"
 	"server/app/enum/node_online_status"
 	"server/app/enum/node_status"
 	"server/app/model"
+	"server/app/queue"
+	"server/app/queue/sync"
 	"server/app/service"
 	"server/app/service/node"
 	"server/app/util"
@@ -29,7 +30,7 @@ func Init() {
 				if value.LastHeart+60 < time.Now().Unix() {
 					value.Status = cluster_status.Offline
 				}
-				sync.Instance.SendTask(&sync.Task{
+				queue.Sync.SendTask(&sync.Task{
 					Type:          sync.RegisterService,
 					RemoteAddress: key,
 				})
@@ -48,7 +49,7 @@ func Init() {
 			if i == 3 {
 				service.Cluster.Each(func(key string, value *model.Cluster) bool {
 					if value.Status == cluster_status.Online {
-						sync.Instance.SendTask(&sync.Task{
+						queue.Sync.SendTask(&sync.Task{
 							Type:          sync.SynchronizeData,
 							RemoteAddress: key,
 						})

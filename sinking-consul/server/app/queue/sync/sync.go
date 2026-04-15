@@ -6,9 +6,7 @@ import (
 	"server/app/util/queue"
 )
 
-const TopicName = "log"
-
-var Instance *queue.Client
+const TopicName = "sync"
 
 type Task struct {
 	Type          Type   //任务类型
@@ -27,6 +25,5 @@ func Register() *queue.Client {
 		panic(err)
 		return nil
 	}
-	Instance = ins
 	return ins
 }

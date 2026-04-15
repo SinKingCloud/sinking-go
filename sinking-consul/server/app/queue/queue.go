@@ -1,7 +1,7 @@
 package queue
 
 import (
-	"server/app/command/queue/sync"
+	"server/app/queue/sync"
 	"server/app/util/queue"
 )
 

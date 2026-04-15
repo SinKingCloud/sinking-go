@@ -1,8 +1,8 @@
 package task
 
 import (
-	"server/app/command/task/save"
-	"server/app/command/task/sync"
+	"server/app/task/save"
+	"server/app/task/sync"
 )
 
 func Init() {
