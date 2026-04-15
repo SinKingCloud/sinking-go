@@ -30,7 +30,7 @@ func Init() {
 				if value.LastHeart+60 < time.Now().Unix() {
 					value.Status = cluster_status.Offline
 				}
-				queue.Sync.SendTask(&sync.Task{
+				queue.Sync.SendUnicastTask(&sync.Task{
 					Type:          sync.RegisterService,
 					RemoteAddress: key,
 				})
@@ -49,7 +49,7 @@ func Init() {
 			if i == 3 {
 				service.Cluster.Each(func(key string, value *model.Cluster) bool {
 					if value.Status == cluster_status.Online {
-						queue.Sync.SendTask(&sync.Task{
+						queue.Sync.SendUnicastTask(&sync.Task{
 							Type:          sync.SynchronizeData,
 							RemoteAddress: key,
 						})

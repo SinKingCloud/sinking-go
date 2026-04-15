@@ -1,7 +1,6 @@
 package sync
 
 import (
-	"encoding/json"
 	"runtime"
 	"server/app/util/queue"
 )
@@ -13,13 +12,10 @@ type Task struct {
 	RemoteAddress string //远程地址
 }
 
-func Register() *queue.Client {
-	ins, err := queue.RegisterMemory(TopicName, 1, runtime.NumCPU(), func(param string) {
-		var task *Task
-		err := json.Unmarshal([]byte(param), &task)
-		if err == nil {
-			exec(task)
-		}
+func Register() *queue.UnicastClient[*Task] {
+	ins, err := queue.RegisterMemoryUnicast[*Task](TopicName, 1, runtime.NumCPU(), func(param *Task) error {
+		exec(param)
+		return nil
 	})
 	if err != nil {
 		panic(err)

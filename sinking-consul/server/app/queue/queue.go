@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	Sync *queue.Client
+	Sync *queue.UnicastClient[*sync.Task]
 )
 
 func Init() {
