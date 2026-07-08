@@ -9,7 +9,7 @@
     "start": "npm run dev"
   },
   "dependencies": {
-    "@ant-design/icons": "^6.2.4",
+    "@ant-design/icons": "^6.2.5",
     "@umijs/plugins": "^4.6.57",
     "antd": "^6.4.3",
     "antd-style": "^4.1.0",
