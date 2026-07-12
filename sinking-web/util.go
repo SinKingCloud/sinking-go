@@ -36,48 +36,42 @@ func (c *Context) ClientIP(useProxy bool) string {
 	return ""
 }
 
-// 代理连接池
+// 代理poll
 var proxyMap = &sync.Map{}
 
 // HttpProxy http反向代理
 func (c *Context) HttpProxy(uri string, logger *log.Logger, filter func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy), errorHandle func(http.ResponseWriter, *http.Request, error)) (err error) {
 	Try(func() {
-		target, e := url.Parse(uri)
-		if e != nil {
-			err = e
-			return
-		}
-		timeout := time.Minute
-		if c.engine != nil && c.engine.writeTimeout > 0 {
-			timeout = c.engine.writeTimeout
-		}
-		key := fmt.Sprintf("%s|%d", uri, timeout)
-		value, ok := proxyMap.Load(key)
-		if !ok {
+		var proxy *httputil.ReverseProxy
+		if value, ok := proxyMap.Load(uri); ok {
+			proxy = value.(*httputil.ReverseProxy)
+		} else {
+			target, e := url.Parse(uri)
+			if e != nil {
+				err = e
+				return
+			}
+			tmp := httputil.NewSingleHostReverseProxy(target)
 			dialer := &net.Dialer{
-				Timeout:   timeout,
+				Timeout:   time.Minute,
 				KeepAlive: time.Minute,
 			}
-			transport := &http.Transport{
-				Proxy:                 http.ProxyFromEnvironment,
-				DialContext:           dialer.DialContext,
-				ForceAttemptHTTP2:     true,
-				IdleConnTimeout:       time.Minute,
-				TLSHandshakeTimeout:   timeout,
-				ResponseHeaderTimeout: timeout,
+			tmp.Transport = &http.Transport{
+				Proxy:             http.ProxyFromEnvironment,
+				DialContext:       dialer.DialContext,
+				ForceAttemptHTTP2: true,
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: true,
 				},
 			}
-			value, _ = proxyMap.LoadOrStore(key, transport)
-		}
-		proxy := httputil.NewSingleHostReverseProxy(target)
-		proxy.Transport = value.(*http.Transport)
-		if logger != nil {
-			proxy.ErrorLog = logger
-		}
-		if errorHandle != nil {
-			proxy.ErrorHandler = errorHandle
+			if logger != nil {
+				tmp.ErrorLog = logger
+			}
+			if errorHandle != nil {
+				tmp.ErrorHandler = errorHandle
+			}
+			proxyMap.Store(uri, tmp)
+			proxy = tmp
 		}
 		if filter != nil {
 			filter(c.Request, c.Writer, proxy)
@@ -122,11 +116,6 @@ func (c *Context) WebSocketProxy(uri string, logger *log.Logger, filter func(r *
 			err = errors.New("hijacker error" + e.Error())
 			return
 		}
-		e = conn.SetDeadline(time.Time{})
-		if e != nil {
-			err = e
-			return
-		}
 		defer func(conn net.Conn) {
 			e2 := conn.Close()
 			if e2 != nil {
@@ -139,29 +128,16 @@ func (c *Context) WebSocketProxy(uri string, logger *log.Logger, filter func(r *
 		if filter != nil {
 			filter(req, c.Writer)
 		}
-		timeout := time.Minute
-		if c.engine != nil && c.engine.writeTimeout > 0 {
-			timeout = c.engine.writeTimeout
-		}
-		dialer := &net.Dialer{
-			Timeout:   timeout,
-			KeepAlive: time.Minute,
-		}
 		var remoteConn net.Conn
 		switch u.Scheme {
 		case "ws":
-			remoteConn, e = dialer.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
+			remoteConn, e = net.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
 		case "wss":
-			remoteConn, e = tls.DialWithDialer(dialer, "tcp", fmt.Sprintf("%s:%s", host, port), &tls.Config{InsecureSkipVerify: true})
+			remoteConn, e = tls.Dial("tcp", fmt.Sprintf("%s:%s", host, port), &tls.Config{InsecureSkipVerify: true})
 		}
 		if e != nil {
-			_, _ = conn.Write([]byte(e.Error()))
+			_, _ = c.Writer.Write([]byte(e.Error()))
 			err = errors.New("remote connection failed")
-			return
-		}
-		e = remoteConn.SetDeadline(time.Time{})
-		if e != nil {
-			err = e
 			return
 		}
 		defer func(remoteConn net.Conn) {
@@ -212,12 +188,10 @@ func (c *Context) WebSocketProxy(uri string, logger *log.Logger, filter func(r *
 
 // Proxy 通用反向代理
 func (c *Context) Proxy(uri string, logger *log.Logger, filter func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy), errorHandle func(http.ResponseWriter, *http.Request, error)) error {
-	if strings.HasPrefix(uri, "ws") {
-		var fun func(r *http.Request, w http.ResponseWriter)
-		if filter != nil {
-			fun = func(r *http.Request, w http.ResponseWriter) {
-				filter(r, w, nil)
-			}
+	prefix := uri[0:2]
+	if prefix == "ws" {
+		fun := func(r *http.Request, w http.ResponseWriter) {
+			filter(r, w, nil)
 		}
 		return c.WebSocketProxy(uri, logger, fun, errorHandle)
 	} else {

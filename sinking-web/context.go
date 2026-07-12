@@ -95,9 +95,7 @@ func (c *Context) AllForm() map[string]string {
 		return param
 	}
 	for k, v := range c.Request.PostForm {
-		if len(v) > 0 {
-			param[k] = v[0]
-		}
+		param[k] = v[0]
 	}
 	return param
 }
@@ -119,9 +117,7 @@ func (c *Context) DefaultForm(key, defaultValue string) string {
 func (c *Context) AllQuery() map[string]string {
 	param := map[string]string{}
 	for k, v := range c.Request.URL.Query() {
-		if len(v) > 0 {
-			param[k] = v[0]
-		}
+		param[k] = v[0]
 	}
 	return param
 }
@@ -141,9 +137,6 @@ func (c *Context) DefaultQuery(key, defaultValue string) string {
 
 // Body 获取请求体
 func (c *Context) Body() string {
-	if c.Request.Body == nil {
-		return ""
-	}
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		return ""

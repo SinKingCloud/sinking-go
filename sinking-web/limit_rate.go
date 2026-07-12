@@ -10,7 +10,6 @@ type LimitRate struct {
 	limit           int
 	currentAmount   int
 	lastConsumeTime int64
-	lock            sync.Mutex
 }
 
 func (*LimitRate) currentTime() int64 {
@@ -21,39 +20,30 @@ func (tb *LimitRate) Wait(n int) {
 	if n > tb.limit {
 		return
 	}
-	for {
-		tb.lock.Lock()
-		now := tb.currentTime()
-		if now == tb.lastConsumeTime {
-			pre := tb.currentAmount + int(now-tb.lastConsumeTime)*tb.rate
+	if tb.currentTime() == tb.lastConsumeTime {
+		ticker := time.NewTicker(500 * time.Millisecond)
+		for n > tb.currentAmount {
+			pre := tb.currentAmount + int(tb.currentTime()-tb.lastConsumeTime)*tb.rate
 			if pre > tb.limit {
 				tb.currentAmount = tb.limit
 			} else {
 				tb.currentAmount = pre
 			}
-		} else {
-			tb.currentAmount = tb.limit
+			<-ticker.C
 		}
-		if n <= tb.currentAmount {
-			tb.currentAmount -= n
-			tb.lastConsumeTime = now
-			tb.lock.Unlock()
-			return
-		}
-		tb.lock.Unlock()
-		time.Sleep(500 * time.Millisecond)
+	} else {
+		tb.currentAmount = tb.limit
 	}
+	tb.currentAmount -= n
+	tb.lastConsumeTime = tb.currentTime()
 }
 
 func (tb *LimitRate) Check(n int) bool {
 	if n > tb.limit {
 		return false
 	}
-	tb.lock.Lock()
-	defer tb.lock.Unlock()
-	now := tb.currentTime()
 	res := false
-	if now == tb.lastConsumeTime {
+	if tb.currentTime() == tb.lastConsumeTime {
 		if tb.currentAmount <= 0 {
 			res = true
 		}
@@ -61,7 +51,7 @@ func (tb *LimitRate) Check(n int) bool {
 		tb.currentAmount = tb.limit
 	}
 	tb.currentAmount -= n
-	tb.lastConsumeTime = now
+	tb.lastConsumeTime = tb.currentTime()
 	return res
 }
 

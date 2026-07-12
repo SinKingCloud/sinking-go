@@ -12,13 +12,13 @@ import (
 
 // BindAll 绑定所有参数
 func (c *Context) BindAll(obj interface{}) error {
-	if obj == nil {
-		return errors.New("the param bind error")
-	}
 	_ = c.bind(c.AllParam(), obj)
 	_ = c.bind(c.AllQuery(), obj)
 	_ = c.bind(c.AllForm(), obj)
 	_ = c.BindJson(obj)
+	if obj == nil {
+		return errors.New("the param bind error")
+	}
 	return nil
 }
 
@@ -39,11 +39,8 @@ func (c *Context) BindParam(obj interface{}) error {
 
 // BindJson 绑定json
 func (c *Context) BindJson(obj interface{}) error {
-	if obj == nil {
-		return errors.New("the param bind error")
-	}
 	body := c.Body()
-	err := json.Unmarshal([]byte(body), obj)
+	err := json.Unmarshal([]byte(body), &obj)
 	if err != nil {
 		return err
 	}
@@ -52,24 +49,9 @@ func (c *Context) BindJson(obj interface{}) error {
 
 // bind 通用绑定
 func (c *Context) bind(params map[string]string, obj interface{}) error {
-	if obj == nil {
-		return errors.New("the param bind error")
-	}
-	if params == nil {
-		params = make(map[string]string)
-	}
-	objType := reflect.TypeOf(obj)
-	objValue := reflect.ValueOf(obj)
-	if objType.Kind() != reflect.Ptr || objValue.IsNil() || objType.Elem().Kind() != reflect.Struct {
-		return errors.New("the param bind error")
-	}
-	keys := objType.Elem()
-	values := objValue.Elem()
+	keys := reflect.TypeOf(obj).Elem()
+	values := reflect.ValueOf(obj).Elem()
 	for i := 0; i < keys.NumField(); i++ {
-		value := values.Field(i)
-		if !value.CanSet() {
-			continue
-		}
 		name := keys.Field(i).Tag.Get(BindFormTagName)
 		if name == "" {
 			name = keys.Field(i).Name
@@ -77,6 +59,7 @@ func (c *Context) bind(params map[string]string, obj interface{}) error {
 		if params[name] == "" {
 			var isNull bool
 			var defaultValue string
+			value := values.Field(i)
 			switch value.Kind() {
 			case reflect.String:
 				isNull = value.String() == ""
