@@ -150,11 +150,6 @@ func (group *RouterGroup) createStaticHandler(relativePath string, fs http.FileS
 	absolutePath := path.Join(group.prefix, relativePath)
 	fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
 	return func(c *Context) {
-		file := c.Param("filepath")
-		if _, err := fs.Open(file); err != nil {
-			c.SetStatus(http.StatusNotFound)
-			return
-		}
 		fileServer.ServeHTTP(c.Writer, c.Request)
 	}
 }
@@ -196,8 +191,7 @@ func (engine *Engine) SetTimeOut(read time.Duration, write time.Duration) *Engin
 
 func (group *RouterGroup) PROXY(pattern string, uri string, logger *log.Logger, filter func(r *http.Request, w http.ResponseWriter, proxy *httputil.ReverseProxy), errorHandle func(http.ResponseWriter, *http.Request, error)) *RouterGroup {
 	fun := func(c *Context) {
-		prefix := uri[0:2]
-		if prefix == "ws" {
+		if strings.HasPrefix(uri, "ws") {
 			fun := func(r *http.Request, w http.ResponseWriter) {
 				if filter != nil {
 					filter(r, w, nil)
@@ -215,10 +209,12 @@ func (group *RouterGroup) PROXY(pattern string, uri string, logger *log.Logger, 
 func server(addr string, engine *Engine) *http.Server {
 	Author(engine, addr)
 	server := &http.Server{
-		ReadTimeout:  engine.readTimeout,
-		WriteTimeout: engine.writeTimeout,
-		Addr:         addr,
-		Handler:      engine,
+		ReadTimeout:       engine.readTimeout,
+		ReadHeaderTimeout: engine.readTimeout,
+		WriteTimeout:      engine.writeTimeout,
+		IdleTimeout:       engine.readTimeout,
+		Addr:              addr,
+		Handler:           engine,
 	}
 	return server
 }

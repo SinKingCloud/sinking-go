@@ -55,7 +55,7 @@ func (n *node) travel(list *[]*node) {
 
 func (n *node) matchChild(part string) *node {
 	for _, child := range n.children {
-		if child.part == part || child.isWild {
+		if child.part == part {
 			return child
 		}
 	}
@@ -64,10 +64,13 @@ func (n *node) matchChild(part string) *node {
 
 func (n *node) matchChildren(part string) []*node {
 	nodes := make([]*node, 0)
+	wildNodes := make([]*node, 0)
 	for _, child := range n.children {
-		if child.part == part || child.isWild {
+		if child.part == part {
 			nodes = append(nodes, child)
+		} else if child.isWild {
+			wildNodes = append(wildNodes, child)
 		}
 	}
-	return nodes
+	return append(nodes, wildNodes...)
 }
