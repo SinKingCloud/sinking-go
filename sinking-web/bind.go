@@ -74,7 +74,23 @@ func (c *Context) bind(params map[string]string, obj interface{}) error {
 		if name == "" {
 			name = keys.Field(i).Name
 		}
-		if params[name] == "" {
+		paramValue, exists := params[name]
+		if value.Kind() == reflect.Ptr {
+			if !exists {
+				if !value.IsNil() {
+					continue
+				}
+				paramValue = keys.Field(i).Tag.Get(BindDefaultValueTagName)
+				if paramValue == "" {
+					continue
+				}
+			}
+			if err := setWithProperType(paramValue, value, keys.Field(i)); err != nil {
+				continue
+			}
+			continue
+		}
+		if paramValue == "" {
 			var isNull bool
 			var defaultValue string
 			switch value.Kind() {
@@ -102,15 +118,17 @@ func (c *Context) bind(params map[string]string, obj interface{}) error {
 				defaultValue = value.String()
 			}
 			if !isNull {
+				paramValue = defaultValue
 				params[name] = defaultValue
 			} else {
 				defaultValue = keys.Field(i).Tag.Get(BindDefaultValueTagName)
 				if defaultValue != "" {
+					paramValue = defaultValue
 					params[name] = defaultValue
 				}
 			}
 		}
-		err := setWithProperType(params[name], values.Field(i), keys.Field(i))
+		err := setWithProperType(paramValue, values.Field(i), keys.Field(i))
 		if err != nil {
 			continue
 		}
@@ -121,6 +139,15 @@ func (c *Context) bind(params map[string]string, obj interface{}) error {
 // setWithProperType 类型转换
 func setWithProperType(val string, value reflect.Value, field reflect.StructField) error {
 	switch value.Kind() {
+	case reflect.Ptr:
+		pointer := reflect.New(value.Type().Elem())
+		if !value.IsNil() {
+			pointer.Elem().Set(value.Elem())
+		}
+		if err := setWithProperType(val, pointer.Elem(), field); err != nil {
+			return err
+		}
+		value.Set(pointer)
 	case reflect.Int:
 		return setIntField(val, 0, value)
 	case reflect.Int8:
