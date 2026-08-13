@@ -10,12 +10,12 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.3.2",
-    "@umijs/plugins": "^4.7.2",
-    "antd": "^6.5.4",
+    "@umijs/plugins": "^4.7.5",
+    "antd": "^6.6.0",
     "antd-style": "^4.1.0",
     "go-captcha-react": "^1.0.5",
-    "sinking-antd": "^1.1.6",
-    "umi": "^4.7.2",
+    "sinking-antd": "^1.1.7",
+    "umi": "^4.7.5",
     "umi-request": "^1.4.0"
   },
   "devDependencies": {
