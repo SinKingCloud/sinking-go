@@ -15,23 +15,23 @@ func (r *Repository) Select(where *SelectCluster, orderByField string, orderByTy
 	offset := pageSize * (page - 1)
 	query := r.Database.Db.Model(&model.Cluster{})
 	if where != nil {
-		if where.Status != "" {
-			query = query.Where("`status` = ?", where.Status)
+		if where.Status != nil {
+			query = query.Where("`status` = ?", *where.Status)
 		}
-		if where.Address != "" {
-			query = query.Where("`address` LIKE ?", "%"+where.Address+"%")
+		if where.Address != nil {
+			query = query.Where("`address` LIKE ?", "%"+*where.Address+"%")
 		}
-		if where.CreateTimeStart != "" {
-			query = query.Where("`create_time` >= ?", where.CreateTimeStart)
+		if where.CreateTimeStart != nil {
+			query = query.Where("`create_time` >= ?", *where.CreateTimeStart)
 		}
-		if where.CreateTimeEnd != "" {
-			query = query.Where("`create_time` <= ?", where.CreateTimeEnd)
+		if where.CreateTimeEnd != nil {
+			query = query.Where("`create_time` <= ?", *where.CreateTimeEnd)
 		}
-		if where.UpdateTimeStart != "" {
-			query = query.Where("`update_time` >= ?", where.UpdateTimeStart)
+		if where.UpdateTimeStart != nil {
+			query = query.Where("`update_time` >= ?", *where.UpdateTimeStart)
 		}
-		if where.UpdateTimeEnd != "" {
-			query = query.Where("`update_time` <= ?", where.UpdateTimeEnd)
+		if where.UpdateTimeEnd != nil {
+			query = query.Where("`update_time` <= ?", *where.UpdateTimeEnd)
 		}
 	}
 	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(orderByField + " " + orderByType).Find(&list).Error

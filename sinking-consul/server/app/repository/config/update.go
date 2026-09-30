@@ -13,22 +13,22 @@ func (r *Repository) UpdateByGroupAndName(keys []*model.Config, config *UpdateCo
 	}
 	updates := make(map[string]interface{})
 	if config.Group != nil {
-		updates["group"] = config.Group
+		updates["group"] = *config.Group
 	}
 	if config.Name != nil {
-		updates["name"] = config.Name
+		updates["name"] = *config.Name
 	}
 	if config.Type != nil {
-		updates["type"] = config.Type
+		updates["type"] = *config.Type
 	}
 	if config.Hash != nil {
-		updates["hash"] = config.Hash
+		updates["hash"] = *config.Hash
 	}
 	if config.Content != nil {
-		updates["content"] = config.Content
+		updates["content"] = *config.Content
 	}
 	if config.Status != nil {
-		updates["status"] = config.Status
+		updates["status"] = *config.Status
 	}
 	if len(updates) == 0 {
 		return nil

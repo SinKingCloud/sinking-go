@@ -1,13 +1,14 @@
 package route
 
 import (
-	"github.com/SinKingCloud/sinking-go/sinking-web"
-	"os"
-	"os/signal"
-	"server/app/util"
-	"server/app/util/http"
+	"fmt"
+	"net"
 	"strconv"
-	"syscall"
+
+	"server/app/util/http"
+	"server/global"
+
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
 // loadErrorHandle 设置错误回调
@@ -26,10 +27,10 @@ func loadErrorHandle(s *sinking_web.Engine) {
 }
 
 // Init 初始化server
-func Init() {
-	host, port := util.ServerAddr()
-	addr := host + ":" + strconv.Itoa(port)
-	r := http.NewServer(addr, util.IsDebug())
+func Init(stop <-chan struct{}) {
+	host, port := global.App.ServerAddr()
+	addr := net.JoinHostPort(host, strconv.Itoa(port))
+	r := http.NewServer(addr, global.App.IsDebug())
 	r.ErrorHandle(&sinking_web.ErrorHandel{
 		NotFound: func(c *sinking_web.Context) {
 			c.JSON(404, sinking_web.H{"code": 404, "message": "请求资源不存在"})
@@ -42,10 +43,18 @@ func Init() {
 		loadErrorHandle(engine)
 		loadApp(engine)
 	})
-	_ = r.Start()
-	//等待中断信号
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-	_ = <-sigChan
-	_ = r.Stop()
+	if err := r.Start(); err != nil {
+		panic(fmt.Errorf("启动HTTP服务失败: %w", err))
+	}
+	select {
+	case err := <-r.Done():
+		if err != nil {
+			panic(fmt.Errorf("HTTP服务运行失败: %w", err))
+		}
+		return
+	case <-stop:
+	}
+	if err := r.Stop(); err != nil {
+		panic(fmt.Errorf("停止HTTP服务失败: %w", err))
+	}
 }

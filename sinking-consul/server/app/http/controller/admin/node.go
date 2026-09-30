@@ -1,6 +1,8 @@
 package admin
 
 import (
+	"strconv"
+
 	"server/app/enum/log_type"
 	"server/app/enum/node_status"
 	"server/app/model"
@@ -9,7 +11,6 @@ import (
 	"server/app/service/cluster"
 	"server/app/util/context"
 	"server/app/util/page"
-	"strconv"
 )
 
 type ControllerNode struct {
@@ -35,28 +36,38 @@ func (ControllerNode) List(c *context.Context) {
 	}
 	where := &node.SelectNode{}
 	if form.Group != "" {
-		where.Group = form.Group
+		where.Group = &form.Group
 	}
 	if form.Name != "" {
-		where.Name = form.Name
+		where.Name = &form.Name
 	}
 	if form.OnlineStatus != "" {
-		where.OnlineStatus = form.OnlineStatus
+		onlineStatus, err := strconv.Atoi(form.OnlineStatus)
+		if err != nil {
+			c.Error("在线状态参数错误")
+			return
+		}
+		where.OnlineStatus = &onlineStatus
 	}
 	if form.Status != "" {
-		where.Status = form.Status
+		status, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
+		where.Status = &status
 	}
 	if form.CreateTimeStart != "" {
-		where.CreateTimeStart = form.CreateTimeStart
+		where.CreateTimeStart = &form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where.CreateTimeEnd = form.CreateTimeEnd
+		where.CreateTimeEnd = &form.CreateTimeEnd
 	}
 	if form.UpdateTimeStart != "" {
-		where.UpdateTimeStart = form.UpdateTimeStart
+		where.UpdateTimeStart = &form.UpdateTimeStart
 	}
 	if form.UpdateTimeEnd != "" {
-		where.UpdateTimeEnd = form.UpdateTimeEnd
+		where.UpdateTimeEnd = &form.UpdateTimeEnd
 	}
 	data, total, err := service.Node.Select(where, orderByField, orderByType, pageNum, pageSize)
 	if err != nil {
@@ -75,12 +86,16 @@ func (ControllerNode) Update(c *context.Context) {
 	}
 	data := &node.UpdateNode{}
 	if form.Status != "" {
-		n, _ := strconv.Atoi(form.Status)
+		n, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
 		if _, ok := node_status.Map()[n]; !ok {
 			c.Error("状态值不合法")
 			return
 		}
-		data.Status = form.Status
+		data.Status = &n
 	}
 	err := service.Cluster.ChangeAllClusterLockStatus(0)
 	if err != nil {

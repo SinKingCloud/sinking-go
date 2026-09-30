@@ -13,6 +13,7 @@ type Service interface {
 	GenLoginToken(ip string) (s string, e error)           //生成登陆token
 	ClearLoginToken() error                                //清理登陆token
 	ChangePassword(password string) error                  //修改密码
+	UpdateAccount(account string, password string) error   //修改账户信息
 	CheckLoginToken(token string) error                    //判断登陆token
 	CheckApiToken(token string) error                      //判断API token
 }

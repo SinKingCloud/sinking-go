@@ -1,6 +1,9 @@
 package admin
 
 import (
+	"strconv"
+	"strings"
+
 	"server/app/enum/config_status"
 	"server/app/enum/config_type"
 	"server/app/enum/log_type"
@@ -11,8 +14,6 @@ import (
 	"server/app/util/context"
 	"server/app/util/page"
 	"server/app/util/str"
-	"strconv"
-	"strings"
 )
 
 type ControllerConfig struct {
@@ -40,34 +41,39 @@ func (ControllerConfig) List(c *context.Context) {
 	}
 	where := &config.SelectConfig{}
 	if form.Group != "" {
-		where.Group = form.Group
+		where.Group = &form.Group
 	}
 	if form.Name != "" {
-		where.Name = form.Name
+		where.Name = &form.Name
 	}
 	if form.Type != "" {
-		where.Type = form.Type
+		where.Type = &form.Type
 	}
 	if form.Hash != "" {
-		where.Hash = form.Hash
+		where.Hash = &form.Hash
 	}
 	if form.Content != "" {
-		where.Content = form.Content
+		where.Content = &form.Content
 	}
 	if form.Status != "" {
-		where.Status = form.Status
+		status, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
+		where.Status = &status
 	}
 	if form.CreateTimeStart != "" {
-		where.CreateTimeStart = form.CreateTimeStart
+		where.CreateTimeStart = &form.CreateTimeStart
 	}
 	if form.CreateTimeEnd != "" {
-		where.CreateTimeEnd = form.CreateTimeEnd
+		where.CreateTimeEnd = &form.CreateTimeEnd
 	}
 	if form.UpdateTimeStart != "" {
-		where.UpdateTimeStart = form.UpdateTimeStart
+		where.UpdateTimeStart = &form.UpdateTimeStart
 	}
 	if form.UpdateTimeEnd != "" {
-		where.UpdateTimeEnd = form.UpdateTimeEnd
+		where.UpdateTimeEnd = &form.UpdateTimeEnd
 	}
 	data, total, err := service.Config.Select(where, orderByField, orderByType, pageNum, pageSize)
 	if err != nil {
@@ -105,19 +111,24 @@ func (ControllerConfig) Update(c *context.Context) {
 	}
 	data := &config.UpdateConfig{}
 	if form.Type != "" {
-		data.Type = form.Type
+		data.Type = &form.Type
 	}
 	if form.Content != "" {
-		data.Content = form.Content
-		data.Hash = str.NewStringTool().Md5(form.Content)
+		data.Content = &form.Content
+		hash := str.NewStringTool().Md5(form.Content)
+		data.Hash = &hash
 	}
 	if form.Status != "" {
-		n, _ := strconv.Atoi(form.Status)
+		n, err := strconv.Atoi(form.Status)
+		if err != nil {
+			c.Error("状态参数错误")
+			return
+		}
 		if _, ok := config_status.Map()[n]; !ok {
 			c.Error("状态值不合法")
 			return
 		}
-		data.Status = form.Status
+		data.Status = &n
 	}
 	err := service.Cluster.ChangeAllClusterLockStatus(0)
 	if err != nil {
@@ -129,7 +140,7 @@ func (ControllerConfig) Update(c *context.Context) {
 	}()
 	err = service.Config.UpdateByGroupAndName(form.Keys, data)
 	if err != nil {
-		c.Success("修改失败")
+		c.Error(err.Error())
 		return
 	}
 	service.Cluster.UpdateAllClusterData(form, nil)

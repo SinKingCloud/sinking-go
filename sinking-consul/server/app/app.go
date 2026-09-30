@@ -7,9 +7,9 @@ import (
 	"server/app/task"
 )
 
-func Run() {
+func Run(stop <-chan struct{}) {
 	service.Init()
 	queue.Init()
 	task.Init()
-	route.Init()
+	route.Init(stop)
 }

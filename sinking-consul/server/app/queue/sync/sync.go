@@ -19,7 +19,6 @@ func Register() *queue.UnicastClient[*Task] {
 	})
 	if err != nil {
 		panic(err)
-		return nil
 	}
 	return ins
 }

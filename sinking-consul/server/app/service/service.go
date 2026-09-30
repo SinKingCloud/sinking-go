@@ -11,7 +11,7 @@ import (
 	"server/app/service/log"
 	"server/app/service/node"
 	"server/app/service/setting"
-	"server/app/util"
+	"server/global"
 )
 
 // service实例
@@ -26,9 +26,9 @@ var (
 
 // Init 初始化服务
 func Init() {
-	conf := util.Conf
-	cache := util.Cache
-	database := util.Database
+	conf := global.App.Config
+	cache := global.App.Cache
+	database := global.App.Database
 	repositoryLog := log2.NewRepository(database)
 	clusterRepository := repositoryCluster.NewRepository(database)
 	nodeRepository := repositoryNode.NewRepository(database)

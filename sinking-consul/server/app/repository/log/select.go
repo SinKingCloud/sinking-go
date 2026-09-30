@@ -7,29 +7,29 @@ func (r *Repository) Select(where *SelectLog, orderByField string, orderByType s
 	offset := pageSize * (page - 1)
 	query := r.Database.Db.Model(&model.Log{})
 	if where != nil {
-		if where.Type != "" {
-			query = query.Where("`type` = ?", where.Type)
+		if where.Type != nil {
+			query = query.Where("`type` = ?", *where.Type)
 		}
-		if where.Ip != "" {
-			query = query.Where("`ip` like ?", "%"+where.Ip+"%")
+		if where.Ip != nil {
+			query = query.Where("`ip` like ?", "%"+*where.Ip+"%")
 		}
-		if where.Title != "" {
-			query = query.Where("`user` like ?", "%"+where.Title+"%")
+		if where.Title != nil {
+			query = query.Where("`title` like ?", "%"+*where.Title+"%")
 		}
-		if where.Content != "" {
-			query = query.Where("`content` like ?", "%"+where.Content+"%")
+		if where.Content != nil {
+			query = query.Where("`content` like ?", "%"+*where.Content+"%")
 		}
-		if where.CreateTimeStart != "" {
-			query = query.Where("`create_time` >= ?", where.CreateTimeStart)
+		if where.CreateTimeStart != nil {
+			query = query.Where("`create_time` >= ?", *where.CreateTimeStart)
 		}
-		if where.CreateTimeEnd != "" {
-			query = query.Where("`create_time` <= ?", where.CreateTimeEnd)
+		if where.CreateTimeEnd != nil {
+			query = query.Where("`create_time` <= ?", *where.CreateTimeEnd)
 		}
-		if where.UpdateTimeStart != "" {
-			query = query.Where("`update_time` >= ?", where.UpdateTimeStart)
+		if where.UpdateTimeStart != nil {
+			query = query.Where("`update_time` >= ?", *where.UpdateTimeStart)
 		}
-		if where.UpdateTimeEnd != "" {
-			query = query.Where("`update_time` <= ?", where.UpdateTimeEnd)
+		if where.UpdateTimeEnd != nil {
+			query = query.Where("`update_time` <= ?", *where.UpdateTimeEnd)
 		}
 	}
 	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(orderByField + " " + orderByType).Find(&list).Error

@@ -1,6 +1,9 @@
 package api
 
 import (
+	"strconv"
+	"time"
+
 	"server/app/model"
 	repositoryConfig "server/app/repository/config"
 	repositoryNode "server/app/repository/node"
@@ -8,7 +11,6 @@ import (
 	"server/app/service/cluster"
 	"server/app/util/context"
 	"server/app/util/str"
-	"time"
 )
 
 type ControllerCluster struct {
@@ -140,21 +142,32 @@ func (ControllerCluster) Update(c *context.Context) {
 	if form.Configs != nil && len(form.Configs.Keys) > 0 {
 		data := &repositoryConfig.UpdateConfig{}
 		if form.Configs.Type != "" {
-			data.Type = form.Configs.Type
+			data.Type = &form.Configs.Type
 		}
 		if form.Configs.Content != "" {
-			data.Content = form.Configs.Content
-			data.Hash = str.NewStringTool().Md5(form.Configs.Content)
+			data.Content = &form.Configs.Content
+			hash := str.NewStringTool().Md5(form.Configs.Content)
+			data.Hash = &hash
 		}
 		if form.Configs.Status != "" {
-			data.Status = form.Configs.Status
+			status, err := strconv.Atoi(form.Configs.Status)
+			if err != nil {
+				c.Error("配置状态参数错误")
+				return
+			}
+			data.Status = &status
 		}
 		_ = service.Config.UpdateByGroupAndName(form.Configs.Keys, data)
 	}
 	if form.Nodes != nil && len(form.Nodes.Addresses) > 0 {
 		data := &repositoryNode.UpdateNode{}
 		if form.Nodes.Status != "" {
-			data.Status = form.Nodes.Status
+			status, err := strconv.Atoi(form.Nodes.Status)
+			if err != nil {
+				c.Error("节点状态参数错误")
+				return
+			}
+			data.Status = &status
 		}
 		_ = service.Node.UpdateByAddresses(form.Nodes.Addresses, data)
 	}

@@ -4,32 +4,34 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
+
 	"server/app/constant"
-	"server/app/util"
 	"server/app/util/database"
 	"server/app/util/file"
+	"server/global"
 	"server/public"
-	"strings"
 )
 
 // LoadDatabase 初始化数据库
 func LoadDatabase() {
-	util.Database = database.NewSqlite(getDbFile())
-	if util.Database.DbError != nil {
-		panic(util.Database.DbError)
+	if global.App.Database != nil {
 		return
+	}
+	global.App.SetDataBase(database.NewSqlite(getDbFile()))
+	if global.App.Database.DbError != nil {
+		panic(global.App.Database.DbError)
 	}
 	err := checkDatabaseInit()
 	if err != nil {
 		panic(err)
-		return
 	}
 }
 
 // checkDatabaseInit 判断数据库是否初始化
 func checkDatabaseInit() error {
 	var tables []string
-	err := util.Database.Db.Raw(`SELECT name FROM sqlite_master WHERE type = 'table' and name like 'cloud_%'`).Scan(&tables).Error
+	err := global.App.Database.Db.Raw(`SELECT name FROM sqlite_master WHERE type = 'table' and name like 'cloud_%'`).Scan(&tables).Error
 	if err != nil {
 		return err
 	}
@@ -40,10 +42,14 @@ func checkDatabaseInit() error {
 		}
 	}
 	//初始化dbFile
+	if err := global.App.Database.Close(); err != nil {
+		return err
+	}
+	global.App.Database = nil
 	deleteDbFile()
-	util.Database = database.NewSqlite(getDbFile())
-	if util.Database.DbError != nil {
-		return util.Database.DbError
+	global.App.SetDataBase(database.NewSqlite(getDbFile()))
+	if global.App.Database.DbError != nil {
+		return global.App.Database.DbError
 	}
 	//新建数据表
 	lines := strings.Split(public.Sql, "\n")
@@ -55,7 +61,7 @@ func checkDatabaseInit() error {
 			sqlStmt += line
 			if strings.HasSuffix(line, ";") && line != "COMMIT;" {
 				sqlStmt = strings.ReplaceAll(sqlStmt, "INSERT INTO ", "INSERT IGNORE INTO ")
-				ctx := util.Database.Db.Exec(sqlStmt)
+				ctx := global.App.Database.Db.Exec(sqlStmt)
 				if ctx.Error != nil {
 					err = ctx.Error
 					errorCount++

@@ -1,6 +1,8 @@
 package sync
 
 import (
+	"time"
+
 	"server/app/constant"
 	"server/app/enum/cluster_status"
 	"server/app/enum/node_online_status"
@@ -10,8 +12,7 @@ import (
 	"server/app/queue/sync"
 	"server/app/service"
 	"server/app/service/node"
-	"server/app/util"
-	"time"
+	"server/global"
 )
 
 // Init 定时同步数据
@@ -20,7 +21,7 @@ func Init() {
 		i := 0
 		for {
 			for {
-				if util.Cache.IsLock(constant.LockSyncData) {
+				if global.App.Cache.IsLock(constant.LockSyncData) {
 					time.Sleep(time.Second)
 				} else {
 					break

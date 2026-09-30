@@ -2,9 +2,10 @@ package bootstrap
 
 import (
 	"log"
-	"server/app/util"
+
+	"server/global"
 )
 
 func LoadLog() {
-	util.Log = log.Default()
+	global.App.SetLog(log.Default())
 }

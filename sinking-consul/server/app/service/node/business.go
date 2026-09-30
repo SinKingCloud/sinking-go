@@ -11,7 +11,8 @@ import (
 // initialize 初始化服务
 func (s *service) initialize() {
 	s.once.Do(func() {
-		_ = s.UpdateAll(&repositoryNode.UpdateNode{OnlineStatus: node_online_status.Offline})
+		offline := node_online_status.Offline
+		_ = s.UpdateAll(&repositoryNode.UpdateNode{OnlineStatus: &offline})
 		all, e := s.repository.SelectAll()
 		if e == nil && all != nil {
 			for _, v := range all {

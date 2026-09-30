@@ -3,7 +3,7 @@ module server
 go 1.25.0
 
 require (
-	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260712012508-7bd79099f916
+	github.com/SinKingCloud/sinking-go/sinking-web v0.0.0-20260927045123-4f43fcb3834b
 	github.com/afocus/captcha v0.0.0-20191010092841-4bd1f21c8868
 	github.com/glebarez/sqlite v1.11.0
 	github.com/go-playground/locales v0.14.1
@@ -16,6 +16,7 @@ require (
 	github.com/wenlng/go-captcha-assets v1.0.7
 	github.com/wenlng/go-captcha/v2 v2.0.5
 	golang.org/x/crypto v0.54.0
+	golang.org/x/term v0.45.0
 	golang.org/x/text v0.40.0
 	gorm.io/gorm v1.31.2
 )

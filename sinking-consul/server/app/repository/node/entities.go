@@ -1,22 +1,22 @@
 package node
 
 type SelectNode struct {
-	Group           string
-	Name            string
-	Status          string
-	OnlineStatus    string
-	Address         string
-	CreateTimeStart string
-	CreateTimeEnd   string
-	UpdateTimeStart string
-	UpdateTimeEnd   string
+	Group           *string
+	Name            *string
+	Status          *int
+	OnlineStatus    *int
+	Address         *string
+	CreateTimeStart *string
+	CreateTimeEnd   *string
+	UpdateTimeStart *string
+	UpdateTimeEnd   *string
 }
 
 type UpdateNode struct {
-	Group        interface{}
-	Name         interface{}
-	Address      interface{}
-	OnlineStatus interface{}
-	Status       interface{}
-	LastHeart    interface{}
+	Group        *string
+	Name         *string
+	Address      *string
+	OnlineStatus *int
+	Status       *int
+	LastHeart    *int64
 }

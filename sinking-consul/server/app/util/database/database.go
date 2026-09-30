@@ -16,6 +16,18 @@ type Database struct {
 	DbError error
 }
 
+// Close 关闭底层数据库连接。
+func (d *Database) Close() error {
+	if d == nil || d.Db == nil {
+		return nil
+	}
+	database, err := d.Db.DB()
+	if err != nil {
+		return err
+	}
+	return database.Close()
+}
+
 // Transaction 事务执行
 func (d *Database) Transaction(fc func(tx *gorm.DB) error) error {
 	if d == nil || d.Db == nil {

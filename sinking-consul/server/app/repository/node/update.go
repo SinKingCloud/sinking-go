@@ -15,22 +15,22 @@ func (r *Repository) UpdateAll(node *UpdateNode) error {
 	}
 	updates := make(map[string]interface{})
 	if node.Group != nil {
-		updates["group"] = node.Group
+		updates["group"] = *node.Group
 	}
 	if node.Name != nil {
-		updates["name"] = node.Name
+		updates["name"] = *node.Name
 	}
 	if node.Address != nil {
-		updates["address"] = node.Address
+		updates["address"] = *node.Address
 	}
 	if node.OnlineStatus != nil {
-		updates["online_status"] = node.OnlineStatus
+		updates["online_status"] = *node.OnlineStatus
 	}
 	if node.Status != nil {
-		updates["status"] = node.Status
+		updates["status"] = *node.Status
 	}
 	if node.LastHeart != nil {
-		updates["last_heart"] = node.LastHeart
+		updates["last_heart"] = *node.LastHeart
 	}
 	if len(updates) == 0 {
 		return nil
@@ -46,22 +46,22 @@ func (r *Repository) UpdateByAddresses(addresses []string, node *UpdateNode) err
 	}
 	updates := make(map[string]interface{})
 	if node.Group != nil {
-		updates["group"] = node.Group
+		updates["group"] = *node.Group
 	}
 	if node.Name != nil {
-		updates["name"] = node.Name
+		updates["name"] = *node.Name
 	}
 	if node.Address != nil {
-		updates["address"] = node.Address
+		updates["address"] = *node.Address
 	}
 	if node.OnlineStatus != nil {
-		updates["online_status"] = node.OnlineStatus
+		updates["online_status"] = *node.OnlineStatus
 	}
 	if node.Status != nil {
-		updates["status"] = node.Status
+		updates["status"] = *node.Status
 	}
 	if node.LastHeart != nil {
-		updates["last_heart"] = node.LastHeart
+		updates["last_heart"] = *node.LastHeart
 	}
 	if len(updates) == 0 {
 		return nil

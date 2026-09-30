@@ -3,25 +3,25 @@ package config
 import "server/app/util/str"
 
 type UpdateConfig struct {
-	Group   interface{}
-	Name    interface{}
-	Type    interface{}
-	Hash    interface{}
-	Content interface{}
-	Status  interface{}
+	Group   *string
+	Name    *string
+	Type    *string
+	Hash    *string
+	Content *string
+	Status  *int
 }
 
 type SelectConfig struct {
-	Group           string
-	Name            string
-	Type            string
-	Hash            string
-	Content         string
-	Status          string
-	CreateTimeStart string
-	CreateTimeEnd   string
-	UpdateTimeStart string
-	UpdateTimeEnd   string
+	Group           *string
+	Name            *string
+	Type            *string
+	Hash            *string
+	Content         *string
+	Status          *int
+	CreateTimeStart *string
+	CreateTimeEnd   *string
+	UpdateTimeStart *string
+	UpdateTimeEnd   *string
 }
 
 type Config struct {

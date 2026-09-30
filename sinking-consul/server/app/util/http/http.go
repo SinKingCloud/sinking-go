@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/SinKingCloud/sinking-go/sinking-web"
+	"net"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/SinKingCloud/sinking-go/sinking-web"
 )
 
 // Server HTTP服务器
@@ -16,6 +18,7 @@ type Server struct {
 	debug       bool
 	engine      *sinking_web.Engine
 	server      *http.Server
+	done        chan error
 	running     bool
 	mutex       sync.RWMutex
 	handlers    []func(engine *sinking_web.Engine)
@@ -74,41 +77,67 @@ func (s *Server) Start() error {
 	if s.addr == "" {
 		s.addr = ":5678"
 	}
-	s.server = &http.Server{
+	listener, err := net.Listen("tcp", s.addr)
+	if err != nil {
+		return fmt.Errorf("监听HTTP地址失败: %w", err)
+	}
+	server := &http.Server{
 		Addr:    s.addr,
 		Handler: s.engine,
 	}
+	done := make(chan error, 1)
+	s.server = server
+	s.done = done
 	s.running = true
 	go func() {
-		if err := s.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			s.mutex.Lock()
-			s.running = false
-			s.mutex.Unlock()
+		err := server.Serve(listener)
+		if errors.Is(err, http.ErrServerClosed) {
+			err = nil
 		}
+		s.mutex.Lock()
+		if s.server == server {
+			s.running = false
+		}
+		s.mutex.Unlock()
+		done <- err
+		close(done)
 	}()
 	return nil
+}
+
+// Done 返回当前HTTP服务的退出结果。
+func (s *Server) Done() <-chan error {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	return s.done
 }
 
 // Stop 停止服务器
 func (s *Server) Stop() error {
 	s.mutex.Lock()
-	defer s.mutex.Unlock()
 	if !s.running {
+		s.mutex.Unlock()
 		return fmt.Errorf("服务器未运行")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := s.server.Shutdown(ctx); err != nil {
+		s.mutex.Unlock()
 		return err
 	}
+	done := s.done
 	s.running = false
 	s.server = nil
-	return nil
+	s.mutex.Unlock()
+	return <-done
 }
 
 // Restart 重启服务器
 func (s *Server) Restart() error {
-	if s.running {
+	s.mutex.RLock()
+	running := s.running
+	s.mutex.RUnlock()
+	if running {
 		if err := s.Stop(); err != nil {
 			return fmt.Errorf("停止服务器失败: %v", err)
 		}

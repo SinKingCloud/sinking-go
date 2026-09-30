@@ -1,12 +1,16 @@
 package bootstrap
 
 import (
-	"server/app/util"
-	"server/app/util/cache"
 	"time"
+
+	"server/app/util/cache"
+	"server/global"
 )
 
 // LoadCache 初始化缓存
 func LoadCache() {
-	util.Cache = cache.NewCache(3600*time.Second, 60*time.Second)
+	if global.App.Cache != nil {
+		return
+	}
+	global.App.SetCache(cache.NewCache(3600*time.Second, 60*time.Second))
 }

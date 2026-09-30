@@ -2,12 +2,14 @@ package auth
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
+	"time"
+
 	"server/app/constant"
 	"server/app/service/setting"
 	"server/app/util/jwt"
 	"server/app/util/str"
-	"strconv"
-	"time"
 )
 
 // CheckAccount 判断账号密码
@@ -73,6 +75,29 @@ func (c *service) ChangePassword(password string) error {
 	err := c.setting.Set(constant.AuthPassword, sPwd)
 	if err != nil {
 		return errors.New("修改失败")
+	}
+	return nil
+}
+
+// UpdateAccount 修改登录信息，空值保留原字段，并清除已有登录会话。
+func (c *service) UpdateAccount(account string, password string) error {
+	if account == "" && password == "" {
+		return errors.New("账户信息不能为空")
+	}
+	configs := make([]*setting.Config, 0, 3)
+	if account != "" {
+		configs = append(configs, &setting.Config{Key: constant.AuthAccount, Value: account})
+	}
+	if password != "" {
+		hash, err := str.NewStringTool().BcryptHash(password)
+		if err != nil {
+			return fmt.Errorf("密码加密失败: %w", err)
+		}
+		configs = append(configs, &setting.Config{Key: constant.AuthPassword, Value: hash})
+	}
+	configs = append(configs, &setting.Config{Key: constant.AuthLoginToken, Value: ""})
+	if err := c.setting.Sets(configs); err != nil {
+		return fmt.Errorf("修改账户信息失败: %w", err)
 	}
 	return nil
 }

@@ -2,14 +2,19 @@ package bootstrap
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
-	"server/app/constant"
-	"server/app/util"
-	"server/app/util/file"
 	"strings"
+
+	"server/app/constant"
+	"server/app/util/file"
+	"server/global"
+
+	"github.com/spf13/viper"
 )
 
 func LoadConf() {
+	if global.App.Config != nil {
+		return
+	}
 	path := constant.ConfPath
 	if !strings.HasSuffix(path, "/") {
 		path += "/"
@@ -19,7 +24,6 @@ func LoadConf() {
 	disk := file.NewDisk(path)
 	if err := disk.AutoCreate(fileName + "." + configType); err != nil {
 		panic(fmt.Errorf("创建配置文件失败: %w", err))
-		return
 	}
 	config := viper.New()
 	config.AddConfigPath(path)
@@ -28,7 +32,6 @@ func LoadConf() {
 	config.WatchConfig()
 	if err := config.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("读取配置文件失败: %w", err))
-		return
 	}
 	config.AutomaticEnv()
 	config.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
@@ -46,5 +49,5 @@ func LoadConf() {
 	for _, key := range keys {
 		_ = config.BindEnv(key)
 	}
-	util.Conf = config
+	global.App.SetConfig(config)
 }
