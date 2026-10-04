@@ -12,6 +12,7 @@ type UpdateConfig struct {
 }
 
 type SelectConfig struct {
+	Keyword         *string
 	Group           *string
 	Name            *string
 	Type            *string

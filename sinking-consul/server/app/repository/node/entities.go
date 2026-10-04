@@ -1,6 +1,7 @@
 package node
 
 type SelectNode struct {
+	Keyword         *string
 	Group           *string
 	Name            *string
 	Status          *int

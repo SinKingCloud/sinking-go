@@ -10,15 +10,6 @@ func (r *Repository) Select(where *SelectLog, orderByField string, orderByType s
 		if where.Type != nil {
 			query = query.Where("`type` = ?", *where.Type)
 		}
-		if where.Ip != nil {
-			query = query.Where("`ip` like ?", "%"+*where.Ip+"%")
-		}
-		if where.Title != nil {
-			query = query.Where("`title` like ?", "%"+*where.Title+"%")
-		}
-		if where.Content != nil {
-			query = query.Where("`content` like ?", "%"+*where.Content+"%")
-		}
 		if where.CreateTimeStart != nil {
 			query = query.Where("`create_time` >= ?", *where.CreateTimeStart)
 		}
@@ -30,6 +21,19 @@ func (r *Repository) Select(where *SelectLog, orderByField string, orderByType s
 		}
 		if where.UpdateTimeEnd != nil {
 			query = query.Where("`update_time` <= ?", *where.UpdateTimeEnd)
+		}
+		if where.Ip != nil {
+			query = query.Where("`ip` like ?", "%"+*where.Ip+"%")
+		}
+		if where.Title != nil {
+			query = query.Where("`title` like ?", "%"+*where.Title+"%")
+		}
+		if where.Content != nil {
+			query = query.Where("`content` like ?", "%"+*where.Content+"%")
+		}
+		if where.Keyword != nil {
+			keyword := "%" + *where.Keyword + "%"
+			query = query.Where("(`ip` LIKE ? OR `title` LIKE ? OR `content` LIKE ?)", keyword, keyword, keyword)
 		}
 	}
 	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(orderByField + " " + orderByType).Find(&list).Error

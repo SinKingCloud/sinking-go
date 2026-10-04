@@ -23,6 +23,7 @@ func (ControllerConfig) List(c *context.Context) {
 	pageNum, pageSize := c.ValidatePage()
 	orderByField, orderByType := c.ValidateOrderBy("create_time", "desc", "group,name,update_time,create_time")
 	type Form struct {
+		Keyword         string `json:"keyword" default:"" validate:"omitempty,max=200" label:"关键词"`
 		Group           string `json:"group" default:"" validate:"omitempty" label:"配置分组"`
 		Name            string `json:"name" default:"" validate:"omitempty" label:"配置名称"`
 		Type            string `json:"type" default:"" validate:"omitempty" label:"配置类型"`
@@ -40,6 +41,9 @@ func (ControllerConfig) List(c *context.Context) {
 		return
 	}
 	where := &config.SelectConfig{}
+	if form.Keyword != "" {
+		where.Keyword = &form.Keyword
+	}
 	if form.Group != "" {
 		where.Group = &form.Group
 	}

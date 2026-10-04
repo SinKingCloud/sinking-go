@@ -20,8 +20,10 @@ func (ControllerNode) List(c *context.Context) {
 	pageNum, pageSize := c.ValidatePage()
 	orderByField, orderByType := c.ValidateOrderBy("create_time", "desc", "group,name,update_time,create_time")
 	type Form struct {
+		Keyword         string `json:"keyword" default:"" validate:"omitempty,max=200" label:"关键词"`
 		Group           string `json:"group" default:"" validate:"omitempty" label:"服务分组"`
 		Name            string `json:"name" default:"" validate:"omitempty" label:"服务名称"`
+		Address         string `json:"address" default:"" validate:"omitempty,max=200" label:"节点地址"`
 		OnlineStatus    string `json:"online_status" default:"" validate:"omitempty,numeric" label:"在线状态"`
 		Status          string `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
 		UpdateTimeStart string `json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
@@ -35,11 +37,17 @@ func (ControllerNode) List(c *context.Context) {
 		return
 	}
 	where := &node.SelectNode{}
+	if form.Keyword != "" {
+		where.Keyword = &form.Keyword
+	}
 	if form.Group != "" {
 		where.Group = &form.Group
 	}
 	if form.Name != "" {
 		where.Name = &form.Name
+	}
+	if form.Address != "" {
+		where.Address = &form.Address
 	}
 	if form.OnlineStatus != "" {
 		onlineStatus, err := strconv.Atoi(form.OnlineStatus)

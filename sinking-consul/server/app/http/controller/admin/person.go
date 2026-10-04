@@ -47,6 +47,7 @@ func (ControllerPerson) Log(c *context.Context) {
 	pageNum, pageSize := c.ValidatePage()
 	orderByField, orderByType := c.ValidateOrderBy("id", "desc", "id,type,ip,create_time,update_time")
 	type Form struct {
+		Keyword         string `json:"keyword" default:"" validate:"omitempty,max=200" label:"关键词"`
 		Type            string `json:"type" default:"" validate:"omitempty,numeric" label:"类型"`
 		Ip              string `json:"ip" default:"" validate:"omitempty" label:"IP地址"`
 		Title           string `json:"title" default:"" validate:"omitempty" label:"标题"`
@@ -62,6 +63,9 @@ func (ControllerPerson) Log(c *context.Context) {
 		return
 	}
 	where := &log.SelectLog{}
+	if form.Keyword != "" {
+		where.Keyword = &form.Keyword
+	}
 	if form.Ip != "" {
 		where.Ip = &form.Ip
 	}

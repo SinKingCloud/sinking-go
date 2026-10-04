@@ -39,9 +39,6 @@ func (r *Repository) Select(where *SelectConfig, orderByField string, orderByTyp
 		if where.Hash != nil {
 			query = query.Where("`hash` = ?", *where.Hash)
 		}
-		if where.Content != nil {
-			query = query.Where("`content` LIKE ?", "%"+*where.Content+"%")
-		}
 		if where.Status != nil {
 			query = query.Where("`status` = ?", *where.Status)
 		}
@@ -56,6 +53,13 @@ func (r *Repository) Select(where *SelectConfig, orderByField string, orderByTyp
 		}
 		if where.UpdateTimeEnd != nil {
 			query = query.Where("`update_time` <= ?", *where.UpdateTimeEnd)
+		}
+		if where.Content != nil {
+			query = query.Where("`content` LIKE ?", "%"+*where.Content+"%")
+		}
+		if where.Keyword != nil {
+			keyword := "%" + *where.Keyword + "%"
+			query = query.Where("(`group` LIKE ? OR `name` LIKE ? OR `hash` LIKE ? OR `content` LIKE ?)", keyword, keyword, keyword, keyword)
 		}
 	}
 	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(orderByField + " " + orderByType).Find(&list).Error

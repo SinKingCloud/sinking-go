@@ -18,9 +18,6 @@ func (r *Repository) Select(where *SelectCluster, orderByField string, orderByTy
 		if where.Status != nil {
 			query = query.Where("`status` = ?", *where.Status)
 		}
-		if where.Address != nil {
-			query = query.Where("`address` LIKE ?", "%"+*where.Address+"%")
-		}
 		if where.CreateTimeStart != nil {
 			query = query.Where("`create_time` >= ?", *where.CreateTimeStart)
 		}
@@ -32,6 +29,12 @@ func (r *Repository) Select(where *SelectCluster, orderByField string, orderByTy
 		}
 		if where.UpdateTimeEnd != nil {
 			query = query.Where("`update_time` <= ?", *where.UpdateTimeEnd)
+		}
+		if where.Address != nil {
+			query = query.Where("`address` LIKE ?", "%"+*where.Address+"%")
+		}
+		if where.Keyword != nil {
+			query = query.Where("`address` LIKE ?", "%"+*where.Keyword+"%")
 		}
 	}
 	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(orderByField + " " + orderByType).Find(&list).Error

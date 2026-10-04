@@ -1,6 +1,7 @@
 package log
 
 type SelectLog struct {
+	Keyword         *string
 	Type            *int
 	Ip              *string
 	Title           *string

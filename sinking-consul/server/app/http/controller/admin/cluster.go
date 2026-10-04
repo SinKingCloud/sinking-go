@@ -17,6 +17,8 @@ func (ControllerCluster) List(c *context.Context) {
 	pageNum, pageSize := c.ValidatePage()
 	orderByField, orderByType := c.ValidateOrderBy("create_time", "desc", "create_time,update_time")
 	type Form struct {
+		Keyword         string `json:"keyword" default:"" validate:"omitempty,max=200" label:"关键词"`
+		Address         string `json:"address" default:"" validate:"omitempty,max=200" label:"集群地址"`
 		Status          string `json:"status" default:"" validate:"omitempty,numeric" label:"在线状态"`
 		UpdateTimeStart string `json:"update_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新起始时间"`
 		UpdateTimeEnd   string `json:"update_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"更新结束时间"`
@@ -29,6 +31,12 @@ func (ControllerCluster) List(c *context.Context) {
 		return
 	}
 	where := &cluster.SelectCluster{}
+	if form.Keyword != "" {
+		where.Keyword = &form.Keyword
+	}
+	if form.Address != "" {
+		where.Address = &form.Address
+	}
 	if form.Status != "" {
 		status, err := strconv.Atoi(form.Status)
 		if err != nil {
