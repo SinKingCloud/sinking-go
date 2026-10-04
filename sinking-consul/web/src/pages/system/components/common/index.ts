@@ -1,2 +1,3 @@
-export { default as BaseForm } from './BaseForm';
-export { default as FormField } from './FormField';
+export {default as actions} from './actions';
+export {default as error} from './error';
+export {default as loading} from './loading';

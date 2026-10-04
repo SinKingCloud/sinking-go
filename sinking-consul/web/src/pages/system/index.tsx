@@ -1,134 +1,72 @@
-import React, {useState} from 'react';
-import {Card, Menu} from 'antd';
-import UiView from "./components/ui";
-import {Body, Title} from "sinking-antd";
-import {createStyles} from "antd-style";
-import WebView from "@/pages/system/components/web";
-import PasswordView from "@/pages/system/components/password";
+import React from "react";
+import {Col, Menu, Row} from "antd";
+import {Body, Icon, useTheme} from "sinking-antd";
+import {history, useLocation, useModel} from "umi";
+import Ui from "./components/ui";
+import Web from "./components/web";
+import Password from "./components/password";
+import HeroGraphic from "./components/hero-graphic";
+import useStyles from "./styles";
 
-type SettingsStateKeys = 'web' | 'pwd' | 'ui';
-type SettingsState = {
-    mode: 'inline' | 'horizontal';
-    selectKey: SettingsStateKeys;
-};
-const useStyles = createStyles(({css, responsive, isDarkMode, token}): any => {
-    const border = isDarkMode ? "1px solid rgb(50, 50, 50)" : "1px solid #f0f0f0"
-    return {
-        main: css`
-            display: flex;
-            width: 100%;
-            height: 100%;
-            padding-bottom: 16px;
+const items = [
+    {key: "web", title: "网站设置", icon: "GlobalOutlined", component: Web},
+    {key: "ui", title: "界面设置", icon: "LayoutOutlined", component: Ui},
+    {key: "pwd", title: "密码设置", icon: "SafetyCertificateOutlined", component: Password},
+];
 
-            .ant-menu-light.ant-menu-inline .ant-menu-item::after {
-                top: 19%;
-                right: 6px;
-                border-top-left-radius: 15px;
-                border-bottom-left-radius: 15px;
-                height: 60%;
-            }
+export default (): React.ReactNode => {
+    const theme = useTheme();
+    const web = useModel("web");
+    const location = useLocation();
+    const isCompactMode = theme?.isCompactTheme?.() || false;
+    const isDarkMode = Boolean(theme?.isDarkMode?.() || theme?.isDarkTheme?.());
+    const {styles} = useStyles({isCompactMode, isDarkMode});
+    const selected = new URLSearchParams(location.search).get("tab") || "web";
+    const activeItem = items.find((item) => item.key === selected) || items[0];
+    const Component = activeItem.component;
 
-
-            ${responsive.md} {
-                flex-direction: column;
-            }
-        `,
-        leftMenu: css`
-            width: 224px;
-
-            .ant-menu-item {
-                position: absolute;
-                font-weight: bold;
-                font-size: ${token.fontSize}px;
-                border-radius: ${token.borderRadius}px;
-            }
-
-            ${responsive.md} {
-                width: 100%;
-                border: none;
-                margin-bottom: 10px;
-            }
-        `,
-        right: css`
-            flex: 1;
-            padding: 8px 40px;
-            margin-left: 1px;
-            border-left: ${border};
-
-            ${responsive.md} {
-                padding: 10px;
-                border-left: none;
-            }
-        `,
-        title: css`
-            margin-bottom: 20px;
-            font-weight: bolder;
-            font-size: ${token.fontSizeHeading4}px;
-            line-height: 28px;
-        `,
-        menu: css`
-            border-inline-end: none !important;
-        `
-    }
-})
-const Settings: React.FC = () => {
-    const menuMap: Record<string, React.ReactNode> = {
-        web: "网站设置",
-        ui: '界面设置',
-        pwd: "密码设置"
-    };
-    const {styles: {main, leftMenu, right, title, menu}} = useStyles()
-    const [initConfig, setInitConfig] = useState<SettingsState>({
-        mode: 'inline',
-        selectKey: 'web',
-    });
-
-    const getMenu = () => {
-        return Object.keys(menuMap).map((item) => {
-            return {
-                key: item, label: menuMap[item]
-            }
-        });
-    };
-    const renderChildren = () => {
-        const {selectKey} = initConfig;
-        switch (selectKey) {
-            case 'web':
-                return <WebView/>;
-            case 'ui':
-                return <UiView/>;
-            case 'pwd':
-                return <PasswordView/>;
-            default:
-                return null;
-        }
+    const changeActive = (key: string) => {
+        const search = new URLSearchParams(location.search);
+        search.set("tab", key);
+        history.replace(`${location.pathname}?${search.toString()}`);
     };
 
     return (
         <Body>
-            <Card title={<Title>网站设置</Title>} variant={"borderless"}>
-                <div className={main}>
-                    <div className={leftMenu}>
-                        <Menu
-                            className={menu}
-                            mode={initConfig.mode}
-                            selectedKeys={[initConfig.selectKey]}
-                            onClick={({key}) => {
-                                setInitConfig({
-                                    ...initConfig,
-                                    selectKey: key as SettingsStateKeys,
-                                });
-                            }}
-                            items={getMenu()}
-                        />
-                    </div>
-                    <div className={right}>
-                        <div className={title}>{menuMap[initConfig.selectKey]}</div>
-                        {renderChildren()}
-                    </div>
-                </div>
-            </Card>
+            <Row className={styles.page} gutter={[0, isCompactMode ? 10 : 12]}>
+                <Col span={24}>
+                    <section className={styles.workspace}>
+                        <section className={styles.hero}>
+                            <div className="hero-copy">
+                                <div className="eyebrow"><span className="status-dot"/>SYSTEM SETTINGS</div>
+                                <h1>系统设置</h1>
+                            </div>
+                            <div className="hero-visual"><HeroGraphic variant="task"/></div>
+                        </section>
+                        <div className={styles.settingsMain}>
+                            <div className={styles.leftMenu}>
+                                <div className={styles.menuScroll}>
+                                    <Menu
+                                        className={styles.menu}
+                                        mode="inline"
+                                        selectedKeys={[activeItem.key]}
+                                        onClick={({key}) => changeActive(key)}
+                                        items={items.map((item) => ({
+                                            key: item.key,
+                                            label: item.title,
+                                            icon: <Icon type={item.icon}/>,
+                                        }))}
+                                    />
+                                </div>
+                            </div>
+                            <section className={styles.right}>
+                                <div className={styles.title}>{activeItem.title}</div>
+                                <Component styles={styles} info={web?.info}/>
+                            </section>
+                        </div>
+                    </section>
+                </Col>
+            </Row>
         </Body>
     );
 };
-export default Settings;

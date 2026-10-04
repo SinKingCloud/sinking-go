@@ -1,73 +1,69 @@
-import React from 'react';
-import {Body, ProTable, Title} from 'sinking-antd';
-import {getData} from "@/utils/page";
-import {useEnums} from "@/utils/enum";
+import {Tooltip, Typography} from "antd";
+import {Body, PageTable} from "sinking-antd";
+import type {PageTableProps} from "sinking-antd";
+import RecordTime from "@/pages/components/record-time";
+import useStyles from "@/pages/components/resource-table/styles";
+import {getParams} from "@/utils/page";
+import {useEnum} from "@/utils/enum";
 import {getClusterList} from "@/service/admin/cluster";
 import {ago} from "@/utils/time";
 
-export default (): React.ReactNode => {
-    const [enumsData] = useEnums(["cluster"]);
+export default () => {
+    const [enumData, enumLoading]: any = useEnum("cluster");
+    const {styles} = useStyles();
+    const statusData: Record<string, string> = enumData?.status || {};
 
-    const columns: any[] = [
+    const columns: PageTableProps<any>["columns"] = [
         {
-            title: '集群地址',
-            dataIndex: 'address',
-            tip: '集群访问地址',
-            valueType: 'text',
-            copyable: true,
+            title: "集群地址", dataIndex: "address", key: "address", width: 260,
+            render: (value: string) => <Typography.Text className="resource-copy"
+                copyable={value ? {text: value} : false}>{value || "-"}</Typography.Text>,
         },
         {
-            title: '在线状态',
-            dataIndex: 'status',
-            tip: '集群在线状态',
-            valueEnum: Object.fromEntries(Object.entries(enumsData?.cluster?.status || {}).map(([key, value]) => {
-                return [
-                    key,
-                    {text: value, color: key === '1' ? 'red' : 'green'}
-                ]
-            })),
+            title: "在线状态", dataIndex: "status", key: "status", width: 120,
+            render: (value: number) => <span className={`resource-state is-${String(value) === "0" ? "success" : "error"}`}>
+                <i/>{statusData[String(value)] || "未知状态"}
+            </span>,
         },
         {
-            title: '最后心跳',
-            dataIndex: 'last_heart',
-            tip: '最后心跳时间戳',
-            hideInSearch: true,
-            render: (text: any) => {
-                if (!text) return '-';
-                return ago(new Date(text * 1000).toLocaleString('zh-CN'));
-            },
+            title: "最后心跳", dataIndex: "last_heart", key: "last_heart", width: 180,
+            render: (value: number) => <Tooltip title={value ? new Date(value * 1000).toLocaleString("zh-CN") : "-"}>
+                <span className="resource-time">{value ? ago(new Date(value * 1000).toLocaleString("zh-CN")) : "-"}</span>
+            </Tooltip>,
         },
         {
-            title: '创建时间',
-            valueType: 'dateRange',
-            dataIndex: 'create_time',
-            tip: '创建时间',
-            sorter: true,
-            transform: (value: any) => {
-                return {
-                    create_time_start: value[0]?.format ? value[0].format('YYYY-MM-DD HH:mm:ss') : value[0],
-                    create_time_end: value[1]?.format ? value[1].format('YYYY-MM-DD HH:mm:ss') : value[1],
-                };
-            },
+            title: "相关时间", dataIndex: "create_time", key: "create_time", width: 220, sorter: true,
+            render: (_, record) => <RecordTime createTime={record.create_time} updateTime={record.update_time}/>,
         },
-    ] as any;
+    ];
 
-    return (
-        <Body>
-            <ProTable
-                extraRefreshBtn={true}
-                title={<Title>集群管理</Title>}
-                pageInTable={true}
-                rowKey={'address'}
-                columns={columns}
-                request={(params, sort) => {
-                    return getData(params, sort, getClusterList)
-                }}
-                defaultPage={1}
-                defaultPageSize={20}
-                paginationAffix={true}
-                selectionAffix={true}
-            />
-        </Body>
-    );
+    return <Body loading={enumLoading}>
+        <PageTable<any>
+            ariaLabel="集群管理"
+            className={styles.table}
+            columns={columns}
+            rowKey="address"
+            request={async (params, sort) => {
+                const response = await getClusterList({body: getParams({...params}, sort)});
+                if (response?.code !== 200) throw new Error(response?.message || "获取集群列表失败");
+                return {data: response.data?.list, total: response.data?.total ?? 0, success: true};
+            }}
+            defaultPageSize={10}
+            paginationAffix={{offsetBottom: 15}}
+            hero={{eyebrow: "CLUSTER MANAGER", title: "集群管理"}}
+            search={{
+                placeholder: "搜索集群", maxLength: 200,
+                defaultField: "keyword",
+                fields: [
+                    {value: "keyword", label: "全部", placeholder: "搜索集群地址"},
+                    {value: "address", label: "地址", placeholder: "搜索集群地址"},
+                ],
+            }}
+            filters={[
+                {type: "select", name: "status", label: "在线状态", icon: "ApiOutlined", allLabel: "全部状态", valueEnum: statusData},
+                {type: "date", name: "create_time", label: "创建时间筛选"},
+            ]}
+            toolbar={{refresh: {ariaLabel: "刷新集群列表"}}}
+        />
+    </Body>;
 };

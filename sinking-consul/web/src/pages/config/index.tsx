@@ -1,29 +1,25 @@
-import React, {useRef, useState} from 'react';
-import {Body, ProTable, Title, ProModal, ProModalRef, ProTableRef} from 'sinking-antd';
-import {getData} from "@/utils/page";
+import React, {useEffect, useRef, useState} from 'react';
+import {Body, PageTable, Title, ProModal, useTheme} from 'sinking-antd';
+import type {PageTableProps, PageTableRef, ProModalRef} from 'sinking-antd';
+import {getParams} from "@/utils/page";
 import {useEnums} from "@/utils/enum";
-import {App, Button, Dropdown, Form, Input, Select, Spin, Row, Col} from 'antd';
+import {App, Button, Form, Input, Select, Spin, Row, Col, Tooltip, Typography} from 'antd';
 import {createConfig, deleteConfig, getConfigInfo, getConfigList, updateConfig} from "@/service/admin/config";
 import defaultSettings from "../../../config/defaultSettings";
 import AceEditor from "@/components/ace-editor";
-import {createStyles} from "antd-style";
+import ActionDropdown from '@/pages/components/action-dropdown';
+import RecordTime from '@/pages/components/record-time';
+import useStyles from './styles';
 
-const AcePath = defaultSettings?.basePath + "ace/" || "/ace/";
-
-const useStyles = createStyles(({token}): any => {
-    return {
-        ace: {
-            ".ace_editor": {
-                borderRadius: token.borderRadius + "px !important",
-            }
-        },
-    };
-});
+const AcePath = `${defaultSettings?.basePath || '/'}ace/`;
 
 export default (): React.ReactNode => {
-    const [enumsData] = useEnums(["config"]);
+    const [enumsData, enumLoading] = useEnums(["config"]);
     const {message, modal} = App.useApp();
-    const {styles: {ace}} = useStyles();
+    const {styles} = useStyles();
+    const theme = useTheme();
+    const typeData = (enumsData?.config?.type || {}) as unknown as Record<string, string>;
+    const statusData = (enumsData?.config?.status || {}) as unknown as Record<string, string>;
 
     const formModalRef = useRef<ProModalRef>({} as ProModalRef);
     const batchModalRef = useRef<ProModalRef>({} as ProModalRef);
@@ -36,11 +32,51 @@ export default (): React.ReactNode => {
     const [formInfoLoading, setFormInfoLoading] = useState(false);
     const [aceContent, setAceContent] = useState<string>('');
     const [aceMode, setAceMode] = useState<string>('text');
+    const requestRef = useRef(0);
+    const [openRowKey, setOpenRowKey] = useState('');
+
+    useEffect(() => () => { requestRef.current += 1; }, []);
 
     const mapTypeToAceMode = (t?: string) => {
         if (!t) return 'text';
         return (t || '').toLowerCase();
     }
+
+    const openCreate = () => {
+        requestRef.current += 1;
+        setIsEditMode(false);
+        setFormInfoLoading(false);
+        form.resetFields();
+        setAceContent('');
+        setAceMode('text');
+        formModalRef.current?.show();
+    };
+
+    const openEdit = async (record: any) => {
+        const requestId = ++requestRef.current;
+        setIsEditMode(true);
+        setEditKeys([{group: record.group, name: record.name}]);
+        form.resetFields();
+        form.setFieldsValue(record);
+        setAceMode(mapTypeToAceMode(record.type));
+        setAceContent('');
+        setFormInfoLoading(true);
+        formModalRef.current?.show();
+        await getConfigInfo({
+            body: {group: record.group, name: record.name},
+            onSuccess: (r: any) => {
+                if (requestRef.current === requestId) setAceContent(r?.data?.content || '');
+            },
+            onFail: (r: any) => {
+                if (requestRef.current !== requestId) return;
+                formModalRef.current?.hide();
+                message.error(r?.message || '读取配置失败');
+            },
+            onFinally: () => {
+                if (requestRef.current === requestId) setFormInfoLoading(false);
+            }
+        });
+    };
 
     const onDelete = (records: any[]) => {
         const keys = records?.map((r: any) => typeof r === 'string' ? r.split(':') : [r.group, r.name])
@@ -48,9 +84,9 @@ export default (): React.ReactNode => {
         modal.confirm({
             title: '删除配置',
             content: `确定删除选中的 ${keys?.length || 0} 条配置吗？`,
-            okText: '确 定',
+            okText: '确定',
             okType: 'danger',
-            cancelText: '取 消',
+            cancelText: '取消',
             maskClosable: true,
             onOk: async () => {
                 await deleteConfig({
@@ -112,170 +148,171 @@ export default (): React.ReactNode => {
         });
     };
 
-    const tableRef = useRef<ProTableRef>({} as ProTableRef);
-    const columns: any[] = [
+    const tableRef = useRef<PageTableRef<any> | null>(null);
+    const columns: PageTableProps<any>['columns'] = [
         {
             title: '配置分组',
             dataIndex: 'group',
-            tip: '配置分组',
-            valueType: 'text',
-            copyable: true,
+            key: 'group',
+            width: 150,
+            render: (value: string) => <Typography.Text className="config-copy" copyable={value ? {text: value} : false}>{value || '-'}</Typography.Text>,
         },
         {
             title: '配置名称',
             dataIndex: 'name',
-            tip: '配置名称',
-            valueType: 'text',
-            copyable: true,
+            key: 'name',
+            width: 190,
+            render: (value: string, record: any) => (
+                <Typography.Text className="config-copy" copyable={value ? {text: value} : false}>
+                    <button className="config-name" type="button" onClick={() => openEdit(record)}>{value || '-'}</button>
+                </Typography.Text>
+            ),
         },
         {
             title: '配置类型',
             dataIndex: 'type',
-            tip: '配置类型',
-            valueType: 'select',
-            valueEnum: Object.fromEntries(Object.entries(enumsData?.config?.type || {}).map(([key, value]) => [key, {text: value}]))
+            key: 'type',
+            width: 100,
+            render: (value: string) => <span className="config-text">{typeData[value] || value || '-'}</span>,
         },
         {
             title: '哈希',
             dataIndex: 'hash',
-            tip: '内容哈希',
-            valueType: 'text',
-            hideInSearch: true,
-            copyable: true,
+            key: 'hash',
+            width: 210,
+            render: (value: string) => (
+                <Typography.Text className="config-copy config-hash" copyable={value ? {text: value} : false}>
+                    <Tooltip title={value || '-'}><span className="config-hash-value">{value || '-'}</span></Tooltip>
+                </Typography.Text>
+            ),
         },
         {
             title: '状态',
             dataIndex: 'status',
-            tip: '状态',
-            valueEnum: Object.fromEntries(Object.entries(enumsData?.config?.status || {}).map(([key, value]) => [key, {
-                text: value,
-                color: key === '0' ? 'green' : 'red'
-            }]))
+            key: 'status',
+            width: 90,
+            render: (value: number) => <span className={`config-state ${Number(value) === 0 ? 'enabled' : 'disabled'}`}><i/>{statusData[String(value)] || '未知状态'}</span>,
         },
         {
-            title: '创建时间',
-            valueType: 'dateRange',
+            title: '相关时间',
             dataIndex: 'create_time',
-            tip: '创建时间',
+            key: 'create_time',
+            width: 220,
             sorter: true,
-            transform: (value: any) => ({
-                create_time_start: value[0]?.format ? value[0].format('YYYY-MM-DD HH:mm:ss') : value[0],
-                create_time_end: value[1]?.format ? value[1].format('YYYY-MM-DD HH:mm:ss') : value[1],
-            }),
-        },
-        {
-            title: '更新时间',
-            valueType: 'dateRange',
-            dataIndex: 'update_time',
-            tip: '更新时间',
-            sorter: true,
-            hideInSearch: true,
-            transform: (value: any) => ({
-                update_time_start: value[0]?.format ? value[0].format('YYYY-MM-DD HH:mm:ss') : value[0],
-                update_time_end: value[1]?.format ? value[1].format('YYYY-MM-DD HH:mm:ss') : value[1],
-            }),
+            render: (_: any, record: any) => <RecordTime createTime={record.create_time} updateTime={record.update_time}/>,
         },
         {
             title: '操作',
-            valueType: 'option',
-            hideInSearch: true,
-            render: (text: any, record: any) => [
-                <Dropdown key={`${record?.group}:${record?.name}`} menu={{
+            key: 'action',
+            width: 80,
+            align: 'center',
+            fixed: 'right',
+            className: 'action-cell',
+            render: (_: any, record: any) => (
+                <ActionDropdown open={openRowKey === JSON.stringify([record.group, record.name])}
+                    onOpenChange={(open) => setOpenRowKey(open ? JSON.stringify([record.group, record.name]) : '')}
+                    menu={{
                     items: [
                         {
                             key: 'edit',
-                            label: <a onClick={async () => {
-                                setIsEditMode(true);
-                                const keys = [{group: record?.group, name: record?.name}];
-                                setEditKeys(keys);
-                                form?.setFieldsValue(record);
-                                setAceMode(mapTypeToAceMode(record?.type));
-                                setFormInfoLoading(true);
-                                formModalRef.current?.show();
-                                await getConfigInfo({
-                                    body: {group: record?.group, name: record?.name},
-                                    onSuccess: (r: any) => setAceContent(r?.data?.content || ''),
-                                    onFail: (r: any) => message?.error(r?.message || '读取配置失败'),
-                                    onFinally: () => setFormInfoLoading(false)
-                                });
-                            }}>编 辑</a>
+                            label: '编辑',
+                            onClick: () => openEdit(record),
                         },
                         {
                             key: 'delete',
-                            label: <a onClick={() => onDelete([{group: record?.group, name: record?.name}])}>删 除</a>
+                            label: '删除',
+                            danger: true,
+                            onClick: () => onDelete([record]),
                         },
                     ]
-                }} trigger={['click']} placement="bottom" arrow={true}>
-                    <Button size="small">操作</Button>
-                </Dropdown>
-            ],
+                }}>
+                    <Button size="small" aria-label="配置操作">操作</Button>
+                </ActionDropdown>
+            ),
         },
-    ] as any;
+    ];
 
     return (
-        <Body>
-            <ProTable
+        <Body loading={enumLoading}>
+            <PageTable<any>
                 ref={tableRef}
-                extraRefreshBtn={true}
-                title={<Title>配置管理</Title>}
-                rowKey={((record) => `${record.group}-${record.name}-${record.type}-${record.hash}`) as any}
+                ariaLabel="配置管理"
+                className={styles.table}
+                hero={{eyebrow: 'CONFIGURATION CENTER', title: '配置管理', action: {label: '新增配置', onClick: openCreate}}}
+                rowKey={(record) => JSON.stringify([record.group, record.name])}
+                rowClassName={(record) => openRowKey === JSON.stringify([record.group, record.name]) ? 'action-menu-open' : ''}
                 columns={columns}
                 defaultPage={1}
-                defaultPageSize={20}
+                defaultPageSize={10}
+                search={{
+                    placeholder: '搜索配置',
+                    maxLength: 200,
+                    defaultField: 'keyword',
+                    fields: [
+                        {value: 'keyword', label: '全部', placeholder: '搜索分组、名称、哈希或内容'},
+                        {value: 'group', label: '分组', placeholder: '搜索配置分组'},
+                        {value: 'name', label: '名称', placeholder: '搜索配置名称'},
+                        {value: 'hash', label: '哈希', placeholder: '搜索内容哈希'},
+                        {value: 'content', label: '内容', placeholder: '搜索配置内容'},
+                    ],
+                }}
+                filters={[
+                    {type: 'select', name: 'type', label: '配置类型筛选', icon: 'CodeOutlined', allLabel: '全部类型', valueEnum: typeData},
+                    {type: 'select', name: 'status', label: '配置状态筛选', icon: 'FlagOutlined', allLabel: '全部状态', valueEnum: statusData},
+                    {type: 'date', name: 'create_time', label: '创建时间筛选'},
+                ]}
+                toolbar={{refresh: {ariaLabel: '刷新配置列表'}}}
                 rowSelection={{
-                    rightExtra: [
-                        <Button key="delete" type="primary" danger ghost onClick={() => {
-                            const selected = tableRef?.current?.getSelectedRows() || [];
-                            if (!selected.length) return message?.warning('请选择记录');
-                            onDelete(selected.map((r: any) => ({group: r.group, name: r.name})));
-                        }}>批量删除</Button>,
-                        <Button key="edit" type="primary" ghost onClick={() => {
-                            const selected = tableRef?.current?.getSelectedRows() || [];
-                            if (!selected.length) return message?.warning('请选择记录');
-                            const keys = selected.map((r: any) => ({group: r.group, name: r.name}));
-                            setEditKeys(keys);
-                            batchForm?.resetFields();
+                    preserveSelectedRowKeys: true,
+                    selections: true,
+                    actions: (_keys, selected) => [
+                        {key: 'edit', type: 'button', label: '批量编辑', onClick: () => {
+                            setEditKeys(selected.map((r: any) => ({group: r.group, name: r.name})));
+                            batchForm.resetFields();
                             batchModalRef.current?.show();
-                        }}>批量编辑</Button>
+                        }},
+                        {key: 'delete', type: 'button', label: '批量删除', danger: true, onClick: () => onDelete(selected)},
                     ]
                 }}
-                request={(params, sort) => getData(params, sort, getConfigList)}
-                paginationAffix={true}
-                selectionAffix={true}
-                extra={<Button key="create" type="primary" onClick={() => {
-                    setIsEditMode(false);
-                    form?.resetFields();
-                    setAceContent('');
-                    setAceMode('text');
-                    formModalRef.current?.show();
-                }}>新 增</Button>}/>
+                request={async (params, sort) => {
+                    const response = await getConfigList({body: getParams({...params}, sort)});
+                    if (response?.code !== 200) throw new Error(response?.message || '获取配置列表失败');
+                    return {data: response.data?.list || [], total: response.data?.total ?? 0, success: true};
+                }}
+                paginationAffix={{offsetBottom: 15}}
+                pagination={{unit: '条'}}/>
 
             <ProModal
                 ref={formModalRef}
                 title={<Title>{isEditMode ? '编辑配置' : '新增配置'}</Title>}
                 onOk={form?.submit}
                 width={800}
+                onCancel={() => {
+                    requestRef.current += 1;
+                    formModalRef.current?.hide();
+                }}
                 modalProps={{
+                    rootClassName: styles.modal,
                     confirmLoading: formBtnLoading || formInfoLoading,
                     forceRender: true,
                     footer: formInfoLoading ? null : undefined,
-                    style: {top: 30}
+                    okText: '保存',
+                    cancelText: '取消',
+                    closable: !formBtnLoading,
+                    keyboard: !formBtnLoading,
+                    mask: {closable: !formBtnLoading},
+                    cancelButtonProps: {disabled: formBtnLoading},
+                    style: {top: 100, paddingBottom: 100},
                 } as any}>
-                <Form form={form} layout="vertical" onFinish={onFormFinish}>
+                <Form form={form} layout="vertical" variant="filled" onFinish={onFormFinish}>
                     {formInfoLoading ? (
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            height: 260,
-                            width: '100%'
-                        }}>
-                            <Spin size="large"/>
+                        <div className={styles.loading}>
+                            <Spin/>
                         </div>
                     ) : (
                         <>
                             <Row gutter={16}>
-                                <Col span={12}>
+                                <Col xs={24} sm={12}>
                                     <Form.Item
                                         label="配置分组"
                                         name="group"
@@ -287,7 +324,7 @@ export default (): React.ReactNode => {
                                         />
                                     </Form.Item>
                                 </Col>
-                                <Col span={12}>
+                                <Col xs={24} sm={12}>
                                     <Form.Item
                                         label="配置名称"
                                         name="name"
@@ -301,7 +338,7 @@ export default (): React.ReactNode => {
                                 </Col>
                             </Row>
                             <Row gutter={16}>
-                                <Col span={12}>
+                                <Col xs={24} sm={12}>
                                     <Form.Item
                                         name="type"
                                         label="配置类型"
@@ -310,14 +347,11 @@ export default (): React.ReactNode => {
                                         <Select
                                             placeholder="请选择类型"
                                             onChange={(v) => setAceMode(mapTypeToAceMode(v))}
-                                        >
-                                            {Object.entries(enumsData?.config?.type || {}).map(([key, value]) => (
-                                                <Select.Option key={key} value={key}>{value as any}</Select.Option>
-                                            ))}
-                                        </Select>
+                                            options={Object.entries(typeData).map(([value, label]) => ({value, label}))}
+                                        />
                                     </Form.Item>
                                 </Col>
-                                <Col span={12}>
+                                <Col xs={24} sm={12}>
                                     <Form.Item
                                         name="status"
                                         label="状态"
@@ -325,12 +359,8 @@ export default (): React.ReactNode => {
                                     >
                                         <Select
                                             placeholder="请选择状态"
-                                        >
-                                            {Object.entries(enumsData?.config?.status || {}).map(([key, value]) => (
-                                                <Select.Option key={key}
-                                                               value={parseInt(key)}>{value as any}</Select.Option>
-                                            ))}
-                                        </Select>
+                                            options={Object.entries(statusData).map(([value, label]) => ({value: Number(value), label}))}
+                                        />
                                     </Form.Item>
                                 </Col>
                             </Row>
@@ -339,12 +369,13 @@ export default (): React.ReactNode => {
                                     value={aceContent}
                                     mode={aceMode}
                                     showPrintMargin={false}
-                                    theme={'monokai'}
+                                    theme={theme?.isDarkTheme?.() ? 'monokai' : 'chrome'}
+                                    fontSize={theme?.isCompactTheme?.() ? 12 : 14}
                                     width={'100%'}
                                     height={400}
                                     acePath={AcePath}
                                     onChange={(v: string) => setAceContent(v)}
-                                    className={ace}
+                                    className={styles.editor}
                                 />
                             </Form.Item>
                         </>
@@ -354,21 +385,31 @@ export default (): React.ReactNode => {
 
             <ProModal
                 ref={batchModalRef}
-                title={<Title>编辑配置</Title>}
+                title={<Title>批量编辑配置</Title>}
                 onOk={batchForm?.submit}
                 width={350}
-                modalProps={{confirmLoading: batchBtnLoading, forceRender: true} as any}>
-                <Form form={batchForm} layout="vertical" onFinish={onBatchEditFinish}>
+                modalProps={{
+                    rootClassName: styles.modal,
+                    confirmLoading: batchBtnLoading,
+                    forceRender: true,
+                    okText: '保存',
+                    cancelText: '取消',
+                    closable: !batchBtnLoading,
+                    keyboard: !batchBtnLoading,
+                    mask: {closable: !batchBtnLoading},
+                    cancelButtonProps: {disabled: batchBtnLoading},
+                    style: {top: 100, paddingBottom: 100},
+                } as any}>
+                <Form form={batchForm} layout="vertical" variant="filled" onFinish={onBatchEditFinish}>
                     <Form.Item
                         name="status"
                         label="状态"
                         rules={[{required: true, message: '请选择状态'}]}
                     >
-                        <Select placeholder="请选择状态">
-                            {Object.entries(enumsData?.config?.status || {}).map(([key, value]) => (
-                                <Select.Option key={key} value={parseInt(key)}>{value as any}</Select.Option>
-                            ))}
-                        </Select>
+                        <Select
+                            placeholder="请选择状态"
+                            options={Object.entries(statusData).map(([value, label]) => ({value: Number(value), label}))}
+                        />
                     </Form.Item>
                 </Form>
             </ProModal>

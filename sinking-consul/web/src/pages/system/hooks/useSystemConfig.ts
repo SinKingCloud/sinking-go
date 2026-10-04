@@ -1,112 +1,120 @@
-import { useState, useEffect } from 'react';
-import { Form, App } from 'antd';
-import { getConfig, setConfig } from "@/service/admin/system";
-import { useModel } from "umi";
+import {useCallback, useEffect, useRef, useState} from "react";
+import {App, Form} from "antd";
+import {useModel} from "umi";
+import {getConfig, setConfig} from "@/service/admin/system";
+
+type ConfigValues = Record<string, any>;
 
 interface UseSystemConfigOptions {
-  group: string;
-  autoLoad?: boolean;
-  onSuccess?: (data: any) => void;
-  onError?: (error: any) => void;
+    group: string;
+    defaults: ConfigValues;
+    normalize?: (values: ConfigValues) => ConfigValues;
 }
 
-export const useSystemConfig = (options: UseSystemConfigOptions) => {
-  const { group, autoLoad = true, onSuccess, onError } = options;
-  const [dataLoading, setDataLoading] = useState(false);
-  const [submitLoading, setSubmitLoading] = useState(false);
-  const { message } = App.useApp();
-  const [form] = Form.useForm();
-  const web = useModel("web");
+const serialize = (value: any) => typeof value === "boolean" ? (value ? "1" : "0") : String(value ?? "");
+const identity = (values: ConfigValues) => values;
 
-  /**
-   * 加载配置数据
-   */
-  const loadConfig = async () => {
-    setDataLoading(true);
-    try {
-      await getConfig({
-        body: {
-          action: "get",
-          group
-        },
-        onSuccess: (r: any) => {
-          const data = r?.data || {};
-          // 处理空值，确保空字符串被转换为undefined以显示placeholder
-          const processedData = Object.keys(data).reduce((acc, key) => {
-            const value = data[key];
-            acc[key] = value === '' || value === null ? undefined : value;
-            return acc;
-          }, {} as any);
-          form.setFieldsValue(processedData);
-          onSuccess?.(processedData);
-        },
-        onFail: (r: any) => {
-          const errorMsg = r?.message || "加载配置失败";
-          message?.error(errorMsg);
-          onError?.(r);
-        },
-        onFinally: () => {
-          setDataLoading(false);
+export const useSystemConfig = ({group, defaults, normalize = identity}: UseSystemConfigOptions) => {
+    const {message} = App.useApp();
+    const web = useModel("web");
+    const [form] = Form.useForm();
+    const [dataLoading, setDataLoading] = useState(true);
+    const [submitLoading, setSubmitLoading] = useState(false);
+    const [error, setError] = useState("");
+    const mountedRef = useRef(true);
+    const savingRef = useRef(false);
+    const requestRef = useRef(0);
+    const initialRef = useRef<ConfigValues>({});
+    const defaultsRef = useRef(defaults);
+    const normalizeRef = useRef(normalize);
+    defaultsRef.current = defaults;
+    normalizeRef.current = normalize;
+
+    const loadConfig = useCallback(async () => {
+        const requestId = ++requestRef.current;
+        setDataLoading(true);
+        setError("");
+        try {
+            const response = await getConfig({body: {action: "get", group}});
+            if (!mountedRef.current || requestId !== requestRef.current) {
+                return;
+            }
+            if (response?.code !== 200) {
+                setError(response?.message || "配置加载失败");
+                return;
+            }
+            const source = response?.data || {};
+            const values = Object.keys(defaultsRef.current).reduce<ConfigValues>((result, key) => {
+                result[key] = source[key] === undefined ? defaultsRef.current[key] : source[key];
+                return result;
+            }, {});
+            const nextValues = normalizeRef.current(values);
+            initialRef.current = nextValues;
+            form.setFieldsValue(nextValues);
+        } catch {
+            if (mountedRef.current && requestId === requestRef.current) {
+                setError("配置加载失败");
+            }
+        } finally {
+            if (mountedRef.current && requestId === requestRef.current) {
+                setDataLoading(false);
+            }
         }
-      });
-    } catch (error) {
-      setDataLoading(false);
-      onError?.(error);
-    }
-  };
+    }, [form, group]);
 
-  /**
-   * 保存配置
-   */
-  const saveConfig = async (values: any) => {
-    setSubmitLoading(true);
-    const configs = Object.entries(values).map(([key, value]) => ({ key, value }));
-    
-    try {
-      await setConfig({
-        body: {
-          action: "set",
-          group,
-          configs
-        },
-        onSuccess: (r: any) => {
-          message?.success(r?.message || "配置保存成功");
-          web?.refreshInfo();
-        },
-        onFail: (r: any) => {
-          message?.error(r?.message || "配置保存失败");
-        },
-        onFinally: () => {
-          setSubmitLoading(false);
+    useEffect(() => {
+        mountedRef.current = true;
+        loadConfig();
+        return () => {
+            mountedRef.current = false;
+            requestRef.current += 1;
+        };
+    }, [loadConfig]);
+
+    const saveConfig = useCallback(async (values: ConfigValues) => {
+        if (savingRef.current) {
+            return;
         }
-      });
-    } catch (error) {
-      setSubmitLoading(false);
-      message?.error("配置保存失败");
-    }
-  };
+        savingRef.current = true;
+        setSubmitLoading(true);
+        try {
+            const nextValues = normalizeRef.current(values);
+            const response = await setConfig({
+                body: {
+                    action: "set",
+                    group,
+                    configs: Object.entries(nextValues).map(([key, value]) => ({key, value: serialize(value)})),
+                },
+            });
+            if (response?.code === 200) {
+                web?.refreshInfo();
+            }
+            if (!mountedRef.current) {
+                return;
+            }
+            if (response?.code !== 200) {
+                message.error(response?.message || "配置保存失败");
+                return;
+            }
+            initialRef.current = nextValues;
+            form.setFieldsValue(nextValues);
+            message.success(response?.message || "配置保存成功");
+        } catch {
+            if (mountedRef.current) {
+                message.error("配置保存失败");
+            }
+        } finally {
+            savingRef.current = false;
+            if (mountedRef.current) {
+                setSubmitLoading(false);
+            }
+        }
+    }, [form, group, message, web]);
 
-  /**
-   * 重置表单
-   */
-  const resetForm = () => {
-    form.resetFields();
-  };
+    const resetForm = useCallback(() => {
+        form.resetFields();
+        form.setFieldsValue(initialRef.current);
+    }, [form]);
 
-  // 自动加载数据
-  useEffect(() => {
-    if (autoLoad) {
-      loadConfig();
-    }
-  }, [group, autoLoad]);
-
-  return {
-    form,
-    dataLoading,
-    submitLoading,
-    loadConfig,
-    saveConfig,
-    resetForm
-  };
+    return {form, dataLoading, submitLoading, error, loadConfig, saveConfig, resetForm};
 };
-

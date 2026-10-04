@@ -1,52 +1,39 @@
-import React from 'react';
-import {useSystemConfig} from "@/pages/system/hooks";
-import BaseForm from "./common/BaseForm";
-import FormField from "./common/FormField";
+import React, {useMemo} from "react";
+import {Form, Input} from "antd";
+import {useSystemConfig} from "../hooks";
+import {actions as Actions, error as Error, loading as Loading} from "./common";
 
-const WebView: React.FC = () => {
-    const {form, dataLoading, submitLoading, saveConfig, resetForm} = useSystemConfig({
-        group: "web"
-    });
+export default ({styles, info}: any): React.ReactNode => {
+    const defaults = useMemo(() => ({
+        name: info?.name || "",
+        title: info?.title || "",
+        keywords: info?.keywords || "",
+        describe: info?.describe || "",
+    }), [info?.name, info?.title, info?.keywords, info?.describe]);
+    const config = useSystemConfig({group: "web", defaults});
 
     return (
-        <BaseForm
-            form={form}
-            loading={dataLoading}
-            submitLoading={submitLoading}
-            onFinish={saveConfig}
-            onReset={resetForm}
-        >
-            <FormField
-                type="input"
-                name="name"
-                label="网站名称"
-                tooltip="网站的名称"
-                placeholder="请输入网站名称"
-            />
-            <FormField
-                type="input"
-                name="title"
-                label="网站标题"
-                tooltip="网站页面的标题，显示在浏览器标签页"
-                placeholder="请输入网站标题"
-            />
-            <FormField
-                type="input"
-                name="keywords"
-                label="网站关键字"
-                tooltip="用于SEO优化的关键字，多个关键字用逗号分隔"
-                placeholder="请输入网站关键字"
-            />
-            <FormField
-                type="textarea"
-                name="describe"
-                label="网站描述"
-                tooltip="网站的描述信息，用于SEO优化"
-                placeholder="请输入网站描述"
-                rows={4}
-            />
-        </BaseForm>
+        <Form form={config.form} layout="vertical" variant="filled" onFinish={config.saveConfig}>
+            {config.dataLoading ? <Loading styles={styles}/> : config.error ? (
+                <Error styles={styles} message={config.error} onRetry={config.loadConfig}/>
+            ) : <>
+                <Form.Item name="name" label="网站名称" tooltip="网站的名称" className={styles.formField}>
+                    <Input placeholder="请输入网站名称"/>
+                </Form.Item>
+                <Form.Item name="title" label="网站标题" tooltip="网站页面的标题，显示在浏览器标签页"
+                           className={styles.formField}>
+                    <Input placeholder="请输入网站标题"/>
+                </Form.Item>
+                <Form.Item name="keywords" label="网站关键字" tooltip="用于 SEO 优化的关键字，多个关键字用逗号分隔"
+                           className={styles.formField}>
+                    <Input placeholder="请输入网站关键字"/>
+                </Form.Item>
+                <Form.Item name="describe" label="网站描述" tooltip="网站的描述信息，用于 SEO 优化"
+                           className={styles.formField}>
+                    <Input.TextArea placeholder="请输入网站描述" rows={4}/>
+                </Form.Item>
+                <Actions styles={styles} saving={config.submitLoading} onReset={config.resetForm}/>
+            </>}
+        </Form>
     );
 };
-
-export default WebView;
