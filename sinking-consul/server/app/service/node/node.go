@@ -4,13 +4,14 @@ import (
 	"server/app/model"
 	repositoryNode "server/app/repository/node"
 	"server/app/util/cache"
+	"server/app/util/page"
 	"sync"
 )
 
 // Service 节点服务接口
 type Service interface {
 	SelectInAddress(addresses []string) ([]*model.Node, error)
-	Select(where *repositoryNode.SelectNode, orderByField string, orderByType string, page int, pageSize int) ([]*model.Node, int64, error)
+	Select(where *repositoryNode.SelectNode, queryPage *page.Query) (*page.Result[*model.Node], error)
 	CountByOnlineStatus(onlineStatus int) (int64, error)
 	CountAll() (int64, error)
 	Save() error

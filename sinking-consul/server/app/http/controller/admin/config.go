@@ -12,7 +12,6 @@ import (
 	"server/app/service"
 	"server/app/service/cluster"
 	"server/app/util/context"
-	"server/app/util/page"
 	"server/app/util/str"
 )
 
@@ -20,9 +19,8 @@ type ControllerConfig struct {
 }
 
 func (ControllerConfig) List(c *context.Context) {
-	pageNum, pageSize := c.ValidatePage()
-	orderByField, orderByType := c.ValidateOrderBy("create_time", "desc", "group,name,update_time,create_time")
-	type Form struct {
+	query := c.ValidatePage("create_time", "desc", "group,name,create_time,update_time", "group,name,update_time,create_time")
+	var form struct {
 		Keyword         string `json:"keyword" default:"" validate:"omitempty,max=200" label:"关键词"`
 		Group           string `json:"group" default:"" validate:"omitempty" label:"配置分组"`
 		Name            string `json:"name" default:"" validate:"omitempty" label:"配置名称"`
@@ -35,8 +33,7 @@ func (ControllerConfig) List(c *context.Context) {
 		CreateTimeStart string `json:"create_time_start" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建起始时间"`
 		CreateTimeEnd   string `json:"create_time_end" default:"" validate:"omitempty,datetime=2006-01-02 15:04:05" label:"创建结束时间"`
 	}
-	form := &Form{}
-	if ok, msg := c.ValidatorAll(form); !ok {
+	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -79,22 +76,21 @@ func (ControllerConfig) List(c *context.Context) {
 	if form.UpdateTimeEnd != "" {
 		where.UpdateTimeEnd = &form.UpdateTimeEnd
 	}
-	data, total, err := service.Config.Select(where, orderByField, orderByType, pageNum, pageSize)
+	data, err := service.Config.Select(where, query)
 	if err != nil {
 		c.Error("获取失败")
 	} else {
 		service.Log.Create(c.GetRequestIp(), log_type.EventShow, "查看服务配置", "查看服务配置列表")
-		c.SuccessWithData("获取成功", page.NewPage(total, pageNum, pageSize, data))
+		c.SuccessWithData("获取成功", data)
 	}
 }
 
 func (ControllerConfig) Info(c *context.Context) {
-	type Form struct {
+	var form struct {
 		Group string `json:"group" default:"" validate:"required" label:"配置分组"`
 		Name  string `json:"name" default:"" validate:"required" label:"配置名称"`
 	}
-	form := &Form{}
-	if ok, msg := c.ValidatorAll(form); !ok {
+	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -108,8 +104,13 @@ func (ControllerConfig) Info(c *context.Context) {
 }
 
 func (ControllerConfig) Update(c *context.Context) {
-	form := &cluster.ConfigUpdateValidate{}
-	if ok, msg := c.ValidatorAll(form); !ok {
+	var form struct {
+		Keys    []*model.Config `json:"keys" default:"" validate:"required,min=1,max=1000" label:"配置列表"`
+		Type    string          `json:"type" default:"" validate:"omitempty" label:"配置类型"`
+		Content string          `json:"content" default:"" validate:"omitempty" label:"配置内容"`
+		Status  string          `json:"status" default:"" validate:"omitempty,numeric" label:"状态"`
+	}
+	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -147,21 +148,25 @@ func (ControllerConfig) Update(c *context.Context) {
 		c.Error(err.Error())
 		return
 	}
-	service.Cluster.UpdateAllClusterData(form, nil)
+	service.Cluster.UpdateAllClusterData(&cluster.ConfigUpdateValidate{
+		Keys:    form.Keys,
+		Type:    form.Type,
+		Content: form.Content,
+		Status:  form.Status,
+	}, nil)
 	service.Log.Create(c.GetRequestIp(), log_type.EventUpdate, "修改服务配置", "修改服务配置数据")
 	c.Success("修改成功")
 }
 
 func (ControllerConfig) Create(c *context.Context) {
-	type Form struct {
+	var form struct {
 		Group   string `json:"group" default:"" validate:"required" label:"配置分组"`
 		Name    string `json:"name" default:"" validate:"required" label:"配置名称"`
 		Type    string `json:"type" default:"" validate:"required" label:"配置类型"`
 		Content string `json:"content" default:"" validate:"omitempty" label:"配置内容"`
 		Status  int    `json:"status" default:"" validate:"numeric" label:"状态"`
 	}
-	form := &Form{}
-	if ok, msg := c.ValidatorAll(form); !ok {
+	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -203,11 +208,10 @@ func (ControllerConfig) Create(c *context.Context) {
 }
 
 func (ControllerConfig) Delete(c *context.Context) {
-	type Form struct {
+	var form struct {
 		Keys []*model.Config `json:"keys" default:"" validate:"required,min=1,max=1000" label:"配置列表"`
 	}
-	form := &Form{}
-	if ok, msg := c.ValidatorAll(form); !ok {
+	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}

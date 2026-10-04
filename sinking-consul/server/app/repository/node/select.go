@@ -2,6 +2,7 @@ package node
 
 import (
 	"server/app/model"
+	"server/app/util/page"
 )
 
 // SelectAll 查询所有
@@ -33,8 +34,7 @@ func (r *Repository) SelectInAddress(addresses []string) (list []*model.Node, er
 }
 
 // Select 查询数据
-func (r *Repository) Select(where *SelectNode, orderByField string, orderByType string, page int, pageSize int) (list []*model.Node, total int64, err error) {
-	offset := pageSize * (page - 1)
+func (r *Repository) Select(where *SelectNode, queryPage *page.Query) (*page.Result[*model.Node], error) {
 	query := r.Database.Db.Model(&model.Node{})
 	if where != nil {
 		if where.Group != nil {
@@ -69,6 +69,5 @@ func (r *Repository) Select(where *SelectNode, orderByField string, orderByType 
 			query = query.Where("(`group` LIKE ? OR `name` LIKE ? OR `address` LIKE ?)", keyword, keyword, keyword)
 		}
 	}
-	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(orderByField + " " + orderByType).Find(&list).Error
-	return
+	return r.Repository.SelectPage(query, queryPage, "group", "name", "address")
 }

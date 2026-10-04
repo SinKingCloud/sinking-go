@@ -2,6 +2,7 @@ package config
 
 import (
 	"server/app/model"
+	"server/app/util/page"
 )
 
 // SelectAll 查询所有
@@ -23,8 +24,7 @@ func (r *Repository) SelectInGroupAndName(keys []*model.Config) (list []*model.C
 }
 
 // Select 查询数据
-func (r *Repository) Select(where *SelectConfig, orderByField string, orderByType string, page int, pageSize int) (list []*Config, total int64, err error) {
-	offset := pageSize * (page - 1)
+func (r *Repository) Select(where *SelectConfig, queryPage *page.Query) (*page.Result[*Config], error) {
 	query := r.Database.Db.Model(&model.Config{})
 	if where != nil {
 		if where.Group != nil {
@@ -62,6 +62,5 @@ func (r *Repository) Select(where *SelectConfig, orderByField string, orderByTyp
 			query = query.Where("(`group` LIKE ? OR `name` LIKE ? OR `hash` LIKE ? OR `content` LIKE ?)", keyword, keyword, keyword, keyword)
 		}
 	}
-	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(orderByField + " " + orderByType).Find(&list).Error
-	return
+	return r.Repository.SelectPage(query, queryPage, "group", "name")
 }

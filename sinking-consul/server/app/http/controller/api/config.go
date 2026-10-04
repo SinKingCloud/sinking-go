@@ -13,12 +13,11 @@ type ControllerConfig struct {
 
 // Sync 同步配置
 func (ControllerConfig) Sync(c *context.Context) {
-	type Form struct {
+	var form struct {
 		Group        string `json:"group" default:"" validate:"required" label:"服务组"`
 		LastSyncTime int64  `json:"last_sync_time" default:"" validate:"" label:"上次同步时间"`
 	}
-	form := &Form{}
-	if ok, msg := c.ValidatorAll(form); !ok {
+	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}

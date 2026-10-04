@@ -1,10 +1,12 @@
 package log
 
-import "server/app/model"
+import (
+	"server/app/model"
+	"server/app/util/page"
+)
 
 // Select 查询数据
-func (r *Repository) Select(where *SelectLog, orderByField string, orderByType string, page int, pageSize int) (list []*model.Log, total int64, err error) {
-	offset := pageSize * (page - 1)
+func (r *Repository) Select(where *SelectLog, queryPage *page.Query) (*page.Result[*model.Log], error) {
 	query := r.Database.Db.Model(&model.Log{})
 	if where != nil {
 		if where.Type != nil {
@@ -36,6 +38,5 @@ func (r *Repository) Select(where *SelectLog, orderByField string, orderByType s
 			query = query.Where("(`ip` LIKE ? OR `title` LIKE ? OR `content` LIKE ?)", keyword, keyword, keyword)
 		}
 	}
-	err = query.Count(&total).Limit(pageSize).Offset(offset).Order(orderByField + " " + orderByType).Find(&list).Error
-	return
+	return r.Repository.SelectPage(query, queryPage)
 }

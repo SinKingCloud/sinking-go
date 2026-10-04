@@ -8,15 +8,14 @@ import (
 
 // Login 账号登录
 func Login(c *context.Context) {
-	type Form struct {
+	var form struct {
 		Account  string `json:"account" default:"" validate:"required" label:"账户"`
 		Password string `json:"password" default:"" validate:"required" label:"密码"`
 		Token    string `json:"token" default:"" validate:"required" label:"验证码标识"`
 		CaptchaX int    `json:"captcha_x" default:"" validate:"required,numeric" label:"验证码X坐标"`
 		CaptchaY int    `json:"captcha_y" default:"" validate:"required,numeric" label:"验证码Y坐标"`
 	}
-	form := &Form{}
-	if ok, msg := c.ValidatorAll(form); !ok {
+	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}

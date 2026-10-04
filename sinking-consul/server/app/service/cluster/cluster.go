@@ -9,13 +9,14 @@ import (
 	"server/app/service/node"
 	"server/app/service/setting"
 	"server/app/util/cache"
+	"server/app/util/page"
 	"sync"
 	"time"
 )
 
 // Service 集群服务接口
 type Service interface {
-	Select(where *cluster.SelectCluster, orderByField string, orderByType string, page int, pageSize int) ([]*model.Cluster, int64, error)
+	Select(where *cluster.SelectCluster, queryPage *page.Query) (*page.Result[*model.Cluster], error)
 	CountByStatus(status int) (int64, error)
 	CountAll() (int64, error)
 	Each(fun func(key string, value *model.Cluster) bool)

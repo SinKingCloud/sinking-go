@@ -49,11 +49,10 @@ func (ControllerSystem) Overview(c *context.Context) {
 }
 
 func (ControllerSystem) Enum(c *context.Context) {
-	type Form struct {
+	var form struct {
 		Name string `json:"name" default:"" validate:"required" label:"枚举名称"`
 	}
-	form := &Form{}
-	if ok, msg := c.ValidatorAll(form); !ok {
+	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}
@@ -69,13 +68,12 @@ func (ControllerSystem) Config(c *context.Context) {
 		Key   string `json:"key" default:"" validate:"required,max=50" label:"配置标识"`
 		Value string `json:"value" default:"" validate:"omitempty" label:"配置内容"`
 	}
-	type Form struct {
+	var form struct {
 		Action  string    `json:"action" default:"get" validate:"oneof=get set" label:"操作类型"`
 		Group   string    `json:"group" default:"web" validate:"oneof=web ui" label:"配置分组"`
 		Configs []*Config `json:"configs" default:"" validate:"omitempty,gte=1" label:"配置标识"`
 	}
-	form := &Form{}
-	if ok, msg := c.ValidatorAll(form); !ok {
+	if ok, msg := c.ValidatorAll(&form); !ok {
 		c.Error(msg)
 		return
 	}

@@ -124,31 +124,29 @@ func main() {
 
 	//参数绑定 访问地址 ip:port/bind?user=admin
 	r.ANY("/bind/:code", func(s *sinking_web.Context) {
-		type Login struct {
+		var form struct {
 			User string `default:"admin" json:"user"` //default:默认值 json:json输出格式
 			Pwd  string `default:"123456" json:"pwd"` //default:默认值 json:json输出格式
 			Code string `default:"000000" json:"code"`
 		}
-		login := &Login{}
-		err := s.BindAll(login) //BindQuery:绑定get参数 BindForm:绑定post参数 BindJson:绑定json BindParam:绑定路由参数
+		err := s.BindAll(&form) //BindQuery:绑定get参数 BindForm:绑定post参数 BindJson:绑定json BindParam:绑定路由参数
 		if err != nil {
 			s.JSON(200, sinking_web.H{"code": "500", "message": "绑定参数失败", "data": err})
 		} else {
-			s.JSON(200, sinking_web.H{"code": "200", "message": "绑定参数成功", "data": login})
+			s.JSON(200, sinking_web.H{"code": "200", "message": "绑定参数成功", "data": form})
 		}
 	})
 
 	r.ANY("/page", func(c *sinking_web.Context) {
-		type ValidatePage struct {
+		var form struct {
 			Page     uint `json:"page" default:"1"`
 			PageSize int  `json:"page_size" default:"20"`
 			Test     bool `json:"test" default:"true"`
 		}
-		pageInfo := &ValidatePage{}
-		if c.BindQuery(pageInfo) != nil {
+		if c.BindQuery(&form) != nil {
 			fmt.Println("get参数绑定失败")
 		} else {
-			c.JSON(200, pageInfo)
+			c.JSON(200, form)
 		}
 	})
 

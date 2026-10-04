@@ -4,13 +4,14 @@ import (
 	"server/app/model"
 	"server/app/repository/config"
 	"server/app/util/cache"
+	"server/app/util/page"
 	"sync"
 )
 
 // Service 配置服务接口
 type Service interface {
 	SelectAll() ([]*config.Config, error)
-	Select(where *config.SelectConfig, orderByField string, orderByType string, page int, pageSize int) ([]*config.Config, int64, error)
+	Select(where *config.SelectConfig, queryPage *page.Query) (*page.Result[*config.Config], error)
 	CountByStatus(status int) (int64, error)
 	CountAll() (int64, error)
 	Save() error
