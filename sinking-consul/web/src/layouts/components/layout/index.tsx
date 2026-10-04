@@ -1,9 +1,9 @@
-import React, {useMemo} from "react";
+import React, {useMemo, useState} from "react";
 import {Layout, Icon, useTheme} from "sinking-antd";
 import {useModel, useSelectedRoutes, useLocation, history, Outlet} from "umi";
 import {deleteHeader} from "@/utils/auth";
 import {getAllMenuItems, getFirstMenuWithoutChildren, getParentList, historyPush} from "@/utils/route";
-import {App, Avatar, Col, Popover, Row, Tooltip} from "antd";
+import {App, Popover, Tooltip} from "antd";
 import {createStyles} from "antd-style";
 import Settings from "@/../config/defaultSettings";
 import {logout} from "@/service/auth/login";
@@ -29,9 +29,6 @@ request.use(check);
  */
 const useRightTopStyles = createStyles(({css, token, isDarkMode}): any => {
     return {
-        img: {
-            marginBottom: "5px",
-        },
         nickname: {
             marginLeft: "3px",
             fontSize: "13px",
@@ -44,11 +41,23 @@ const useRightTopStyles = createStyles(({css, token, isDarkMode}): any => {
         pop: css`
             margin-left: 10px;
             margin-right: 20px;
-            display: initial;
+            display: inline-flex;
+            align-items: center;
             padding: 11px 5px;
+            border: 0;
             border-radius: 10px;
+            background: transparent;
+            font: inherit;
+            line-height: 20px;
+            white-space: nowrap;
+            vertical-align: middle;
             transition: background-color 0.3s ease;
             cursor: pointer;
+
+            &:focus-visible {
+                outline: 2px solid ${token.colorPrimary};
+                outline-offset: 2px;
+            }
 
             .anticon {
                 margin-left: 2px;
@@ -56,8 +65,14 @@ const useRightTopStyles = createStyles(({css, token, isDarkMode}): any => {
             }
         `,
         box: css`
+            &.ant-popover {
+                filter: none !important;
+            }
+
             .ant-popover-container {
                 padding: 0 !important;
+                overflow: hidden;
+                border-radius: ${token.borderRadiusLG}px;
                 box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.15) !important;
                 width: 210px;
             }
@@ -67,34 +82,42 @@ const useRightTopStyles = createStyles(({css, token, isDarkMode}): any => {
             }
         `,
         content_top: css`
-            height: 70px;
-            width: 100%;
+            height: 64px;
+            box-sizing: border-box;
             background-color: ${token?.colorPrimary};
             overflow: hidden;
             background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIgAAACGBAMAAAD0nt8RAAAAD1BMVEVHcEz///////////////8T4DEaAAAABXRSTlMADAYJA8T7L0gAAALASURBVGjezVpbcoMwDCS2DxBhDgC0BwhNDoDb3v9MfaQQMLb1cqfVVz6YjbS7ks2IptnFCOD7RhcDfIafVRgGvqPVJ/IZmoLcD4YqFbuAgAIkrCCKeqYaICsGnP8WxP0bkE05F71hK4EoWvC0YHh9EwN0v93Fr9frs3aefP/PjdA9Pfo3F8xuxRk74LlaTBpLaPOATaRA0A+lBPAB6rBUNy2KVXwmDOF8YwSs3g1Ij8zYVgPi0PYjlGOppJVATmi9BgcZUJDH1PKokzIamwdGVkGDPGEeB2S+jU9lT2/4KFASip4edxgtfpxDidJiIpvmOsoTYfQEI8UPmR3GOFJuOLHGe0o97YYT8fYKNE4jSnYP7mUpH2x292SW0vKtIyQlNAeM4pEzpTQ0E3BAXOpJA4mYqZTcCx+BCRKOOg5JDE+m5AskjVECcfGzJoNRsokFanRkSgpxJlNSiAudEgmIoYPM+AVWAzKQMTzlzUAOwqCkq0FJV8FqBa9NFWzCsBrt2BLbhEEJ1KDE16DE16Ckq0FJV4GSrNc4lGS9xqEk6zUOJVmvcSgB/UAq2GSqAWJq2IQxpQsgpsZcY4h89Jpbf0xSr5kngBeuaSOv3f/9xuQ2LUnP4tanFWlZqfiMID1nHnQZry/Kv/FB3PF9giTz9foyju/vc6Spl7TQHW5IqDaAPBphKhn/hBogbqoAwpv7WRNKue2kkzI/ZoSpzPIjtTWZ1+03BkgfzRPJKdQupmjlo98v1hoVp9AyiGbFKdRSN0Wy1x56C6FLJKsuhiYzYZtleL0iu2zQtoROXQwqM3nlMmmLQWRm7BkHfSJ5mXkL6aAuJiszd5FsBc1Lkpm/ATbqYpIyS1bRcSo35U5dseLfT0rpXt3qE6GtUTjcKj4SWFNRfcPh9Kvs9bLRN7qY1B+k/HCrTeSL24saozF4MR+gwScpYNNOxQAAAABJRU5ErkJggg==);
             background-repeat: no-repeat;
             background-position: right;
-            border-top-left-radius: ${token?.borderRadius}px;
-            border-top-right-radius: ${token?.borderRadius}px;
-            line-height: 70px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
         `,
-        ava: {
-            height: "40px",
-            width: "40px",
-            marginLeft: "10px",
-        },
         top_text: {
             color: "#fff",
+            width: "100%",
+            minWidth: 0,
+        },
+        userName: {
+            fontSize: "14px",
+            fontWeight: 600,
+            lineHeight: "20px",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+        },
+        userIp: {
+            marginTop: "3px",
             fontSize: "12px",
-            letterSpacing: "1px",
-            lineHeight: "100%",
-            marginLeft: "8px",
-            width: "auto",
-            "div:first-of-type": {
-                fontSize: 13,
-                marginTop: 18,
-                marginBottom: 10
-            }
+            lineHeight: "18px",
+            opacity: 0.8,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+        },
+        menuItemLabel: {
+            display: "flex",
+            alignItems: "center",
         },
         menu: {
             listStyle: "none",
@@ -103,12 +126,18 @@ const useRightTopStyles = createStyles(({css, token, isDarkMode}): any => {
             userSelect: "none",
             "li:last-of-type": {
                 borderTop: "0.5px solid rgba(189, 189, 189, 0.2)",
-                borderRadius: "0px 0px " + token.borderRadius + "px " + token.borderRadius + "px",
-                height: "45px",
-                lineHeight: "45px",
+                button: {
+                    height: "45px",
+                    lineHeight: "45px",
+                },
             }
         },
         menuItem: {
+            width: "100%",
+            border: 0,
+            background: "transparent",
+            fontFamily: "inherit",
+            textAlign: "left",
             cursor: "pointer",
             letterSpacing: "1px",
             height: "40px",
@@ -118,14 +147,19 @@ const useRightTopStyles = createStyles(({css, token, isDarkMode}): any => {
             transition: "background-color 0.3s ease",
             color: isDarkMode ? token.colorTextSecondary : "rgba(0,0,0,0.65)",
             display: "flex",
+            alignItems: "center",
             justifyContent: "space-between",
             ":hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.03)",
             },
+            ":focus-visible": {
+                outline: "2px solid " + token.colorPrimary,
+                outlineOffset: "-2px",
+            },
             ".anticon": {
                 fontSize: "11px",
             },
-            "div>.anticon": {
+            "span>.anticon": {
                 fontSize: "12.5px",
                 marginRight: "7px"
             }
@@ -135,6 +169,7 @@ const useRightTopStyles = createStyles(({css, token, isDarkMode}): any => {
             padding: "7px",
             marginRight: "5px",
             cursor: "pointer",
+            verticalAlign: "middle",
             borderRadius: "5px",
             transition: "background-color 0.3s ease",
             ":hover": {
@@ -154,22 +189,23 @@ const RightTop: React.FC = () => {
      * 全局数据
      */
     const user = useModel("user");//用户信息
-    const web = useModel("web");//站点信息
     const theme = useTheme();//主题信息
     const {message} = App.useApp();
+    const [userOpen, setUserOpen] = useState(false);
 
     const {
         styles: {
-            img,
             nickname,
             bottomIconDark,
             pop,
             content_top,
-            ava,
             top_text,
+            userName,
+            userIp,
             box,
             menu,
             menuItem,
+            menuItemLabel,
             icon
         }
     } = useRightTopStyles();
@@ -182,54 +218,65 @@ const RightTop: React.FC = () => {
                   }}/>
         </Tooltip>
         <Popover rootClassName={box} autoAdjustOverflow={false}
+                 open={userOpen}
+                 onOpenChange={setUserOpen}
+                 trigger={["hover", "click"]}
                  placement="bottomRight"
                  content={<>
-                     <Row className={content_top}>
-                         <Col span={6}>
-                             <Avatar src={(defaultSettings?.basePath || "/") + "images/default_avatar.jpg"}
-                                     className={ava}> {(user?.web?.account?.slice(0, 1)?.toUpperCase() || "未设置")}</Avatar>
-                         </Col>
-                         <Col span={16} className={top_text}>
-                             <div>{user?.web?.account || "未登录"}</div>
-                             <div>{user?.web?.login_ip || "未登录"}</div>
-                         </Col>
-                     </Row>
-                     <ul className={menu}>
-                         <li className={menuItem} onClick={() => historyPush("system")}>
-                             <div><Icon type={"icon-set"} style={{fontSize: 14}}/>系统管理</div>
-                             <Icon type={"icon-right"}></Icon>
+                     <div className={content_top}>
+                         <div className={top_text}>
+                             <div className={userName}>{user?.web?.account || "未登录"}</div>
+                             <div className={userIp}>{user?.web?.login_ip || "未知IP"}</div>
+                         </div>
+                     </div>
+                     <ul className={menu} onKeyDown={(event) => {
+                         if (event.key === "Escape") setUserOpen(false);
+                     }}>
+                         <li>
+                             <button type="button" className={menuItem} onClick={() => {
+                                 historyPush("system");
+                             }}>
+                                 <span className={menuItemLabel}><Icon type="SettingOutlined"/>系统管理</span>
+                                 <Icon type="RightOutlined"/>
+                             </button>
                          </li>
-                         <li className={menuItem} onClick={() => historyPush("log")}>
-                             <div><Icon type={"icon-log"} style={{fontSize: 14}}/>操作日志</div>
-                             <Icon type={"icon-right"}></Icon>
+                         <li>
+                             <button type="button" className={menuItem} onClick={() => {
+                                 historyPush("log");
+                             }}>
+                                 <span className={menuItemLabel}><Icon type="FileTextOutlined"/>操作日志</span>
+                                 <Icon type="RightOutlined"/>
+                             </button>
                          </li>
-                         <li className={menuItem} onClick={async () => {
-                             message?.loading({content: '正在退出登录', duration: 600000, key: "outLogin"});
-                             await logout({
-                                 onSuccess: (r) => {
-                                     message?.success(r?.message || "退出登录成功")
-                                     deleteHeader()
-                                     user?.setWeb(undefined);
-                                     message?.destroy("outLogin")
-                                     historyPush("login");
-                                 },
-                                 onFail: (r) => {
-                                     message?.error(r?.message || "退出登录失败")
-                                 }
-                             })
-                         }}>
-                             <div><Icon type={"icon-exit"} style={{fontSize: 14}}/>退出登录</div>
-                             <Icon type={"icon-right"}></Icon>
+                         <li>
+                             <button type="button" className={menuItem} onClick={async () => {
+                                 message?.loading({content: '正在退出登录', duration: 600000, key: "outLogin"});
+                                 await logout({
+                                     onSuccess: (r) => {
+                                         message?.success(r?.message || "退出登录成功")
+                                         deleteHeader()
+                                         user?.setWeb(undefined);
+                                         message?.destroy("outLogin")
+                                         historyPush("login");
+                                     },
+                                     onFail: (r) => {
+                                         message?.error(r?.message || "退出登录失败")
+                                     }
+                                 })
+                             }}>
+                                 <span className={menuItemLabel}><Icon type="LogoutOutlined"/>退出登录</span>
+                                 <Icon type="RightOutlined"/>
+                             </button>
                          </li>
                      </ul>
                  </>}>
-            <div className={pop}>
-                <Avatar className={img} src={(defaultSettings?.basePath || "/") + "images/default_avatar.jpg"}>
-                    {(user?.web?.account?.slice(0, 1)?.toUpperCase() || "未登录")}
-                </Avatar>
+            <button type="button" className={pop} aria-label="账户菜单" aria-expanded={userOpen}
+                    onKeyDown={(event) => {
+                        if (event.key === "Escape") setUserOpen(false);
+                    }}>
                 <span className={nickname}>{user?.web?.account || "未登录"}</span>
-                <Icon className={web?.info?.ui?.theme == "dark" ? bottomIconDark : ""} type={"icon-bottom"}/>
-            </div>
+                <Icon className={bottomIconDark} type="DownOutlined"/>
+            </button>
         </Popover>
     </>
 }
