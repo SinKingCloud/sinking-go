@@ -190,8 +190,46 @@ const RightTop: React.FC = () => {
      */
     const user = useModel("user");//用户信息
     const theme = useTheme();//主题信息
-    const {message} = App.useApp();
+    const {message, modal} = App.useApp();
     const [userOpen, setUserOpen] = useState(false);
+
+    /**
+     * 退出登录
+     */
+    const outLogin = async () => {
+        message?.loading({content: "正在退出登录", duration: 600000, key: "outLogin"});
+        await logout({
+            onSuccess: (r) => {
+                message?.success(r?.message || "退出登录成功");
+                deleteHeader();
+                user?.setWeb(undefined);
+                historyPush("login");
+            },
+            onFail: (r) => {
+                message?.error(r?.message || "退出登录失败");
+            },
+            onFinally: () => {
+                message?.destroy("outLogin");
+            },
+        });
+    };
+
+    /**
+     * 退出登录确认
+     */
+    const confirmOutLogin = () => {
+        modal.confirm({
+            title: "退出登录",
+            content: "确定退出当前账号吗？",
+            okText: "确定",
+            okButtonProps: {danger: true, type: "default"},
+            cancelText: "取消",
+            mask: {
+                closable: true,
+            },
+            onOk: outLogin,
+        } as any);
+    };
 
     const {
         styles: {
@@ -249,21 +287,7 @@ const RightTop: React.FC = () => {
                              </button>
                          </li>
                          <li>
-                             <button type="button" className={menuItem} onClick={async () => {
-                                 message?.loading({content: '正在退出登录', duration: 600000, key: "outLogin"});
-                                 await logout({
-                                     onSuccess: (r) => {
-                                         message?.success(r?.message || "退出登录成功")
-                                         deleteHeader()
-                                         user?.setWeb(undefined);
-                                         message?.destroy("outLogin")
-                                         historyPush("login");
-                                     },
-                                     onFail: (r) => {
-                                         message?.error(r?.message || "退出登录失败")
-                                     }
-                                 })
-                             }}>
+                             <button type="button" className={menuItem} onClick={confirmOutLogin}>
                                  <span className={menuItemLabel}><Icon type="LogoutOutlined"/>退出登录</span>
                                  <Icon type="RightOutlined"/>
                              </button>
