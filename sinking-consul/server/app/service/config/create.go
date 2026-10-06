@@ -25,7 +25,10 @@ func (s *service) Create(data *model.Config) (err error) {
 	}
 	defer s.cache.UnLock(key)
 	info, err := s.FindByGroupAndName(data.Group, data.Name)
-	if err == nil && info != nil {
+	if err != nil {
+		return err
+	}
+	if info != nil {
 		return errors.New("配置已存在")
 	}
 	err = s.repository.Create(data)

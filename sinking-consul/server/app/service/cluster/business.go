@@ -78,7 +78,10 @@ func (s *service) initialize() {
 		}
 		for _, v := range list {
 			d, e := s.repository.FindByAddress(v)
-			if e != nil || d == nil {
+			if e != nil {
+				continue
+			}
+			if d == nil {
 				_ = s.repository.Create(&model.Cluster{
 					Address:   v,
 					Status:    cluster_status.Offline,

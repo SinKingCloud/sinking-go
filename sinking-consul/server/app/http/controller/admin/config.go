@@ -97,6 +97,8 @@ func (ControllerConfig) Info(c *context.Context) {
 	info, err := service.Config.FindByGroupAndName(form.Group, form.Name)
 	if err != nil {
 		c.Error("获取失败")
+	} else if info == nil {
+		c.Error("配置不存在")
 	} else {
 		service.Log.Create(c.GetRequestIp(), log_type.EventShow, "查看配置详情", "查看配置["+form.Group+":"+form.Name+"]详情")
 		c.SuccessWithData("获取成功", info)
