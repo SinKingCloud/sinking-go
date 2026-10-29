@@ -38,12 +38,9 @@ class EnumService {
         const requestPromise = this.fetchEnum(name);
         this.pendingRequests.set(name, requestPromise);
         try {
-            const result = await requestPromise;
+            return await requestPromise;
+        } finally {
             this.pendingRequests.delete(name);
-            return result;
-        } catch (error) {
-            this.pendingRequests.delete(name);
-            throw error;
         }
     }
 
@@ -88,11 +85,11 @@ class EnumService {
      * 请求枚举数据
      */
     private async fetchEnum(name: string): Promise<Record<string, string>> {
-        const response = await get(`/admin/system/enum?name=${name}`);
-        if (response.code !== 200) {
+        const response = await get(`/admin/system/enum?name=${encodeURIComponent(name)}`);
+        if (response?.code !== 200) {
             return {};
         }
-        const allEnumData = response.data || {};
+        const allEnumData = response?.data || {};
         this.cache.set(name, {
             data: allEnumData,
             timestamp: Date.now()
@@ -104,24 +101,14 @@ class EnumService {
      * 检查缓存是否存在且有效
      */
     isCached(name: string): boolean {
-        const cached = this.cache.get(name);
-        return Date.now() - cached.timestamp < this.CACHE_EXPIRE_TIME;
+        return this.getFromCache(name) !== null;
     }
 
     /**
      * 直接从缓存获取数据，不发起网络请求
      */
     getCachedData(name: string): Record<string, string> | null {
-        const cached = this.cache.get(name);
-        const now = Date.now();
-        if (cached) {
-            const age = now - cached.timestamp;
-            const isValid = age < this.CACHE_EXPIRE_TIME;
-            if (isValid) {
-                return cached.data;
-            }
-        }
-        return null;
+        return this.getFromCache(name);
     }
 
     /**
@@ -169,120 +156,62 @@ export const getEnums = (names: string[]) => enumService.getEnums(names);
  * @returns [enumData, loading, error] - enumData是原始的Record<string, string>格式
  */
 export const useEnum = (name: string): [Record<string, string>, boolean, Error | null] => {
-    const [enumData, setEnumData] = useState<Record<string, string>>({});
-    const [loading, setLoading] = useState(true);
+    const [enumData, setEnumData] = useState<Record<string, string>>(() => enumService.getCachedData(name) || {});
+    const [loading, setLoading] = useState(() => Boolean(name && !enumService.isCached(name)));
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-        if (!name) {
+        const cached = name ? enumService.getCachedData(name) : null;
+        setError(null);
+        if (!name || cached) {
+            setEnumData(cached || {});
             setLoading(false);
             return;
         }
-
         let mounted = true;
-
-        const fetchEnum = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-                const data = await enumService.getEnum(name);
-
-                if (mounted) {
-                    setEnumData(data);
-                }
-            } catch (err) {
-                if (mounted) {
-                    setError(err instanceof Error ? err : new Error('获取枚举数据失败'));
-                }
-            } finally {
-                if (mounted) {
-                    setLoading(false);
-                }
-            }
-        };
-
-        fetchEnum();
-
-        return () => {
-            mounted = false;
-        };
+        setLoading(true);
+        enumService.getEnum(name).then(data => {
+            if (mounted) setEnumData(data);
+        }).catch(err => {
+            if (mounted) setError(err instanceof Error ? err : new Error('获取枚举数据失败'));
+        }).finally(() => {
+            if (mounted) setLoading(false);
+        });
+        return () => { mounted = false; };
     }, [name]);
 
     return [enumData, loading, error];
 };
 
-/**
- * 获取多个枚举的Hook
- * @param names 枚举名称数组
- * @returns [enumsData, loading, error] - enumsData是Record<string, Record<string, string>>格式
- */
+/** 批量读取枚举，名称顺序不影响请求，且不修改调用方的数组。 */
 export const useEnums = (names: string[]): [Record<string, Record<string, string>>, boolean, Error | null] => {
-    const [enumsData, setEnumsData] = useState<Record<string, Record<string, string>>>({});
-    const [loading, setLoading] = useState(true);
+    const namesKey = JSON.stringify([...new Set(names || [])].filter(Boolean).sort());
+    const readCache = () => Object.fromEntries((JSON.parse(namesKey) as string[])
+        .map(name => [name, enumService.getCachedData(name)])
+        .filter(([, data]) => data !== null)) as Record<string, Record<string, string>>;
+    const [enumsData, setEnumsData] = useState(readCache);
+    const [loading, setLoading] = useState(() => (JSON.parse(namesKey) as string[]).some(name => !enumService.isCached(name)));
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-        if (!names || names.length === 0) {
-            setLoading(false);
-            setEnumsData({});
-            return;
-        }
+        const requestedNames = JSON.parse(namesKey) as string[];
+        const cachedData = readCache();
+        const missing = requestedNames.filter(name => !cachedData[name]);
+        setError(null);
+        setEnumsData(previous => Object.keys(previous).length === Object.keys(cachedData).length &&
+            Object.keys(cachedData).every(name => previous[name] === cachedData[name]) ? previous : cachedData);
+        setLoading(missing.length > 0);
+        if (!missing.length) return;
         let mounted = true;
-        const fetchEnums = async () => {
-            try {
-                setError(null);
-                // 检查哪些枚举需要获取（未缓存的）
-                const needFetchNames: string[] = [];
-                const cachedData: Record<string, Record<string, string>> = {};
-                // 分离已缓存和需要获取的枚举
-                for (const name of names) {
-                    const cachedItem = enumService.getCachedData(name);
-                    if (cachedItem) {
-                        // 从缓存直接获取数据，不发起网络请求
-                        cachedData[name] = cachedItem;
-                    } else {
-                        // 缓存不存在或已过期，需要重新获取
-                        needFetchNames.push(name);
-                    }
-                }
-                // 如果有需要获取的枚举，显示loading
-                if (needFetchNames.length > 0) {
-                    setLoading(true);
-                    // 先设置已缓存的数据
-                    if (Object.keys(cachedData).length > 0 && mounted) {
-                        setEnumsData(cachedData);
-                    }
-                    // 并发获取需要的枚举
-                    const results = await enumService.getEnums(needFetchNames);
-                    if (mounted) {
-                        // 合并缓存数据和新获取的数据
-                        const finalData = {...cachedData, ...results};
-                        setEnumsData(finalData);
-                    }
-                } else {
-                    // 全部都有缓存，直接设置数据
-                    if (mounted) {
-                        setEnumsData(cachedData);
-                    }
-                }
-
-            } catch (err) {
-                if (mounted) {
-                    setError(err instanceof Error ? err : new Error('获取枚举数据失败'));
-                }
-            } finally {
-                if (mounted) {
-                    setLoading(false);
-                }
-            }
-        };
-
-        fetchEnums();
-
-        return () => {
-            mounted = false;
-        };
-    }, [JSON.stringify(names.sort())]); // 排序确保数组顺序不影响缓存
+        enumService.getEnums(missing).then(data => {
+            if (mounted) setEnumsData({...cachedData, ...data});
+        }).catch(err => {
+            if (mounted) setError(err instanceof Error ? err : new Error('获取枚举数据失败'));
+        }).finally(() => {
+            if (mounted) setLoading(false);
+        });
+        return () => { mounted = false; };
+    }, [namesKey]);
 
     return [enumsData, loading, error];
 };

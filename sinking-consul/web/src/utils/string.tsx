@@ -22,7 +22,7 @@ export function getUrlQuery(url: string) {
     const noMatchData = {};
     if (!url) return noMatchData;
     const reg = /(?:\?|&)(?:(?:([^=&]+?)=([^&#]+))|([^&#]+))/gi;
-    const obj = {};
+    const obj: Record<string, string> = {};
     // @ts-ignore
     const fun = (match, $1, $2 = '', $3) => {
         if ($3) {

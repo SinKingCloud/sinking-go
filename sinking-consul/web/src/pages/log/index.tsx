@@ -96,7 +96,7 @@ export default (): React.ReactNode => {
                     if (response?.code !== 200) {
                         throw new Error(response?.message || "获取列表失败");
                     }
-                    return {data: response.data?.list, total: response.data?.total ?? 0, success: true};
+                    return {data: response?.data?.list || [], total: response?.data?.total ?? 0, success: true};
                 }}
                 defaultPageSize={10}
                 paginationAffix={{offsetBottom: 15}}

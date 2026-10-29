@@ -1,4 +1,4 @@
-import React, {useRef, useState} from "react";
+import React, {useMemo, useRef, useState} from "react";
 import {App, Button, Form, Input} from "antd";
 import {Body, Icon, useTheme} from "sinking-antd";
 import {useModel} from "umi";
@@ -24,7 +24,8 @@ const Login: React.FC = () => {
     const theme = useTheme();
     const isCompactMode = theme?.isCompactTheme?.() || false;
     const isDarkMode = Boolean(theme?.isDarkMode?.());
-    const {styles} = useStyles({isCompactMode, isDarkMode});
+    const styleProps = useMemo(() => ({isCompactMode, isDarkMode}), [isCompactMode, isDarkMode]);
+    const {styles} = useStyles(styleProps);
     const name = web?.info?.name || Settings?.title;
 
     const finish = () => {
@@ -50,16 +51,16 @@ const Login: React.FC = () => {
                     body: {
                         account: values.account,
                         password: values.password,
-                        token: result.token,
-                        captcha_x: result.x,
-                        captcha_y: result.y,
+                        token: result?.token,
+                        captcha_x: result?.x,
+                        captcha_y: result?.y,
                     },
                 });
-                if (response?.code !== 200 || !response.data) {
+                if (response?.code !== 200 || !response?.data) {
                     message.error(response?.message || "登录失败");
                     return;
                 }
-                setLoginToken(response.data);
+                setLoginToken(response?.data);
                 const data = await user.getWebUser();
                 if (!data) {
                     deleteHeader();

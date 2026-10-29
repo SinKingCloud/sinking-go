@@ -33,7 +33,7 @@ export default () => {
         },
         {
             title: "相关时间", dataIndex: "create_time", key: "create_time", width: 220, sorter: true,
-            render: (_, record) => <RecordTime createTime={record.create_time} updateTime={record.update_time}/>,
+            render: (_, record) => <RecordTime createTime={record?.create_time} updateTime={record?.update_time}/>,
         },
     ];
 
@@ -46,7 +46,7 @@ export default () => {
             request={async (params, sort) => {
                 const response = await getClusterList({body: getParams({...params}, sort)});
                 if (response?.code !== 200) throw new Error(response?.message || "获取集群列表失败");
-                return {data: response.data?.list, total: response.data?.total ?? 0, success: true};
+                return {data: response?.data?.list || [], total: response?.data?.total ?? 0, success: true};
             }}
             defaultPageSize={10}
             paginationAffix={{offsetBottom: 15}}

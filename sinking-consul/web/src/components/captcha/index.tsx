@@ -118,19 +118,22 @@ const Captcha = forwardRef<CaptchaRef>((_, ref): any => {
                 body: {token: token.current},
                 onSuccess: (res) => {
                     const d = res?.data;
-                    if (d) {
-                        setData({
-                            key: d.key,
-                            image: d.image_base64,
-                            thumb: d.tile_base64,
-                            thumbWidth: d.tile_width,
-                            thumbHeight: d.tile_height,
-                            tileX: d.tile_x,
-                            tileY: d.tile_y,
-                            width: d.width,
-                            height: d.height,
-                        });
+                    if (!d?.image_base64 || !d?.tile_base64) {
+                        message.error(res?.message || "验证码加载失败");
+                        close();
+                        return;
                     }
+                    setData({
+                        key: d?.key,
+                        image: d?.image_base64,
+                        thumb: d?.tile_base64,
+                        thumbWidth: d?.tile_width,
+                        thumbHeight: d?.tile_height,
+                        tileX: d?.tile_x,
+                        tileY: d?.tile_y,
+                        width: d?.width,
+                        height: d?.height,
+                    });
                 },
                 onFail: (error) => {
                     message.error(error?.message || "验证码加载失败");
@@ -175,7 +178,7 @@ const Captcha = forwardRef<CaptchaRef>((_, ref): any => {
             onCancel={close}
             footer={null}
             closable={false}
-            maskClosable={false}
+            mask={{closable: false}}
             keyboard={false}
             rootClassName={styles?.modal}
         >

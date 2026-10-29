@@ -1,4 +1,4 @@
-import {forwardRef} from "react";
+import {forwardRef, useMemo} from "react";
 import {Dropdown} from "antd";
 import type {DropdownProps} from "antd";
 import {createStyles} from "antd-style";
@@ -37,7 +37,9 @@ const useStyles = createStyles(({css, token}, {compact}: {compact: boolean}) => 
 const ActionDropdown = forwardRef<HTMLElement, DropdownProps>(({rootClassName,
     trigger = ["click"], placement = "bottom", arrow = {pointAtCenter: true}, ...props}, ref) => {
     const theme = useTheme();
-    const {styles, cx} = useStyles({compact: Boolean(theme?.isCompactTheme?.())});
+    const compact = Boolean(theme?.isCompactTheme?.());
+    const styleProps = useMemo(() => ({compact}), [compact]);
+    const {styles, cx} = useStyles(styleProps);
 
     return <Dropdown {...props} ref={ref}
         trigger={trigger} placement={placement} arrow={arrow}

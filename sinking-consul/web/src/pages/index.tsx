@@ -396,8 +396,8 @@ export default (): React.ReactNode => {
                         <div className="user-header">
                             <Avatar size={64} icon={<UserOutlined/>} className="user-avatar"/>
                             <div className="user-info">
-                                <div level={4} className="user-name">
-                                    {userModel.web?.account || '管理员'}
+                                <div className="user-name">
+                                    {userModel?.web?.account || '管理员'}
                                 </div>
                             </div>
                         </div>
@@ -407,14 +407,14 @@ export default (): React.ReactNode => {
                                     <UserOutlined style={{marginRight: 8}}/>
                                     登录IP
                                 </span>
-                                <span className="detail-value">{userModel.web?.login_ip || '未知'}</span>
+                                <span className="detail-value">{userModel?.web?.login_ip || '未知'}</span>
                             </div>
                             <div className="detail-item">
                                 <span className="detail-label">
                                     <ClusterOutlined style={{marginRight: 8}}/>
                                     登录时间
                                 </span>
-                                <span className="detail-value">{formatTime(userModel.web?.login_time)}</span>
+                                <span className="detail-value">{formatTime(userModel?.web?.login_time)}</span>
                             </div>
                         </div>
                     </Card>

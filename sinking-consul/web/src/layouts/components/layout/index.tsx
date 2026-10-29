@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from "react";
+import React, {useCallback, useMemo, useState} from "react";
 import {Layout, Icon, useTheme} from "sinking-antd";
 import {useModel, useSelectedRoutes, useLocation, history, Outlet} from "umi";
 import {deleteHeader} from "@/utils/auth";
@@ -18,7 +18,7 @@ import defaultSettings from "@/../config/defaultSettings";
  */
 const check = async (ctx: any, next: any) => {
     await next();
-    if (ctx.res.code == 401) {
+    if (ctx.res?.code == 401) {
         historyPush("notAllowed");
     }
 }
@@ -305,10 +305,6 @@ const RightTop: React.FC = () => {
     </>
 }
 
-export type slide = {
-    menu?: any,
-}
-
 /**
  * 样式信息
  */
@@ -339,11 +335,7 @@ const useSKLayoutStyles = createStyles((): any => {
 /**
  * 用户系统
  */
-const SKLayout: React.FC<slide> = ({...props}) => {
-    /**
-     * 初始化用户信息
-     */
-    const {menu} = props;
+const SKLayout = () => {
     /**
      * 全局信息
      */
@@ -351,7 +343,22 @@ const SKLayout: React.FC<slide> = ({...props}) => {
     const web = useModel("web");
     const location = useLocation();
     const match = useSelectedRoutes();
+    const menu = useMemo(() => getAllMenuItems(true), []);
+    const allMenu = useMemo(() => getAllMenuItems(false), []);
+    const routeName = match?.at(-1)?.route?.name;
+    const onNavigate = useCallback((path: string) => history.push(path), []);
     const {styles: {collapsedImg, unCollapsed}} = useSKLayoutStyles();
+    const color = web?.info?.ui?.color || defaultSettings?.color;
+    const name = web?.info?.name || Settings?.title;
+    const watermark = Boolean(web?.info?.ui?.watermark);
+    const waterMark = useMemo(() => watermark ? [web?.info?.name, user?.web?.account] : "", [watermark, web?.info?.name, user?.web?.account]);
+    const headerRight = useMemo(() => <RightTop/>, []);
+    const footer = useMemo(() => <>©{new Date().getFullYear()} All Right Revered {name}</>, [name]);
+    const collapsedLogo = useCallback(() => <Icon type="icon-logo" style={{color}} className={collapsedImg}/>, [color, collapsedImg]);
+    const unCollapsedLogo = useCallback(() => <div className={unCollapsed}>
+        <Icon type="icon-logo" style={{color}}/>
+        <div style={{color}}>{name}</div>
+    </div>, [color, name, unCollapsed]);
 
     /**
      * 计算面包屑数据
@@ -359,11 +366,11 @@ const SKLayout: React.FC<slide> = ({...props}) => {
     const breadCrumbItems = useMemo(() => {
         if (!location?.pathname) return [];
 
-        const items = getParentList(getAllMenuItems(false), match?.at(-1)?.route?.name);
+        const items = getParentList(allMenu, routeName);
         const temp = [{
             title: "首页",
             onClick: () => {
-                historyPush(getFirstMenuWithoutChildren(getAllMenuItems(location?.pathname))?.name || "");
+                historyPush(getFirstMenuWithoutChildren(menu)?.name || "");
             },
         }];
 
@@ -383,42 +390,29 @@ const SKLayout: React.FC<slide> = ({...props}) => {
         });
 
         return temp;
-    }, [location?.pathname, match]);
+    }, [routeName, allMenu, menu]);
     return (
         <>
             <Title/>
             <Layout loading={!user?.web}
                     pathname={location?.pathname}
                     matchedRoutes={match || []}
-                    onNavigate={(path) => history.push(path)}
+                    onNavigate={onNavigate}
                     breadCrumbItems={breadCrumbItems}
                     hideBreadCrumb={match?.at(-1)?.route?.hideBreadCrumb}
-                    waterMark={web?.info?.ui?.watermark ? [web?.info?.name, user?.web?.account] : ""}
+                    waterMark={waterMark}
                     menus={menu}
                     layout={web?.info?.ui?.layout != "left" ? "horizontal" : "inline"}
                     flowLayout={web?.info?.ui?.layout != "left"}
                     menuTheme={web?.info?.ui?.theme == "dark" ? "dark" : "light"}
-                    footer={<>©{new Date().getFullYear()} All Right
-                        Revered {web?.info?.name || Settings?.title}</>}
+                    footer={footer}
                     headerHidden={false}
                     headerFixed={true}
-                    headerRight={<RightTop/>}
+                    headerRight={headerRight}
                     menuCollapsedWidth={60}
                     menuUnCollapsedWidth={210}
-                    collapsedLogo={() => {
-                        return <Icon type={"icon-logo"} style={{color: web?.info?.ui?.color || defaultSettings?.color}}
-                                     className={collapsedImg}/>;
-                    }}
-                    unCollapsedLogo={() => {
-                        return (
-                            <div className={unCollapsed}>
-                                <Icon type={"icon-logo"}
-                                      style={{color: web?.info?.ui?.color || defaultSettings?.color}}/>
-                                <div style={{color: web?.info?.ui?.color || defaultSettings?.color}}>
-                                    {web?.info?.name || Settings?.title}
-                                </div>
-                            </div>)
-                    }}>
+                    collapsedLogo={collapsedLogo}
+                    unCollapsedLogo={unCollapsedLogo}>
                 <Outlet/>
             </Layout>
         </>

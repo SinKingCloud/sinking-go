@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from "react";
-import {Outlet, useLocation, history, useSelectedRoutes} from "umi";
+import React, {useEffect, useLayoutEffect} from "react";
+import {Outlet, useSelectedRoutes} from "umi";
 import {App, ConfigProvider, Spin} from "antd";
-import {getAllMenuItems, historyPush} from "@/utils/route";
+import {historyPush} from "@/utils/route";
 import {Layout} from "@/layouts/components";
 import {useModel} from "umi";
 import Title from "./components/title";
@@ -18,9 +18,9 @@ import zhCN from 'antd/locale/zh_CN';
  * @param next 执行函数
  */
 const check = async (ctx: any, next: any) => {
-    ctx.req.options.headers = getHeaders();
+    ctx.req.options.headers = {...ctx.req.options.headers, ...getHeaders()};
     await next();
-    if (ctx.res.code == 403 || ctx.res.code == 503) {
+    if (ctx.res?.code == 403 || ctx.res?.code == 503) {
         historyPush("login");//登陆页面;
         deleteHeader()
     }
@@ -48,8 +48,7 @@ const ProLayout = () => {
     const routes = useSelectedRoutes();
     const {styles: {load}} = useStyles();
 
-    const [menu, setMenu] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const isPublic = routes?.at(-1)?.route?.auth === false;
 
     // 初始化 iconfont 地址
     useEffect(() => {
@@ -59,23 +58,19 @@ const ProLayout = () => {
     }, []);
 
     useEffect(() => {
-        setMenu(getAllMenuItems(true));
-        setLoading(true)
-        user?.refreshWebUser(() => {
-            setLoading(false)
-        });
-    }, []);
+        if (!isPublic && !user?.web) user?.refreshWebUser();
+    }, [isPublic]);
 
     const theme = useTheme();
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (web?.info?.ui) {
-            if (web.info.ui.color) {
-                theme?.setColor(web.info.ui.color);
+            if (web?.info?.ui?.color) {
+                theme?.setColor(web?.info?.ui?.color);
             }
-            if (web.info.ui.radius >= 0) {
-                theme?.setRadius(web.info.ui.radius <= 15 ? web.info.ui.radius : 0);
+            if (web?.info?.ui?.radius >= 0) {
+                theme?.setRadius(web?.info?.ui?.radius <= 15 ? web?.info?.ui?.radius : 0);
             }
-            if (web.info.ui.compact) {
+            if (web?.info?.ui?.compact) {
                 theme?.setCompactTheme();
             } else {
                 theme?.setDefaultTheme();
@@ -83,10 +78,10 @@ const ProLayout = () => {
         }
     }, [web?.info?.ui]);
 
-    if (loading || !web?.info || !web?.info?.ui) {
+    if (!web?.info?.ui) {
         return <Spin spinning={true} size="large" className={load}/>;
     }
-    if (routes?.pop()?.route?.auth === false) {
+    if (isPublic) {
         return <>
             <Title/>
             <App>
@@ -94,7 +89,8 @@ const ProLayout = () => {
             </App>
         </>;
     }
-    return <Layout menu={menu}/>;
+    if (!user?.web) return <Spin spinning size="large" className={load}/>;
+    return <Layout/>;
 }
 
 export default () => {

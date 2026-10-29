@@ -45,7 +45,7 @@ function errorHandle(): void {
  * @param onError 错误捕获
  * @param options 其他选项
  */
-export async function post(url: string = "", body: any = {}, onSuccess: (res) => void = undefined, onFail: (res) => void = undefined, onFinally: () => void = undefined, onError: (error) => void = undefined, options?: {
+export async function post(url: string = "", body: any = {}, onSuccess?: (res: API.Response) => void, onFail?: (res: API.Response) => void, onFinally?: () => void, onError?: (error: unknown) => void, options?: {
     [key: string]: any
 }) {
     let res = {};
@@ -81,7 +81,7 @@ export async function post(url: string = "", body: any = {}, onSuccess: (res) =>
  * @param onError 错误捕获
  * @param options 其他选项
  */
-export async function get(url: string = "", params?: {}, onSuccess: (res) => void = undefined, onFail: (res) => void = undefined, onFinally: () => void = undefined, onError: (error) => void = undefined, options?: {
+export async function get(url: string = "", params?: {}, onSuccess?: (res: API.Response) => void, onFail?: (res: API.Response) => void, onFinally?: () => void, onError?: (error: unknown) => void, options?: {
     [key: string]: any
 }) {
     let res = {};

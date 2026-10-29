@@ -1,8 +1,8 @@
-import {useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import type {Key} from "react";
 import {App, Button, Form, Select, Tooltip, Typography} from "antd";
 import {Body, PageTable, ProModal, Title} from "sinking-antd";
-import type {PageTableProps, PageTableRef, ProModalRef} from "sinking-antd";
+import type {PageTableProps, PageTableRef} from "sinking-antd";
 import ActionDropdown from "@/pages/components/action-dropdown";
 import RecordTime from "@/pages/components/record-time";
 import useStyles from "@/pages/components/resource-table/styles";
@@ -16,7 +16,8 @@ export default () => {
     const {message, modal} = App.useApp();
     const {styles} = useStyles();
     const tableRef = useRef<PageTableRef<any> | null>(null);
-    const modalRef = useRef<ProModalRef | null>(null);
+    const [editOpen, setEditOpen] = useState(false);
+    const [editValues, setEditValues] = useState<Record<string, string>>({});
     const [form] = Form.useForm();
     const [editRecords, setEditRecords] = useState<string[]>([]);
     const [editLoading, setEditLoading] = useState(false);
@@ -25,12 +26,19 @@ export default () => {
     const statusData: Record<string, string> = enumData?.status || {};
 
     const onEdit = (addresses: Key[], record?: any) => {
+        addresses = (addresses || []).filter(address => address != null);
         if (!addresses.length) return;
-        form.resetFields();
-        if (record) form.setFieldsValue({status: String(record.status)});
+        setEditValues(record ? {status: String(record?.status)} : {});
         setEditRecords(addresses.map(String));
-        modalRef.current?.show();
+        setEditOpen(true);
     };
+
+    useEffect(() => {
+        if (editOpen) {
+            form.resetFields();
+            form.setFieldsValue(editValues);
+        }
+    }, [editOpen, editValues, form]);
 
     const onFormFinish = async (values: {status: string}) => {
         setEditLoading(true);
@@ -40,22 +48,23 @@ export default () => {
                 message.error(response?.message || "编辑失败");
                 return;
             }
-            modalRef.current?.hide();
+            setEditOpen(false);
             tableRef.current?.reload();
             tableRef.current?.clearSelectedRows();
-            message.success(response.message || "编辑成功");
+            message.success(response?.message || "编辑成功");
         } finally {
             setEditLoading(false);
         }
     };
 
     const onDelete = (addresses: Key[]) => {
+        addresses = (addresses || []).filter(address => address != null);
         if (!addresses.length) return;
         modal.confirm({
             title: "删除节点",
             content: `确定删除选中的 ${addresses.length} 个节点吗？`,
             okText: "删除",
-            okType: "danger",
+            okButtonProps: {danger: true},
             cancelText: "取消",
             mask: {closable: true},
             onOk: async () => {
@@ -66,7 +75,7 @@ export default () => {
                 }
                 tableRef.current?.reload();
                 tableRef.current?.clearSelectedRows();
-                message.success(response.message || "删除成功");
+                message.success(response?.message || "删除成功");
             },
         });
     };
@@ -98,16 +107,16 @@ export default () => {
         },
         {
             title: "相关时间", dataIndex: "create_time", key: "create_time", width: 220, sorter: true,
-            render: (_, record) => <RecordTime createTime={record.create_time} updateTime={record.update_time}/>,
+            render: (_, record) => <RecordTime createTime={record?.create_time} updateTime={record?.update_time}/>,
         },
         {
             title: "操作", key: "option", width: 80, align: "center", fixed: "right", className: "action-cell",
             render: (_, record) => <ActionDropdown
-                open={openRowAddress === record.address}
-                onOpenChange={(open) => setOpenRowAddress(open ? record.address : "")}
+                open={openRowAddress === record?.address}
+                onOpenChange={(open) => setOpenRowAddress(open ? record?.address : "")}
                 menu={{items: [
-                    {key: "edit", label: "编辑", onClick: () => onEdit([record.address], record)},
-                    {key: "delete", label: "删除", danger: true, onClick: () => onDelete([record.address])},
+                    {key: "edit", label: "编辑", onClick: () => onEdit([record?.address], record)},
+                    {key: "delete", label: "删除", danger: true, onClick: () => onDelete([record?.address])},
                 ]}}>
                 <Button size="small" aria-label="节点操作">操作</Button>
             </ActionDropdown>,
@@ -121,11 +130,11 @@ export default () => {
             className={styles.table}
             columns={columns}
             rowKey="address"
-            rowClassName={(record) => openRowAddress === record.address ? "action-menu-open" : ""}
+            rowClassName={(record) => openRowAddress === record?.address ? "action-menu-open" : ""}
             request={async (params, sort) => {
                 const response = await getNodeList({body: getParams({...params}, sort)});
                 if (response?.code !== 200) throw new Error(response?.message || "获取节点列表失败");
-                return {data: response.data?.list, total: response.data?.total ?? 0, success: true};
+                return {data: response?.data?.list || [], total: response?.data?.total ?? 0, success: true};
             }}
             defaultPageSize={10}
             paginationAffix={{offsetBottom: 15}}
@@ -151,8 +160,8 @@ export default () => {
                 {key: "delete", type: "button", label: "批量删除", icon: "DeleteOutlined", danger: true, onClick: () => onDelete(keys)},
             ]}}
         />
-        <ProModal ref={modalRef} title={<Title>{editRecords.length > 1 ? "批量编辑节点" : "编辑节点"}</Title>}
-            onOk={form.submit} width={380} modalProps={{confirmLoading: editLoading, forceRender: true} as any}>
+        <ProModal onCancel={() => setEditOpen(false)} title={<Title>{editRecords.length > 1 ? "批量编辑节点" : "编辑节点"}</Title>}
+            onOk={form.submit} width={380} modalProps={{open: editOpen, confirmLoading: editLoading} as any}>
             <Form form={form} layout="vertical" variant="filled" className={styles.form} onFinish={onFormFinish}>
                 <Form.Item name="status" label="服务状态" rules={[{required: true, message: "请选择服务状态"}]}>
                     <Select placeholder="请选择服务状态" options={Object.entries(statusData).map(([value, label]) => ({value, label}))}/>

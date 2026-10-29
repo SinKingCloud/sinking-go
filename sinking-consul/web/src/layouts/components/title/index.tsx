@@ -8,7 +8,7 @@ const Title = () => {
     const location = useLocation();
 
     const initWeb = () => {
-        const route = match?.pop()?.route;
+        const route = match?.at(-1)?.route;
         if (route && route?.title) {
             document.title = route?.title + " - " + (web?.info?.name || defaultSettings?.title);
         }

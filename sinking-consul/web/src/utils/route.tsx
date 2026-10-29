@@ -95,7 +95,7 @@ function getMenuItems(routes: any, parentPath = '/', hideMenu = true) {
             }
         }
         return menuItem;
-    });
+    }).filter(Boolean);
 }
 
 
@@ -107,7 +107,7 @@ const parentCache: any = {}
  * @param name 标识
  */
 export function getParentList(data: any[], name: string): any[] {
-    if (name && Object.keys(name).length <= 0 && parentCache?.[name] != undefined) {
+    if (name && parentCache[name] !== undefined) {
         return parentCache[name];
     }
     let parents: any[] = [];

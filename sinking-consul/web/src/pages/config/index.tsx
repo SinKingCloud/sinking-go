@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Body, PageTable, Title, ProModal, useTheme} from 'sinking-antd';
-import type {PageTableProps, PageTableRef, ProModalRef} from 'sinking-antd';
+import type {PageTableProps, PageTableRef} from 'sinking-antd';
 import {getParams} from "@/utils/page";
 import {useEnums} from "@/utils/enum";
 import {App, Button, Form, Input, Select, Spin, Row, Col, Tooltip, Typography} from 'antd';
@@ -21,8 +21,9 @@ export default (): React.ReactNode => {
     const typeData = (enumsData?.config?.type || {}) as unknown as Record<string, string>;
     const statusData = (enumsData?.config?.status || {}) as unknown as Record<string, string>;
 
-    const formModalRef = useRef<ProModalRef>({} as ProModalRef);
-    const batchModalRef = useRef<ProModalRef>({} as ProModalRef);
+    const [formOpen, setFormOpen] = useState(false);
+    const [batchOpen, setBatchOpen] = useState(false);
+    const [formValues, setFormValues] = useState<Record<string, any>>({});
     const [form] = Form.useForm();
     const [batchForm] = Form.useForm();
     const [isEditMode, setIsEditMode] = useState(false);
@@ -37,6 +38,17 @@ export default (): React.ReactNode => {
 
     useEffect(() => () => { requestRef.current += 1; }, []);
 
+    useEffect(() => {
+        if (formOpen) {
+            form.resetFields();
+            form.setFieldsValue(formValues);
+        }
+    }, [formOpen, formValues, form]);
+
+    useEffect(() => {
+        if (batchOpen) batchForm.resetFields();
+    }, [batchOpen, batchForm]);
+
     const mapTypeToAceMode = (t?: string) => {
         if (!t) return 'text';
         return (t || '').toLowerCase();
@@ -46,30 +58,30 @@ export default (): React.ReactNode => {
         requestRef.current += 1;
         setIsEditMode(false);
         setFormInfoLoading(false);
-        form.resetFields();
+        setFormValues({});
         setAceContent('');
         setAceMode('text');
-        formModalRef.current?.show();
+        setFormOpen(true);
     };
 
     const openEdit = async (record: any) => {
+        if (!record) return;
         const requestId = ++requestRef.current;
         setIsEditMode(true);
-        setEditKeys([{group: record.group, name: record.name}]);
-        form.resetFields();
-        form.setFieldsValue(record);
-        setAceMode(mapTypeToAceMode(record.type));
+        setEditKeys([{group: record?.group, name: record?.name}]);
+        setFormValues(record);
+        setAceMode(mapTypeToAceMode(record?.type));
         setAceContent('');
         setFormInfoLoading(true);
-        formModalRef.current?.show();
+        setFormOpen(true);
         await getConfigInfo({
-            body: {group: record.group, name: record.name},
+            body: {group: record?.group, name: record?.name},
             onSuccess: (r: any) => {
                 if (requestRef.current === requestId) setAceContent(r?.data?.content || '');
             },
             onFail: (r: any) => {
                 if (requestRef.current !== requestId) return;
-                formModalRef.current?.hide();
+                setFormOpen(false);
                 message.error(r?.message || '读取配置失败');
             },
             onFinally: () => {
@@ -79,15 +91,16 @@ export default (): React.ReactNode => {
     };
 
     const onDelete = (records: any[]) => {
-        const keys = records?.map((r: any) => typeof r === 'string' ? r.split(':') : [r.group, r.name])
+        const keys = (records || []).filter(Boolean).map((r: any) => typeof r === 'string' ? r.split(':') : [r?.group, r?.name])
             .map(([group, name]: any[]) => ({group, name}));
+        if (!keys.length) return;
         modal.confirm({
             title: '删除配置',
             content: `确定删除选中的 ${keys?.length || 0} 条配置吗？`,
             okText: '确定',
-            okType: 'danger',
+            okButtonProps: {danger: true},
             cancelText: '取消',
-            maskClosable: true,
+            mask: {closable: true},
             onOk: async () => {
                 await deleteConfig({
                     body: {keys},
@@ -118,7 +131,7 @@ export default (): React.ReactNode => {
         await apiCall({
             body,
             onSuccess: (r: any) => {
-                formModalRef.current?.hide();
+                setFormOpen(false);
                 tableRef.current?.refreshTableData();
                 if (isEditMode) {
                     tableRef.current?.clearSelectedRows();
@@ -138,7 +151,7 @@ export default (): React.ReactNode => {
                 status: values?.status !== undefined && values?.status !== null ? String(values.status) : undefined,
             },
             onSuccess: (r: any) => {
-                batchModalRef.current?.hide();
+                setBatchOpen(false);
                 tableRef.current?.refreshTableData();
                 tableRef.current?.clearSelectedRows();
                 message?.success(r?.message || '编辑成功');
@@ -199,7 +212,7 @@ export default (): React.ReactNode => {
             key: 'create_time',
             width: 220,
             sorter: true,
-            render: (_: any, record: any) => <RecordTime createTime={record.create_time} updateTime={record.update_time}/>,
+            render: (_: any, record: any) => <RecordTime createTime={record?.create_time} updateTime={record?.update_time}/>,
         },
         {
             title: '操作',
@@ -209,8 +222,8 @@ export default (): React.ReactNode => {
             fixed: 'right',
             className: 'action-cell',
             render: (_: any, record: any) => (
-                <ActionDropdown open={openRowKey === JSON.stringify([record.group, record.name])}
-                    onOpenChange={(open) => setOpenRowKey(open ? JSON.stringify([record.group, record.name]) : '')}
+                <ActionDropdown open={openRowKey === JSON.stringify([record?.group, record?.name])}
+                    onOpenChange={(open) => setOpenRowKey(open ? JSON.stringify([record?.group, record?.name]) : '')}
                     menu={{
                     items: [
                         {
@@ -239,8 +252,8 @@ export default (): React.ReactNode => {
                 ariaLabel="配置管理"
                 className={styles.table}
                 hero={{eyebrow: 'CONFIGURATION CENTER', title: '配置管理', action: {label: '新增配置', onClick: openCreate}}}
-                rowKey={(record) => JSON.stringify([record.group, record.name])}
-                rowClassName={(record) => openRowKey === JSON.stringify([record.group, record.name]) ? 'action-menu-open' : ''}
+                rowKey={(record) => JSON.stringify([record?.group, record?.name])}
+                rowClassName={(record) => openRowKey === JSON.stringify([record?.group, record?.name]) ? 'action-menu-open' : ''}
                 columns={columns}
                 defaultPage={1}
                 defaultPageSize={10}
@@ -267,9 +280,8 @@ export default (): React.ReactNode => {
                     selections: true,
                     actions: (_keys, selected) => [
                         {key: 'edit', type: 'button', label: '批量编辑', onClick: () => {
-                            setEditKeys(selected.map((r: any) => ({group: r.group, name: r.name})));
-                            batchForm.resetFields();
-                            batchModalRef.current?.show();
+                            setEditKeys((selected || []).filter(Boolean).map((r: any) => ({group: r?.group, name: r?.name})));
+                            setBatchOpen(true);
                         }},
                         {key: 'delete', type: 'button', label: '批量删除', danger: true, onClick: () => onDelete(selected)},
                     ]
@@ -277,24 +289,23 @@ export default (): React.ReactNode => {
                 request={async (params, sort) => {
                     const response = await getConfigList({body: getParams({...params}, sort)});
                     if (response?.code !== 200) throw new Error(response?.message || '获取配置列表失败');
-                    return {data: response.data?.list || [], total: response.data?.total ?? 0, success: true};
+                    return {data: response?.data?.list || [], total: response?.data?.total ?? 0, success: true};
                 }}
                 paginationAffix={{offsetBottom: 15}}
                 pagination={{unit: '条'}}/>
 
             <ProModal
-                ref={formModalRef}
                 title={<Title>{isEditMode ? '编辑配置' : '新增配置'}</Title>}
                 onOk={form?.submit}
                 width={800}
                 onCancel={() => {
                     requestRef.current += 1;
-                    formModalRef.current?.hide();
+                    setFormOpen(false);
                 }}
                 modalProps={{
                     rootClassName: styles.modal,
+                    open: formOpen,
                     confirmLoading: formBtnLoading || formInfoLoading,
-                    forceRender: true,
                     footer: formInfoLoading ? null : undefined,
                     okText: '保存',
                     cancelText: '取消',
@@ -384,14 +395,14 @@ export default (): React.ReactNode => {
             </ProModal>
 
             <ProModal
-                ref={batchModalRef}
+                onCancel={() => setBatchOpen(false)}
                 title={<Title>批量编辑配置</Title>}
                 onOk={batchForm?.submit}
                 width={350}
                 modalProps={{
                     rootClassName: styles.modal,
+                    open: batchOpen,
                     confirmLoading: batchBtnLoading,
-                    forceRender: true,
                     okText: '保存',
                     cancelText: '取消',
                     closable: !batchBtnLoading,

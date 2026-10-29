@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useMemo} from "react";
 import {Col, Menu, Row} from "antd";
 import {Body, Icon, useTheme} from "sinking-antd";
 import {history, useLocation, useModel} from "umi";
@@ -20,7 +20,8 @@ export default (): React.ReactNode => {
     const location = useLocation();
     const isCompactMode = theme?.isCompactTheme?.() || false;
     const isDarkMode = Boolean(theme?.isDarkMode?.() || theme?.isDarkTheme?.());
-    const {styles} = useStyles({isCompactMode, isDarkMode});
+    const styleProps = useMemo(() => ({isCompactMode, isDarkMode}), [isCompactMode, isDarkMode]);
+    const {styles} = useStyles(styleProps);
     const selected = new URLSearchParams(location.search).get("tab") || "web";
     const activeItem = items.find((item) => item.key === selected) || items[0];
     const Component = activeItem.component;
