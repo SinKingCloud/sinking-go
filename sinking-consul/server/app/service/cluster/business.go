@@ -67,6 +67,9 @@ func (s *service) Register(address string) {
 
 // initialize 初始化服务
 func (s *service) initialize() {
+	if s.setting == nil {
+		return
+	}
 	s.once.Do(func() {
 		_ = s.repository.DeleteAll()
 		var list []string
@@ -106,6 +109,9 @@ func (s *service) initialize() {
 
 // request 向集群节点发送请求
 func (s *service) request(address string, action string, body interface{}) (int, string, []byte, error) {
+	if s.setting == nil {
+		return 500, "系统设置服务未初始化", nil, errors.New("系统设置服务未初始化")
+	}
 	if !strings.HasPrefix(address, "http://") {
 		address = "http://" + address
 	}
@@ -155,7 +161,10 @@ func (s *service) request(address string, action string, body interface{}) (int,
 // GetLocalAddr 获取本机地址
 func (s *service) GetLocalAddr() string {
 	str := s.cache.Remember(constant.CacheNameWithLocalIp, func() interface{} {
-		local := s.setting.GetString(constant.ClusterLocal)
+		local := ""
+		if s.setting != nil {
+			local = s.setting.GetString(constant.ClusterLocal)
+		}
 		if local == "" {
 			_, port := s.serverAddr()
 			local = ip.GetLocalIP() + ":" + strconv.Itoa(port)
@@ -166,8 +175,10 @@ func (s *service) GetLocalAddr() string {
 }
 
 func (s *service) serverAddr() (host string, port int) {
-	host = s.setting.GetString(constant.ServerHost)
-	port = s.setting.GetInt(constant.ServerPort)
+	if s.setting != nil {
+		host = s.setting.GetString(constant.ServerHost)
+		port = s.setting.GetInt(constant.ServerPort)
+	}
 	if host == "" {
 		host = "0.0.0.0"
 	}
@@ -267,6 +278,12 @@ func (s *service) RemoteUpdateData(remoteAddress string, configs *ConfigUpdateVa
 
 // SynchronizeRemoteData 同步集群信息
 func (s *service) SynchronizeRemoteData(remoteAddress string) error {
+	if s.nodeService == nil && s.configService == nil {
+		return nil
+	}
+	if s.setting == nil {
+		return errors.New("系统设置服务未初始化")
+	}
 	for {
 		if s.cache.IsLock(constant.LockSyncData) {
 			time.Sleep(time.Second)
@@ -278,38 +295,42 @@ func (s *service) SynchronizeRemoteData(remoteAddress string) error {
 	defer atomic.AddInt64(&s.syncDataCoroutineCount, -1)
 	var nodeList []*node.Node
 	needSetNode := false
-	code, _, data, err := s.request(remoteAddress, "api/cluster/node", nil)
-	if err == nil && code == 200 {
-		if err = json.Unmarshal(data, &nodeList); err == nil && nodeList != nil {
-			needSetNode = true
+	if s.nodeService != nil {
+		code, _, data, err := s.request(remoteAddress, "api/cluster/node", nil)
+		if err == nil && code == 200 {
+			if err = json.Unmarshal(data, &nodeList); err == nil && nodeList != nil {
+				needSetNode = true
+			}
 		}
 	}
 	var configList []*model.Config
 	needSetConfig := false
-	body := map[string]interface{}{
-		"show_content": false,
-	}
-	code, _, data, err = s.request(remoteAddress, "api/cluster/config", body)
-	if err == nil && code == 200 {
-		if err = json.Unmarshal(data, &configList); err == nil && configList != nil {
-			isChange := s.configService.CheckIsChange(configList)
-			if isChange {
-				body = map[string]interface{}{
-					"show_content": true,
-				}
-				code, _, data, err = s.request(remoteAddress, "api/cluster/config", body)
-				if err == nil && code == 200 {
-					if err = json.Unmarshal(data, &configList); err == nil && configList != nil {
-						needSetConfig = true
+	if s.configService != nil {
+		body := map[string]interface{}{
+			"show_content": false,
+		}
+		code, _, data, err := s.request(remoteAddress, "api/cluster/config", body)
+		if err == nil && code == 200 {
+			if err = json.Unmarshal(data, &configList); err == nil && configList != nil {
+				isChange := s.configService.CheckIsChange(configList)
+				if isChange {
+					body = map[string]interface{}{
+						"show_content": true,
+					}
+					code, _, data, err = s.request(remoteAddress, "api/cluster/config", body)
+					if err == nil && code == 200 {
+						if err = json.Unmarshal(data, &configList); err == nil && configList != nil {
+							needSetConfig = true
+						}
 					}
 				}
 			}
 		}
 	}
-	if needSetNode && nodeList != nil {
+	if s.nodeService != nil && needSetNode && nodeList != nil {
 		s.nodeService.Sets(nodeList)
 	}
-	if needSetConfig && configList != nil {
+	if s.configService != nil && needSetConfig && configList != nil {
 		s.configService.Sets(configList)
 	}
 	return nil

@@ -17,6 +17,9 @@ func (c *service) CheckAccount(account string, pwd string) error {
 	if account == "" || pwd == "" {
 		return errors.New("用户名或密码不能为空")
 	}
+	if c.setting == nil {
+		return errors.New("系统设置服务未初始化")
+	}
 	sUser := c.setting.GetString(constant.AuthAccount)
 	sPwd := c.setting.GetString(constant.AuthPassword)
 	if sUser == "" || sPwd == "" {
@@ -38,6 +41,9 @@ func (c *service) CheckAccount(account string, pwd string) error {
 
 // GenLoginToken 生成jwtToken
 func (c *service) GenLoginToken(ip string) (s string, e error) {
+	if c.setting == nil {
+		return "", errors.New("系统设置服务未初始化")
+	}
 	token := str.NewStringTool().Md5(strconv.FormatInt(time.Now().UnixMilli(), 10))
 	if token != "" {
 		e = c.setting.Set(constant.AuthLoginToken, token)
@@ -63,6 +69,9 @@ func (c *service) GenLoginToken(ip string) (s string, e error) {
 
 // ClearLoginToken 清理jwtToken
 func (c *service) ClearLoginToken() error {
+	if c.setting == nil {
+		return errors.New("系统设置服务未初始化")
+	}
 	if c.setting.Set(constant.AuthLoginToken, "") != nil {
 		return errors.New("清理登录token失败")
 	}
@@ -71,6 +80,9 @@ func (c *service) ClearLoginToken() error {
 
 // ChangePassword 修改密码
 func (c *service) ChangePassword(password string) error {
+	if c.setting == nil {
+		return errors.New("系统设置服务未初始化")
+	}
 	sPwd, _ := str.NewStringTool().BcryptHash(password)
 	err := c.setting.Set(constant.AuthPassword, sPwd)
 	if err != nil {
@@ -83,6 +95,9 @@ func (c *service) ChangePassword(password string) error {
 func (c *service) UpdateAccount(account string, password string) error {
 	if account == "" && password == "" {
 		return errors.New("账户信息不能为空")
+	}
+	if c.setting == nil {
+		return errors.New("系统设置服务未初始化")
 	}
 	configs := make([]*setting.Config, 0, 3)
 	if account != "" {
@@ -104,6 +119,9 @@ func (c *service) UpdateAccount(account string, password string) error {
 
 // CheckLoginToken 判断登陆token
 func (c *service) CheckLoginToken(token string) error {
+	if c.setting == nil {
+		return errors.New("系统设置服务未初始化")
+	}
 	loginToken := c.setting.GetString(constant.AuthLoginToken)
 	if loginToken == "" {
 		return errors.New("您的账户已注销登陆,请重新登陆")
@@ -118,6 +136,9 @@ func (c *service) CheckLoginToken(token string) error {
 func (c *service) CheckApiToken(token string) error {
 	if token == "" {
 		return errors.New("鉴权token缺失,请检查请求")
+	}
+	if c.setting == nil {
+		return errors.New("系统设置服务未初始化")
 	}
 	if token != c.setting.GetString(constant.AuthApiToken) {
 		return errors.New("鉴权token无效,请确认token是否正确")
