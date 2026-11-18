@@ -8567,10 +8567,10 @@ single-spa@^5.9.2:
   resolved "https://registry.npmjs.org/single-spa/-/single-spa-5.9.5.tgz#f47b3c91b009ebc3b224dd1086ef2b2dac524373"
   integrity sha512-9SQdmsyz4HSP+3gs6PJzhkaMEg+6zTlu9oxIghnwUX3eq+ajq4ft5egl0iyR55LAmO/UwvU8NgIWs/ZyQMa6dw==
 
-sinking-antd@^1.2.7:
-  version "1.2.7"
-  resolved "https://registry.npmjs.org/sinking-antd/-/sinking-antd-1.2.7.tgz#9cce2a80c8560c5e73502bcc9c5acda9f0da8d58"
-  integrity sha512-xGPs+NrssLqNPku/Wwci8CpDMPcy4zbBOrzKx2iPaEnbsa5ki6zuAZubD/2RfvA0P5KoO1mvJVyEO9jB69pelg==
+sinking-antd@^1.2.8:
+  version "1.2.8"
+  resolved "https://registry.npmjs.org/sinking-antd/-/sinking-antd-1.2.8.tgz#b17cddeca34845935c7843b3fdbb051d085253eb"
+  integrity sha512-0B3bJXyFAlcUIeNkLsKP7/ltambG0wuncUwLeprzq4CV0x36zsmNXNzqLa0DewW3sM3YbkWKFNTOF1978JrkmQ==
   dependencies:
     "@ant-design/icons" "^6.3.4"
     antd "^6.6.5"
